@@ -1,0 +1,79 @@
+{
+	"profession": "minecraft:fletcher",
+	"offersCount": 7,
+	"staticPool": [
+		{ "item": "minecraft:stick", "buy": 2, "sell": 1, "maxStock": 64 },
+		{ "item": "minecraft:feather", "buy": 3, "sell": 1, "maxStock": 32 },
+		{ "item": "minecraft:flint", "buy": 4, "sell": 2, "maxStock": 24 },
+		{ "item": "minecraft:arrow", "buy": 6, "sell": 2, "maxStock": 16 },
+		{ "item": "minecraft:spectral_arrow", "buy": 12, "sell": 5, "maxStock": 8 },
+		{ "item": "minecraft:tipped_arrow", "buy": 10, "sell": 4, "maxStock": 8 },
+		{ "item": "minecraft:bow", "buy": 24, "sell": 10, "maxStock": 2 },
+		{ "item": "minecraft:crossbow", "buy": 36, "sell": 16, "maxStock": 2 },
+		{ "item": "minecraft:fletching_table", "buy": 14, "sell": 5, "maxStock": 4 },
+		{ "item": "minecraft:string", "buy": 3, "sell": 1, "maxStock": 32 }
+	],
+	"weaponPool": [
+		{
+			"tag": "minecraft:bows",
+			"maxStock": 2,
+			"buyPerDamage": 4,
+			"sellPerDamage": 2,
+			"buyBase": 2,
+			"sellBase": 1,
+			"useDurability": true
+		},
+		{
+			"tag": "minecraft:crossbows",
+			"maxStock": 2,
+			"buyPerDamage": 5,
+			"sellPerDamage": 2,
+			"buyBase": 3,
+			"sellBase": 1,
+			"useDurability": true
+		}
+	],
+	"toolPool": [],
+	"generalPool": [
+		{
+			"tag": "minecraft:arrows",
+			"maxStock": 16,
+			"buyPrice": 6,
+			"sellPrice": 2
+		}
+	],
+	"buyPool": [
+		{
+			"tag": "c:feathers",
+			"buyPrice": 3,
+			"discountFactor": 70
+		},
+		{
+			"tag": "c:rods/wooden",
+			"buyPrice": 1,
+			"discountFactor": 80
+		},
+		{
+			"tag": "c:strings",
+			"buyPrice": 2,
+			"discountFactor": 60
+		},
+		{
+			"tag": "c:gems/quartz",
+			"buyPrice": 4,
+			"discountFactor": 50
+		},
+		{
+			"tag": "minecraft:phantom_membranes",
+			"buyPrice": 8,
+			"discountFactor": 40
+		}
+	],
+	"itemPriceMultipliers": {
+		"minecraft:bow": 1.0,
+		"minecraft:crossbow": 1.8,
+		"minecraft:arrow": 0.3,
+		"minecraft:spectral_arrow": 1.5,
+		"minecraft:tipped_arrow": 1.2
+	}
+}

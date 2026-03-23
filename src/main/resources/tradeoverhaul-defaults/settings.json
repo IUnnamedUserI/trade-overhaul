@@ -1,0 +1,18 @@
+{
+	"restockDelayGameDays": 2,
+	"walletAfterRestock": 40,
+	"maxStockDefault": 16,
+	"weaponBuyPerDamage": 4,
+	"weaponSellPerDamage": 2,
+	"weaponBuyBase": 1,
+	"weaponSellBase": 0,
+	"weaponUseDurability": true,
+	"toolBuyPerEfficiency": 3,
+	"toolSellPerEfficiency": 1,
+	"toolBuyBase": 1,
+	"toolSellBase": 0,
+	"toolUseDurability": true,
+	"durabilityPriceStep": 10,
+	"durabilityPriceReductionPerStep": 1,
+	"buyOnlyDiscountDefault": 50
+}

@@ -1,0 +1,8 @@
+{
+	"gui.tradeoverhaul.player_inventory": "Инвентарь %s",
+	"gui.tradeoverhaul.villager_inventory": "Инвентарь торговца",
+	"gui.tradeoverhaul.wallet": "Кошелёк",
+	"command.tradeoverhaul.refresh.all": "Обновлено %d жителей(ей)",
+	"command.tradeoverhaul.refresh.near": "Обновлено %d жителей(ей) в радиусе %d блоков от %s",
+	"tradeoverhaul.config.itemPriceMultipliers": "Множители цен предметов"
+}

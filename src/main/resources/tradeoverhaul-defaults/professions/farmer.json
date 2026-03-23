@@ -1,0 +1,53 @@
+{
+	"profession": "minecraft:farmer",
+	"offersCount": 7,
+	"staticPool": [
+		{ "item": "minecraft:wheat", "buy": 2, "sell": 1, "maxStock": 32 },
+		{ "item": "minecraft:carrot", "buy": 3, "sell": 1, "maxStock": 24 },
+		{ "item": "minecraft:potato", "buy": 3, "sell": 1, "maxStock": 24 },
+		{ "item": "minecraft:beetroot", "buy": 3, "sell": 1, "maxStock": 24 },
+		{ "item": "minecraft:wheat_seeds", "buy": 2, "sell": 1, "maxStock": 32 },
+		{ "item": "minecraft:beetroot_seeds", "buy": 2, "sell": 1, "maxStock": 32 },
+		{ "item": "minecraft:melon_seeds", "buy": 3, "sell": 1, "maxStock": 16 },
+		{ "item": "minecraft:pumpkin_seeds", "buy": 3, "sell": 1, "maxStock": 16 },
+		{ "item": "minecraft:sugar_cane", "buy": 4, "sell": 2, "maxStock": 16 },
+		{ "item": "minecraft:egg", "buy": 4, "sell": 2, "maxStock": 8 }
+	],
+	"weaponPool": [],
+	"toolPool": [
+		{
+			"tag": "minecraft:hoes",
+			"maxStock": 2,
+			"buyPerEfficiency": 3,
+			"sellPerEfficiency": 1,
+			"buyBase": 2,
+			"sellBase": 1,
+			"useDurability": true
+		}
+	],
+	"generalPool": [
+		{
+			"tag": "minecraft:crops",
+			"maxStock": 24,
+			"buyPrice": 3,
+			"sellPrice": 1
+		}
+	],
+	"buyPool": [
+		{
+			"tag": "c:seeds",
+			"buyPrice": 2,
+			"discountFactor": 70
+		},
+		{
+			"tag": "c:bones",
+			"buyPrice": 3,
+			"discountFactor": 50
+		},
+		{
+			"tag": "c:clay_balls",
+			"buyPrice": 2,
+			"discountFactor": 60
+		}
+	]
+}

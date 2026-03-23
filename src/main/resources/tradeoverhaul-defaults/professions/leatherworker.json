@@ -1,0 +1,59 @@
+{
+	"profession": "minecraft:leatherworker",
+	"offersCount": 7,
+	"staticPool": [
+		{ "item": "minecraft:leather", "buy": 4, "sell": 2, "maxStock": 32 },
+		{ "item": "minecraft:rabbit_hide", "buy": 3, "sell": 1, "maxStock": 16 },
+		{ "item": "minecraft:string", "buy": 2, "sell": 1, "maxStock": 48 },
+		{ "item": "minecraft:leather_helmet", "buy": 18, "sell": 8, "maxStock": 2 },
+		{ "item": "minecraft:leather_chestplate", "buy": 28, "sell": 12, "maxStock": 2 },
+		{ "item": "minecraft:leather_leggings", "buy": 24, "sell": 10, "maxStock": 2 },
+		{ "item": "minecraft:leather_boots", "buy": 14, "sell": 6, "maxStock": 2 },
+		{ "item": "minecraft:saddle", "buy": 32, "sell": 14, "maxStock": 1 },
+		{ "item": "minecraft:lead", "buy": 8, "sell": 3, "maxStock": 4 },
+		{ "item": "minecraft:name_tag", "buy": 20, "sell": 8, "maxStock": 2 }
+	],
+	"weaponPool": [
+		{
+			"tag": "minecraft:swords",
+			"maxStock": 1,
+			"buyPerDamage": 4,
+			"sellPerDamage": 2,
+			"buyBase": 2,
+			"sellBase": 1,
+			"useDurability": true
+		}
+	],
+	"toolPool": [],
+	"generalPool": [
+		{
+			"tag": "minecraft:armor",
+			"maxStock": 2,
+			"buyPrice": 15,
+			"sellPrice": 6,
+			"useDurability": true
+		}
+	],
+	"buyPool": [
+		{
+			"tag": "c:feathers",
+			"buyPrice": 2,
+			"discountFactor": 60
+		},
+		{
+			"tag": "c:rods/blaze",
+			"buyPrice": 8,
+			"discountFactor": 35
+		},
+		{
+			"tag": "c:gems/lapis",
+			"buyPrice": 3,
+			"discountFactor": 50
+		},
+		{
+			"tag": "c:inks",
+			"buyPrice": 4,
+			"discountFactor": 45
+		}
+	]
+}

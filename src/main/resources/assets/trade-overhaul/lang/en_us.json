@@ -1,0 +1,8 @@
+{
+	"gui.tradeoverhaul.player_inventory": "%s's Inventory",
+	"gui.tradeoverhaul.villager_inventory": "Trader's Inventory",
+	"gui.tradeoverhaul.wallet": "Wallet",
+	"command.tradeoverhaul.refresh.all": "Refreshed %d villager(s)",
+	"command.tradeoverhaul.refresh.near": "Refreshed %d villager(s) within %d blocks of %s",
+	"tradeoverhaul.config.itemPriceMultipliers": "Item Price Multipliers"
+}
