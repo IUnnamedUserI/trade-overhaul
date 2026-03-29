@@ -18,13 +18,23 @@
 		]
 	},
 	"mixins": [
-		"tradeoverhaul.mixins.json"
+		{
+			"config": "tradeoverhaul.mixins.json",
+			"environment": "*"
+		},
+		{
+			"config": "trade-overhaul.client.mixins.json",
+			"environment": "client"
+		}
 	],
 	"accessWidener": "tradeoverhaul.accesswidener",
 	"depends": {
 		"fabricloader": ">=0.15.11",
-		"fabric": "*",
+		"fabric-api": "*",
 		"minecraft": "~1.20.1",
 		"java": ">=17"
+	},
+	"custom": {
+		"fabric-api:module-lifecycle": "stable"
 	}
 }

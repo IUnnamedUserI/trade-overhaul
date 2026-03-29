@@ -1,53 +1,71 @@
 {
 	"profession": "minecraft:farmer",
-	"offersCount": 7,
+	"offersCount": 10,
 	"staticPool": [
-		{ "item": "minecraft:wheat", "buy": 2, "sell": 1, "maxStock": 32 },
-		{ "item": "minecraft:carrot", "buy": 3, "sell": 1, "maxStock": 24 },
-		{ "item": "minecraft:potato", "buy": 3, "sell": 1, "maxStock": 24 },
-		{ "item": "minecraft:beetroot", "buy": 3, "sell": 1, "maxStock": 24 },
-		{ "item": "minecraft:wheat_seeds", "buy": 2, "sell": 1, "maxStock": 32 },
-		{ "item": "minecraft:beetroot_seeds", "buy": 2, "sell": 1, "maxStock": 32 },
-		{ "item": "minecraft:melon_seeds", "buy": 3, "sell": 1, "maxStock": 16 },
-		{ "item": "minecraft:pumpkin_seeds", "buy": 3, "sell": 1, "maxStock": 16 },
-		{ "item": "minecraft:sugar_cane", "buy": 4, "sell": 2, "maxStock": 16 },
-		{ "item": "minecraft:egg", "buy": 4, "sell": 2, "maxStock": 8 }
+		{ "item": "minecraft:wheat", "buy": 40, "sell": 20, "buyQuantity": 20, "sellQuantity": 10, "minStock": 60, "maxStock": 180 },
+		{ "item": "minecraft:carrot", "buy": 30, "sell": 15, "buyQuantity": 15, "sellQuantity": 8, "minStock": 60, "maxStock": 180 },
+		{ "item": "minecraft:potato", "buy": 30, "sell": 15, "buyQuantity": 15, "sellQuantity": 8, "minStock": 60, "maxStock": 180 },
+		{ "item": "minecraft:beetroot", "buy": 36, "sell": 18, "buyQuantity": 12, "sellQuantity": 6, "minStock": 48, "maxStock": 144 },
+		{ "item": "minecraft:wheat_seeds", "buy": 20, "sell": 10, "buyQuantity": 24, "sellQuantity": 12, "minStock": 96, "maxStock": 288 },
+		{ "item": "minecraft:beetroot_seeds", "buy": 20, "sell": 10, "buyQuantity": 24, "sellQuantity": 12, "minStock": 96, "maxStock": 288 },
+		{ "item": "minecraft:melon_seeds", "buy": 25, "sell": 12, "buyQuantity": 18, "sellQuantity": 10, "minStock": 72, "maxStock": 216 },
+		{ "item": "minecraft:pumpkin_seeds", "buy": 25, "sell": 12, "buyQuantity": 18, "sellQuantity": 10, "minStock": 72, "maxStock": 216 },
+		{ "item": "minecraft:sugar_cane", "buy": 36, "sell": 18, "buyQuantity": 12, "sellQuantity": 6, "minStock": 48, "maxStock": 144 },
+		{ "item": "minecraft:egg", "buy": 50, "sell": 25, "buyQuantity": 4, "sellQuantity": 2, "minStock": 32, "maxStock": 96 },
+		{ "item": "minecraft:hay_block", "buy": 360, "sell": 180, "buyQuantity": 2, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
+		{ "item": "minecraft:bread", "buy": 120, "sell": 60, "buyQuantity": 6, "sellQuantity": 3, "minStock": 12, "maxStock": 36 },
+		{ "item": "minecraft:golden_carrot", "buy": 600, "sell": 300, "buyQuantity": 2, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
+		{ "item": "minecraft:apple", "buy": 180, "sell": 90, "buyQuantity": 4, "sellQuantity": 2, "minStock": 8, "maxStock": 24 },
+		{ "item": "minecraft:dried_kelp", "buy": 60, "sell": 30, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 48 }
 	],
 	"weaponPool": [],
 	"toolPool": [
 		{
 			"tag": "minecraft:hoes",
+			"minStock": 1,
 			"maxStock": 2,
-			"buyPerEfficiency": 3,
-			"sellPerEfficiency": 1,
-			"buyBase": 2,
-			"sellBase": 1,
-			"useDurability": true
+			"buyPerEfficiency": 30,
+			"sellPerEfficiency": 15,
+			"buyBase": 200,
+			"sellBase": 100,
+			"useDurability": true,
+			"buyQuantity": 1,
+			"sellQuantity": 1
 		}
 	],
 	"generalPool": [
 		{
 			"tag": "minecraft:crops",
-			"maxStock": 24,
-			"buyPrice": 3,
-			"sellPrice": 1
+			"minStock": 48,
+			"maxStock": 144,
+			"buyPrice": 30,
+			"sellPrice": 15,
+			"buyQuantity": 12,
+			"sellQuantity": 6
 		}
 	],
 	"buyPool": [
 		{
 			"tag": "c:seeds",
-			"buyPrice": 2,
+			"buyPrice": 20,
+			"buyQuantity": 20,
 			"discountFactor": 70
 		},
 		{
 			"tag": "c:bones",
-			"buyPrice": 3,
-			"discountFactor": 50
+			"buyPrice": 30,
+			"buyQuantity": 8,
+			"discountFactor": 80
 		},
 		{
 			"tag": "c:clay_balls",
-			"buyPrice": 2,
-			"discountFactor": 60
+			"buyPrice": 25,
+			"buyQuantity": 12,
+			"discountFactor": 75
 		}
-	]
+	],
+	"itemPriceMultipliers": {
+		"minecraft:golden_carrot": 2.0,
+		"minecraft:glistering_melon_slice": 1.5
+	}
 }

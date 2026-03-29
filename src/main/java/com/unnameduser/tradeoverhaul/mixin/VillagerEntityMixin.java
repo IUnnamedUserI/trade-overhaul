@@ -2,6 +2,8 @@ package com.unnameduser.tradeoverhaul.mixin;
 
 import com.unnameduser.tradeoverhaul.client.gui.VillagerTradeScreenHandlerFactory;
 import com.unnameduser.tradeoverhaul.common.VillagerTradeData;
+import com.unnameduser.tradeoverhaul.common.component.BulletinBoardComponent;
+import com.unnameduser.tradeoverhaul.common.component.VillagerCurrencyComponent;
 import com.unnameduser.tradeoverhaul.common.component.VillagerInventoryComponent;
 import com.unnameduser.tradeoverhaul.common.trade.TradeRestock;
 import net.minecraft.entity.passive.VillagerEntity;
@@ -29,6 +31,9 @@ public class VillagerEntityMixin implements VillagerTradeData {
 	private int tradeOverhaul_walletEmeralds;
 
 	@Unique
+	private VillagerCurrencyComponent tradeOverhaul_currency;
+
+	@Unique
 	private int[] tradeOverhaul_offerSlots;
 
 	@Unique
@@ -38,6 +43,9 @@ public class VillagerEntityMixin implements VillagerTradeData {
 	@Nullable
 	private PlayerEntity tradeOverhaul_activeTrader;
 
+	@Unique
+	private BulletinBoardComponent tradeOverhaul_bulletinBoardDiscount;
+
 	@Override
 	public int tradeOverhaul$getWalletEmeralds() {
 		return tradeOverhaul_walletEmeralds;
@@ -46,6 +54,14 @@ public class VillagerEntityMixin implements VillagerTradeData {
 	@Override
 	public void tradeOverhaul$setWalletEmeralds(int amount) {
 		tradeOverhaul_walletEmeralds = Math.max(0, amount);
+	}
+
+	@Override
+	public VillagerCurrencyComponent tradeOverhaul$getCurrency() {
+		if (tradeOverhaul_currency == null) {
+			tradeOverhaul_currency = new VillagerCurrencyComponent();
+		}
+		return tradeOverhaul_currency;
 	}
 
 	@Override
@@ -91,12 +107,18 @@ public class VillagerEntityMixin implements VillagerTradeData {
 	private void tradeOverhaul$onTick(CallbackInfo ci) {
 		VillagerEntity villager = (VillagerEntity) (Object) this;
 		TradeRestock.tick(villager);
-		
+
 		// Check if active trader is too far or disconnected
 		if (tradeOverhaul_activeTrader != null) {
-			if (!tradeOverhaul_activeTrader.isAlive() || 
+			if (!tradeOverhaul_activeTrader.isAlive() ||
 				villager.squaredDistanceTo(tradeOverhaul_activeTrader) > 100.0) { // 10 blocks squared
 				tradeOverhaul_activeTrader = null;
+			} else {
+				// Make villager look at active trader
+				villager.getLookControl().lookAt(tradeOverhaul_activeTrader);
+				// Stop villager movement while trading
+				villager.getNavigation().stop();
+				villager.setVelocity(0, villager.getVelocity().y, 0);
 			}
 		}
 	}
@@ -117,6 +139,8 @@ public class VillagerEntityMixin implements VillagerTradeData {
 
 			if (!villager.getWorld().isClient) {
 				tradeOverhaul_activeTrader = player;
+				// Инициализируем компонент валюты (создаётся при первом вызове getCurrency)
+				com.unnameduser.tradeoverhaul.TradeOverhaulMod.LOGGER.info("Opening trade screen for villager {}", villager.getUuid());
 				player.openHandledScreen(new VillagerTradeScreenHandlerFactory(villager.getDisplayName(), villager));
 			}
 
@@ -136,6 +160,12 @@ public class VillagerEntityMixin implements VillagerTradeData {
 			tradeOverhaul_inventory.writeNbt(inventoryNbt);
 			nbt.put("TradeOverhaulInventory", inventoryNbt);
 		}
+		// Сохраняем валюту жителя
+		if (tradeOverhaul_currency != null) {
+			NbtCompound currencyNbt = new NbtCompound();
+			tradeOverhaul_currency.writeNbt(currencyNbt);
+			nbt.put("TradeOverhaulCurrency", currencyNbt);
+		}
 		// Don't save active trader - it's session-only
 	}
 
@@ -153,6 +183,9 @@ public class VillagerEntityMixin implements VillagerTradeData {
 		}
 		if (nbt.contains("TradeOverhaulInventory")) {
 			tradeOverhaul$getInventory().readNbt(nbt.getCompound("TradeOverhaulInventory"));
+		}
+		if (nbt.contains("TradeOverhaulCurrency")) {
+			tradeOverhaul$getCurrency().readNbt(nbt.getCompound("TradeOverhaulCurrency"));
 		}
 		// Active trader is always null after load
 		tradeOverhaul_activeTrader = null;

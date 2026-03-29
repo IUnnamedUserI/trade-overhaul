@@ -2,7 +2,8 @@ package com.unnameduser.tradeoverhaul.common.config;
 
 public class TradeOverhaulSettings {
 	public int restockDelayGameDays = 2;
-	public int walletAfterRestock = 40;
+	public int walletAfterRestockMin = 20;
+	public int walletAfterRestockMax = 40;
 	public int maxStockDefault = 16;
 	
 	// Weapon pricing
@@ -25,4 +26,8 @@ public class TradeOverhaulSettings {
 	
 	// Buy-only discount factor (default discount for items not in sell pool)
 	public int buyOnlyDiscountDefault = 50;
+	
+	// Batch trading settings
+	public boolean batchTradingEnabled = true;
+	public boolean enforceQuantityMultiples = true;
 }

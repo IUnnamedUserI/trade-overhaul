@@ -1,0 +1,78 @@
+{
+  "mappings": {
+    "com/glisco/numismaticoverhaul/mixin/BundleItemMixin": {
+      "onClicked": "Lnet/minecraft/class_5537;method_31566(Lnet/minecraft/class_1799;Lnet/minecraft/class_1799;Lnet/minecraft/class_1735;Lnet/minecraft/class_5536;Lnet/minecraft/class_1657;Lnet/minecraft/class_5630;)Z",
+      "onStackClicked": "Lnet/minecraft/class_5537;method_31565(Lnet/minecraft/class_1799;Lnet/minecraft/class_1735;Lnet/minecraft/class_5536;Lnet/minecraft/class_1657;)Z"
+    },
+    "com/glisco/numismaticoverhaul/mixin/LivingEntityMixin": {
+      "dropLoot": "Lnet/minecraft/class_1309;method_16077(Lnet/minecraft/class_1282;Z)V"
+    },
+    "com/glisco/numismaticoverhaul/mixin/MerchantScreenHandlerMixin": {
+      "autofill": "Lnet/minecraft/class_1728;method_20214(ILnet/minecraft/class_1799;)V",
+      "canUse": "Lnet/minecraft/class_1728;method_7597(Lnet/minecraft/class_1657;)Z",
+      "playYesSound": "Lnet/minecraft/class_1728;method_20595()V"
+    },
+    "com/glisco/numismaticoverhaul/mixin/MerchantScreenMixin": {
+      "renderFirstBuyItem": "Lnet/minecraft/class_492;method_20222(Lnet/minecraft/class_332;Lnet/minecraft/class_1799;Lnet/minecraft/class_1799;II)V"
+    },
+    "com/glisco/numismaticoverhaul/mixin/ServerPlayerEntityMixin": {
+      "vanishCursedItems": "Lnet/minecraft/class_1657;method_7293()V"
+    },
+    "com/glisco/numismaticoverhaul/mixin/ServerWorldMixin": {
+      "onPlayerConnected": "Lnet/minecraft/class_3218;method_18213(Lnet/minecraft/class_3222;)V"
+    },
+    "com/glisco/numismaticoverhaul/mixin/TradeOfferListMixin": {
+      "Lnet/minecraft/network/PacketByteBuf;writeInt(I)Lio/netty/buffer/ByteBuf;": "Lnet/minecraft/class_2540;writeInt(I)Lio/netty/buffer/ByteBuf;",
+      "Lnet/minecraft/village/TradeOffer;setSpecialPrice(I)V": "Lnet/minecraft/class_1914;method_19273(I)V",
+      "method_43715": "Lnet/minecraft/class_1916;method_43715(Lnet/minecraft/class_2540;Lnet/minecraft/class_1914;)V",
+      "method_43716": "Lnet/minecraft/class_1916;method_43716(Lnet/minecraft/class_2540;)Lnet/minecraft/class_1914;"
+    },
+    "com/glisco/numismaticoverhaul/mixin/TradeOfferMixin": {
+      "<init>(Lnet/minecraft/nbt/NbtCompound;)V": "Lnet/minecraft/class_1914;<init>(Lnet/minecraft/class_2487;)V",
+      "getAdjustedFirstBuyItem": "Lnet/minecraft/class_1914;method_19272()Lnet/minecraft/class_1799;",
+      "toNbt": "Lnet/minecraft/class_1914;method_8251()Lnet/minecraft/class_2487;"
+    },
+    "com/glisco/numismaticoverhaul/mixin/VillagerEntityMixin": {
+      "prepareOffersFor": "Lnet/minecraft/class_1646;method_19192(Lnet/minecraft/class_1657;)V"
+    }
+  },
+  "data": {
+    "named:intermediary": {
+      "com/glisco/numismaticoverhaul/mixin/BundleItemMixin": {
+        "onClicked": "Lnet/minecraft/class_5537;method_31566(Lnet/minecraft/class_1799;Lnet/minecraft/class_1799;Lnet/minecraft/class_1735;Lnet/minecraft/class_5536;Lnet/minecraft/class_1657;Lnet/minecraft/class_5630;)Z",
+        "onStackClicked": "Lnet/minecraft/class_5537;method_31565(Lnet/minecraft/class_1799;Lnet/minecraft/class_1735;Lnet/minecraft/class_5536;Lnet/minecraft/class_1657;)Z"
+      },
+      "com/glisco/numismaticoverhaul/mixin/LivingEntityMixin": {
+        "dropLoot": "Lnet/minecraft/class_1309;method_16077(Lnet/minecraft/class_1282;Z)V"
+      },
+      "com/glisco/numismaticoverhaul/mixin/MerchantScreenHandlerMixin": {
+        "autofill": "Lnet/minecraft/class_1728;method_20214(ILnet/minecraft/class_1799;)V",
+        "canUse": "Lnet/minecraft/class_1728;method_7597(Lnet/minecraft/class_1657;)Z",
+        "playYesSound": "Lnet/minecraft/class_1728;method_20595()V"
+      },
+      "com/glisco/numismaticoverhaul/mixin/MerchantScreenMixin": {
+        "renderFirstBuyItem": "Lnet/minecraft/class_492;method_20222(Lnet/minecraft/class_332;Lnet/minecraft/class_1799;Lnet/minecraft/class_1799;II)V"
+      },
+      "com/glisco/numismaticoverhaul/mixin/ServerPlayerEntityMixin": {
+        "vanishCursedItems": "Lnet/minecraft/class_1657;method_7293()V"
+      },
+      "com/glisco/numismaticoverhaul/mixin/ServerWorldMixin": {
+        "onPlayerConnected": "Lnet/minecraft/class_3218;method_18213(Lnet/minecraft/class_3222;)V"
+      },
+      "com/glisco/numismaticoverhaul/mixin/TradeOfferListMixin": {
+        "Lnet/minecraft/network/PacketByteBuf;writeInt(I)Lio/netty/buffer/ByteBuf;": "Lnet/minecraft/class_2540;writeInt(I)Lio/netty/buffer/ByteBuf;",
+        "Lnet/minecraft/village/TradeOffer;setSpecialPrice(I)V": "Lnet/minecraft/class_1914;method_19273(I)V",
+        "method_43715": "Lnet/minecraft/class_1916;method_43715(Lnet/minecraft/class_2540;Lnet/minecraft/class_1914;)V",
+        "method_43716": "Lnet/minecraft/class_1916;method_43716(Lnet/minecraft/class_2540;)Lnet/minecraft/class_1914;"
+      },
+      "com/glisco/numismaticoverhaul/mixin/TradeOfferMixin": {
+        "<init>(Lnet/minecraft/nbt/NbtCompound;)V": "Lnet/minecraft/class_1914;<init>(Lnet/minecraft/class_2487;)V",
+        "getAdjustedFirstBuyItem": "Lnet/minecraft/class_1914;method_19272()Lnet/minecraft/class_1799;",
+        "toNbt": "Lnet/minecraft/class_1914;method_8251()Lnet/minecraft/class_2487;"
+      },
+      "com/glisco/numismaticoverhaul/mixin/VillagerEntityMixin": {
+        "prepareOffersFor": "Lnet/minecraft/class_1646;method_19192(Lnet/minecraft/class_1657;)V"
+      }
+    }
+  }
+}

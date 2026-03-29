@@ -1,5 +1,6 @@
 package com.unnameduser.tradeoverhaul.common;
 
+import com.unnameduser.tradeoverhaul.common.component.VillagerCurrencyComponent;
 import com.unnameduser.tradeoverhaul.common.component.VillagerInventoryComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import org.jetbrains.annotations.Nullable;
@@ -10,6 +11,8 @@ public interface VillagerTradeData {
 	int tradeOverhaul$getWalletEmeralds();
 
 	void tradeOverhaul$setWalletEmeralds(int amount);
+
+	VillagerCurrencyComponent tradeOverhaul$getCurrency();
 
 	int[] tradeOverhaul$getOfferSlots();
 

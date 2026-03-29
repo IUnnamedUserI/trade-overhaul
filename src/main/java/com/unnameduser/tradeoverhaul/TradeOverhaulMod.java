@@ -11,6 +11,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
@@ -21,17 +22,24 @@ public class TradeOverhaulMod implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
 	public static final ScreenHandlerType<VillagerTradeScreenHandler> VILLAGER_TRADE_SCREEN_HANDLER =
-			new ExtendedScreenHandlerType<>((int syncId, PlayerInventory inv, PacketByteBuf buf) ->
-					new VillagerTradeScreenHandler(syncId, inv, buf));
+			new ExtendedScreenHandlerType<>((int syncId, PlayerInventory inv, PacketByteBuf buf) -> {
+				// Этот конструктор используется ТОЛЬКО на клиенте
+				// На сервере используется createMenu() из VillagerTradeScreenHandlerFactory
+				return new VillagerTradeScreenHandler(syncId, inv, buf);
+			});
 
 	@Override
 	public void onInitialize() {
 		TradeConfigLoader.load(LOGGER);
 		LOGGER.info("Trade Overhaul mod initialized!");
+		LOGGER.info("Registering screen handler...");
 		Registry.register(Registries.SCREEN_HANDLER, new Identifier(MOD_ID, "villager_trade"), VILLAGER_TRADE_SCREEN_HANDLER);
+		LOGGER.info("Registering networking...");
 		ModNetworking.register();
-		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> 
+		LOGGER.info("Registering commands...");
+		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
 			TradeOverhaulCommand.register(dispatcher)
 		);
+		LOGGER.info("Trade Overhaul initialization complete!");
 	}
 }

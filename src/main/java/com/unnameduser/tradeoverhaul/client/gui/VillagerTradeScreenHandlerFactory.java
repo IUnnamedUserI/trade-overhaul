@@ -1,5 +1,6 @@
 package com.unnameduser.tradeoverhaul.client.gui;
 
+import com.unnameduser.tradeoverhaul.TradeOverhaulMod;
 import com.unnameduser.tradeoverhaul.common.config.TradeConfigLoader;
 import com.unnameduser.tradeoverhaul.common.trade.TradeScreenSync;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
@@ -29,12 +30,17 @@ public class VillagerTradeScreenHandlerFactory implements ExtendedScreenHandlerF
 
 	@Override
 	public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
-		return new VillagerTradeScreenHandler(syncId, inv, villager);
+		VillagerTradeScreenHandler handler = new VillagerTradeScreenHandler(syncId, inv, villager);
+		// Для сервера также нужно установить villager (на случай если createMenu вызывается на сервере)
+		handler.setVillager(villager);
+		return handler;
 	}
 
 	@Override
 	public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
 		Identifier pid = Registries.VILLAGER_PROFESSION.getId(villager.getVillagerData().getProfession());
+		// Пишем ID профессии для клиента
+		buf.writeVarInt(Registries.VILLAGER_PROFESSION.getRawId(villager.getVillagerData().getProfession()));
 		TradeScreenSync.write(buf, villager, TradeConfigLoader.getProfession(pid));
 	}
 }

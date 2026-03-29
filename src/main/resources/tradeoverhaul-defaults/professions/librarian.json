@@ -1,0 +1,63 @@
+{
+	"profession": "minecraft:librarian",
+	"offersCount": 12,
+	"staticPool": [
+		{ "item": "minecraft:book", "buy": 120, "sell": 60, "buyQuantity": 12, "sellQuantity": 6, "minStock": 24, "maxStock": 72 },
+		{ "item": "minecraft:bookshelf", "buy": 400, "sell": 180, "buyQuantity": 2, "sellQuantity": 1, "minStock": 8, "maxStock": 24 },
+		{ "item": "minecraft:lectern", "buy": 800, "sell": 350, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:lantern", "buy": 600, "sell": 280, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
+		{ "item": "minecraft:glass", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 48 },
+		{ "item": "minecraft:clock", "buy": 800, "sell": 350, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:spyglass", "buy": 1200, "sell": 500, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:paper", "buy": 80, "sell": 40, "buyQuantity": 24, "sellQuantity": 12, "minStock": 48, "maxStock": 144 },
+		{ "item": "minecraft:written_book", "buy": 600, "sell": 250, "buyQuantity": 2, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
+		{ "item": "minecraft:enchanting_table", "buy": 3000, "sell": 1200, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 },
+		{ "item": "minecraft:experience_bottle", "buy": 300, "sell": 120, "buyQuantity": 3, "sellQuantity": 1, "minStock": 6, "maxStock": 18 },
+		{ "item": "minecraft:name_tag", "buy": 1000, "sell": 400, "buyQuantity": 2, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
+		{ "item": "minecraft:chiseled_bookshelf", "buy": 600, "sell": 250, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:ink_sac", "buy": 150, "sell": 70, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 48 }
+	],
+	"weaponPool": [],
+	"toolPool": [],
+	"generalPool": [
+		{
+			"tag": "minecraft:books",
+			"minStock": 12,
+			"maxStock": 36,
+			"buyPrice": 100,
+			"sellPrice": 50,
+			"buyQuantity": 8,
+			"sellQuantity": 4
+		}
+	],
+	"buyPool": [
+		{
+			"tag": "c:paper",
+			"buyPrice": 80,
+			"buyQuantity": 20,
+			"discountFactor": 50
+		},
+		{
+			"tag": "c:books",
+			"buyPrice": 120,
+			"buyQuantity": 8,
+			"discountFactor": 55
+		},
+		{
+			"tag": "c:dyes",
+			"buyPrice": 100,
+			"buyQuantity": 12,
+			"discountFactor": 60
+		},
+		{
+			"tag": "c:feathers",
+			"buyPrice": 200,
+			"buyQuantity": 8,
+			"discountFactor": 65
+		}
+	],
+	"itemPriceMultipliers": {
+		"minecraft:enchanted_book": 3.0,
+		"minecraft:writable_book": 0.8
+	}
+}

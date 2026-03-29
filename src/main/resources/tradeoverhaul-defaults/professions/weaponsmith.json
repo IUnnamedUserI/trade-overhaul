@@ -1,101 +1,118 @@
 {
 	"profession": "minecraft:weaponsmith",
-	"offersCount": 10,
+	"offersCount": 12,
 	"staticPool": [
-		{ "item": "minecraft:iron_ingot", "buy": 8, "sell": 3, "maxStock": 32 },
-		{ "item": "minecraft:iron_sword", "buy": 24, "sell": 10, "maxStock": 2 },
-		{ "item": "minecraft:iron_axe", "buy": 20, "sell": 8, "maxStock": 2 },
-		{ "item": "minecraft:iron_pickaxe", "buy": 18, "sell": 7, "maxStock": 2 },
-		{ "item": "minecraft:iron_shovel", "buy": 14, "sell": 5, "maxStock": 2 },
-		{ "item": "minecraft:iron_hoe", "buy": 14, "sell": 5, "maxStock": 2 },
-		{ "item": "minecraft:shield", "buy": 20, "sell": 8, "maxStock": 2 },
-		{ "item": "minecraft:grindstone", "buy": 16, "sell": 6, "maxStock": 4 },
-		{ "item": "minecraft:smithing_table", "buy": 14, "sell": 5, "maxStock": 4 },
-		{ "item": "minecraft:diamond_sword", "buy": 60, "sell": 25, "maxStock": 1 },
-		{ "item": "minecraft:diamond_pickaxe", "buy": 45, "sell": 18, "maxStock": 1 },
-		{ "item": "minecraft:diamond_axe", "buy": 50, "sell": 20, "maxStock": 1 },
-		{ "item": "minecraft:netherite_scrap", "buy": 80, "sell": 35, "maxStock": 2 }
+		{ "item": "minecraft:iron_ingot", "buy": 400, "sell": 200, "buyQuantity": 2, "sellQuantity": 1, "minStock": 8, "maxStock": 24 },
+		{ "item": "minecraft:iron_sword", "buy": 1200, "sell": 500, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:iron_axe", "buy": 1000, "sell": 400, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:iron_pickaxe", "buy": 900, "sell": 350, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:iron_shovel", "buy": 700, "sell": 280, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:iron_hoe", "buy": 700, "sell": 280, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:shield", "buy": 1000, "sell": 400, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:grindstone", "buy": 800, "sell": 300, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:smithing_table", "buy": 700, "sell": 280, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:diamond_sword", "buy": 3000, "sell": 1200, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 },
+		{ "item": "minecraft:diamond_pickaxe", "buy": 2200, "sell": 900, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 },
+		{ "item": "minecraft:diamond_axe", "buy": 2500, "sell": 1000, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 },
+		{ "item": "minecraft:netherite_scrap", "buy": 4000, "sell": 1800, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 2 },
+		{ "item": "minecraft:flint", "buy": 180, "sell": 80, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 48 },
+		{ "item": "minecraft:arrow", "buy": 120, "sell": 50, "buyQuantity": 12, "sellQuantity": 6, "minStock": 24, "maxStock": 72 }
 	],
 	"weaponPool": [
 		{
 			"tag": "minecraft:swords",
-			"maxStock": 2,
-			"buyPerDamage": 4,
-			"sellPerDamage": 2,
-			"buyBase": 2,
-			"sellBase": 1,
-			"useDurability": true
+			"minStock": 2,
+			"maxStock": 4,
+			"buyPerDamage": 40,
+			"sellPerDamage": 20,
+			"buyBase": 200,
+			"sellBase": 100,
+			"useDurability": true,
+			"buyQuantity": 1,
+			"sellQuantity": 1
 		},
 		{
 			"tag": "minecraft:axes",
-			"maxStock": 2,
-			"buyPerDamage": 3,
-			"sellPerDamage": 1,
-			"buyBase": 2,
-			"sellBase": 1,
-			"useDurability": true
+			"minStock": 2,
+			"maxStock": 4,
+			"buyPerDamage": 30,
+			"sellPerDamage": 15,
+			"buyBase": 200,
+			"sellBase": 100,
+			"useDurability": true,
+			"buyQuantity": 1,
+			"sellQuantity": 1
 		}
 	],
 	"toolPool": [
 		{
 			"tag": "minecraft:pickaxes",
-			"maxStock": 2,
-			"buyPerEfficiency": 3,
-			"sellPerEfficiency": 1,
-			"buyBase": 2,
-			"sellBase": 1,
-			"useDurability": true
+			"minStock": 2,
+			"maxStock": 4,
+			"buyPerEfficiency": 30,
+			"sellPerEfficiency": 15,
+			"buyBase": 200,
+			"sellBase": 100,
+			"useDurability": true,
+			"buyQuantity": 1,
+			"sellQuantity": 1
 		},
 		{
 			"tag": "minecraft:shovels",
-			"maxStock": 2,
-			"buyPerEfficiency": 3,
-			"sellPerEfficiency": 1,
-			"buyBase": 2,
-			"sellBase": 1,
-			"useDurability": true
-		},
-		{
-			"tag": "minecraft:hoes",
-			"maxStock": 2,
-			"buyPerEfficiency": 3,
-			"sellPerEfficiency": 1,
-			"buyBase": 2,
-			"sellBase": 1,
-			"useDurability": true
+			"minStock": 2,
+			"maxStock": 4,
+			"buyPerEfficiency": 30,
+			"sellPerEfficiency": 15,
+			"buyBase": 200,
+			"sellBase": 100,
+			"useDurability": true,
+			"buyQuantity": 1,
+			"sellQuantity": 1
 		}
 	],
 	"generalPool": [],
 	"buyPool": [
 		{
 			"tag": "minecraft:coals",
-			"buyPrice": 2,
+			"buyPrice": 200,
+			"buyQuantity": 8,
 			"discountFactor": 60
 		},
 		{
 			"tag": "c:ores/iron",
-			"buyPrice": 4,
+			"buyPrice": 400,
+			"buyQuantity": 4,
 			"discountFactor": 50
 		},
 		{
 			"tag": "c:ores/gold",
-			"buyPrice": 4,
+			"buyPrice": 400,
+			"buyQuantity": 4,
 			"discountFactor": 50
 		},
 		{
 			"tag": "c:gems/diamond",
-			"buyPrice": 12,
+			"buyPrice": 1200,
+			"buyQuantity": 1,
 			"discountFactor": 30
 		},
 		{
 			"tag": "c:gems/emerald",
-			"buyPrice": 8,
+			"buyPrice": 800,
+			"buyQuantity": 1,
 			"discountFactor": 40
 		},
 		{
 			"tag": "c:rods/blaze",
-			"buyPrice": 10,
+			"buyPrice": 500,
+			"buyQuantity": 2,
 			"discountFactor": 35
+		},
+		{
+			"tag": "c:ingots/netherite",
+			"buyPrice": 3000,
+			"buyQuantity": 1,
+			"discountFactor": 25
 		}
 	],
 	"itemPriceMultipliers": {
@@ -104,12 +121,12 @@
 		"minecraft:iron_sword": 1.0,
 		"minecraft:golden_sword": 1.2,
 		"minecraft:diamond_sword": 2.5,
-		"minecraft:netherite_sword": 4.0,
+		"minecraft:netherite_sword": 5.0,
 		"minecraft:wooden_pickaxe": 0.5,
 		"minecraft:stone_pickaxe": 0.75,
 		"minecraft:iron_pickaxe": 1.0,
 		"minecraft:golden_pickaxe": 1.2,
 		"minecraft:diamond_pickaxe": 2.5,
-		"minecraft:netherite_pickaxe": 4.0
+		"minecraft:netherite_pickaxe": 5.0
 	}
 }

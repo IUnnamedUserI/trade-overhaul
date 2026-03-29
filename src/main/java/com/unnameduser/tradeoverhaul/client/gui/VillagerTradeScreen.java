@@ -1,12 +1,19 @@
 package com.unnameduser.tradeoverhaul.client.gui;
 
+import java.awt.Color;
+import java.util.List;
+
+import org.apache.logging.log4j.core.pattern.AbstractStyleNameConverter.Red;
+
 import com.unnameduser.tradeoverhaul.TradeOverhaulMod;
 import com.unnameduser.tradeoverhaul.common.network.TradePayload;
+import com.unnameduser.tradeoverhaul.common.numismatic.NumismaticHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.text.Text;
 
@@ -15,14 +22,14 @@ public class VillagerTradeScreen extends HandledScreen<VillagerTradeScreenHandle
 	private static final int BG_COLOR_BOTTOM = 0x8B8B8B; // Тёмно-серый для градиента
 	private static final int SLOT_BG_COLOR = 0x8B8B8B8B; // Полупрозрачный фон слотов
 	private static final int BORDER_COLOR = 0xFF555555; // Тёмная рамка
-	private static final int CENTER_PANEL_COLOR = 0xA0A0A0A0; // Полупрозрачный центр
-	private static final int WALLET_BG_COLOR = 0xFF404040; // Фон кошелька
-	private static final int WALLET_TEXT_COLOR = 0xFF55FF55; // Зелёный для изумрудов
 
-	private int layoutCenterStart;
-	private int layoutCenterWidth;
 	private int layoutPanelY;
 	
+	// Позиции для отрисовки (вычисляются в init(), используются в drawSlotBackgrounds)
+	private int renderArmorX;
+	private int renderPlayerGridX;
+	private int renderVillagerX;
+
 	private Text playerInventoryLabel;
 	private Text villagerInventoryLabel;
 	private int openDelayTicks = 10;
@@ -32,66 +39,85 @@ public class VillagerTradeScreen extends HandledScreen<VillagerTradeScreenHandle
 		// Динамический размер будет установлен в init()
 	}
 
-	private static int[] playerColRow(int invIndex) {
-		if (invIndex >= 9 && invIndex <= 17) {
-			return new int[]{0, invIndex - 9};
-		}
-		if (invIndex >= 18 && invIndex <= 26) {
-			return new int[]{1, invIndex - 18};
-		}
-		if (invIndex >= 27 && invIndex <= 35) {
-			return new int[]{2, invIndex - 27};
-		}
-		if (invIndex >= 0 && invIndex <= 8) {
-			return new int[]{3, invIndex};
-		}
-		return new int[]{0, 0};
-	}
-
 	@Override
 	protected void init() {
 		// Устанавливаем динамический размер: 90% ширины, 85% высоты экрана
 		this.backgroundWidth = (int) (this.client.getWindow().getScaledWidth() * 0.90);
 		this.backgroundHeight = (int) (this.client.getWindow().getScaledHeight() * 0.85);
-		
+
 		super.init();
 		this.playerInventoryLabel = Text.translatable("gui.tradeoverhaul.player_inventory", this.client.player.getDisplayName());
-		this.villagerInventoryLabel = Text.translatable("gui.tradeoverhaul.villager_inventory", this.handler.getVillager() != null ? this.handler.getVillager().getCustomName() : Text.literal("Trader"));
 		
+		// Получаем профессию жителя для заголовка
+		String professionKey = "";
+		if (this.handler.getVillager() != null) {
+			var villager = this.handler.getVillager();
+			var profession = villager.getVillagerData().getProfession();
+			if (profession != null && profession != net.minecraft.village.VillagerProfession.NONE) {
+				// Получаем перевод профессии через registry
+				var profId = net.minecraft.registry.Registries.VILLAGER_PROFESSION.getId(profession);
+				if (profId != null) {
+					professionKey = " (" + net.minecraft.text.Text.translatable("entity.minecraft.villager." + profId.getPath()).getString() + ")";
+				}
+			}
+		}
+		Text villagerName = this.handler.getVillager() != null ? this.handler.getVillager().getCustomName() : Text.literal("Trader");
+		this.villagerInventoryLabel = Text.translatable("gui.tradeoverhaul.villager_inventory", villagerName.getString() + professionKey);
+
 		// Пересчитываем позиции для динамического размера
 		int slot = 18;
+		int slotStep = 19;  // Шаг для слотов (на 1 пиксель больше для отображения)
+		int armorW = VillagerTradeScreenHandler.ARMOR_SLOT_WIDTH;
+		int armorGridGap = 16; // зазор между бронёй и сеткой
 		int gridW = VillagerTradeScreenHandler.GRID_COLS * slot;
-		int gap = 24;
-		int minCenter = 72;
-		int contentW = gridW + gap + minCenter + gap + gridW;
+		int gapBetweenGrids = 64; // зазор между сетками (бывший центр)
+
+		// contentW = броня + зазор + сетка игрока + зазор + сетка жителя
+		int contentW = armorW + armorGridGap + gridW + gapBetweenGrids + gridW;
 		int marginX = Math.max(16, (this.backgroundWidth - contentW) / 2);
-		this.layoutCenterWidth = this.backgroundWidth - marginX * 2 - gridW * 2 - gap * 2;
-		this.layoutCenterWidth = Math.max(minCenter, this.layoutCenterWidth);
 
-		int playerX = marginX;
-		this.layoutCenterStart = playerX + gridW + gap;
-		int villagerX = this.layoutCenterStart + this.layoutCenterWidth + gap;
+		// Позиции X
+		int armorX = marginX;
+		int playerGridX = armorX + armorW + armorGridGap;
+		int villagerX = playerGridX + gridW + gapBetweenGrids;
 
-		this.layoutPanelY = 42 + (this.backgroundHeight - 42 - VillagerTradeScreenHandler.GRID_ROWS * slot - 28) / 3;
-		this.layoutPanelY = Math.max(38, Math.min(this.layoutPanelY, this.backgroundHeight - VillagerTradeScreenHandler.GRID_ROWS * slot - 28));
+		// Сохраняем позиции для отрисовки фона
+		this.renderArmorX = armorX;
+		this.renderPlayerGridX = playerGridX;
+		this.renderVillagerX = villagerX;
 
+		// Позиция Y панели (чуть выше для места под кошелёк)
+		this.layoutPanelY = 48 + (this.backgroundHeight - 48 - VillagerTradeScreenHandler.GRID_ROWS * slot - 28) / 3;
+		this.layoutPanelY = Math.max(44, Math.min(this.layoutPanelY, this.backgroundHeight - VillagerTradeScreenHandler.GRID_ROWS * slot - 28));
+
+		// Расставляем слоты
 		for (int i = 0; i < this.handler.slots.size(); i++) {
 			Slot s = this.handler.slots.get(i);
-			if (i < VillagerTradeScreenHandler.FIRST_VILLAGER_SLOT_INDEX) {
-				int[] cr = playerColRow(s.getIndex());
-				s.x = playerX + cr[0] * slot;
-				s.y = this.layoutPanelY + cr[1] * slot;
+			
+			if (i < VillagerTradeScreenHandler.FIRST_ARMOR_SLOT_INDEX + VillagerTradeScreenHandler.ARMOR_SLOT_COUNT) {
+				// Слоты брони (0-4)
+				int armorIndex = i - VillagerTradeScreenHandler.FIRST_ARMOR_SLOT_INDEX;
+				s.x = armorX + 1;  // +1 пиксель вправо
+				s.y = this.layoutPanelY + armorIndex * slotStep + armorIndex;  // +1 пиксель за каждый ряд вниз
+			} else if (i < VillagerTradeScreenHandler.FIRST_MAIN_GRID_SLOT_INDEX + VillagerTradeScreenHandler.PLAYER_GRID_SLOTS) {
+				// Основная сетка игрока (5-40)
+				int gridIndex = i - VillagerTradeScreenHandler.FIRST_MAIN_GRID_SLOT_INDEX;
+				int col = gridIndex % VillagerTradeScreenHandler.GRID_COLS;
+				int row = gridIndex / VillagerTradeScreenHandler.GRID_COLS;
+				s.x = playerGridX + col * slotStep + 1;  // +1 пиксель вправо
+				s.y = this.layoutPanelY + row * slotStep;
 			} else {
-				int inv = s.getIndex();
-				int col = inv % VillagerTradeScreenHandler.GRID_COLS;
-				int row = inv / VillagerTradeScreenHandler.GRID_COLS;
-				s.x = villagerX + col * slot;
-				s.y = this.layoutPanelY + row * slot;
+				// Инвентарь жителя (41-76)
+				int invIndex = i - VillagerTradeScreenHandler.FIRST_VILLAGER_SLOT_INDEX;
+				int col = invIndex % VillagerTradeScreenHandler.GRID_COLS;
+				int row = invIndex / VillagerTradeScreenHandler.GRID_COLS;
+				s.x = villagerX + col * slotStep + 1;  // +1 пиксель вправо
+				s.y = this.layoutPanelY + row * slotStep;
 			}
 		}
 
-		this.playerInventoryTitleX = playerX;
-		this.playerInventoryTitleY = this.layoutPanelY - 12;
+		this.playerInventoryTitleX = playerGridX;
+		this.playerInventoryTitleY = this.layoutPanelY - 20;  // Выше
 		this.titleX = (this.backgroundWidth - this.textRenderer.getWidth(this.title)) / 2;
 	}
 
@@ -116,11 +142,110 @@ public class VillagerTradeScreen extends HandledScreen<VillagerTradeScreenHandle
 		// Draw inventory labels (светлый текст)
 		int x = (this.width - this.backgroundWidth) / 2;
 		int y = (this.height - this.backgroundHeight) / 2;
-		int labelY = y + this.layoutPanelY - 16;
+		int labelY = y + this.layoutPanelY - 20;
+
+		// Заголовок инвентаря игрока
 		context.drawText(this.textRenderer, this.playerInventoryLabel,
-			x + this.layoutCenterStart - 72, labelY, 0xFFFFFF, true);
+			x + this.renderPlayerGridX, labelY, 0xFFFFFF, true);
+
+		// Деньги игрока (горизонтально под заголовком)
+		int playerMoney = com.unnameduser.tradeoverhaul.common.numismatic.NumismaticHelper.getTotalMoney(this.client.player);
+		com.unnameduser.tradeoverhaul.common.component.VillagerCurrencyComponent playerCurrency = new com.unnameduser.tradeoverhaul.common.component.VillagerCurrencyComponent();
+		playerCurrency.setTotalCopper(playerMoney);
+		String playerMoneyText = String.format("§6ЗМ: §f%d §fСМ: §f%d §fММ: §f%d", 
+			playerCurrency.getGold(), playerCurrency.getSilver(), playerCurrency.getCopper());
+		context.drawText(this.textRenderer, playerMoneyText,
+			x + this.renderPlayerGridX, labelY + 10, 0xFFFFFF, true);
+
+		// Заголовок инвентаря жителя
 		context.drawText(this.textRenderer, this.villagerInventoryLabel,
-			x + this.layoutCenterStart + this.layoutCenterWidth, labelY, 0xFFFFFF, true);
+			x + this.renderVillagerX, labelY, 0xFFFFFF, true);
+
+		// Деньги жителя (горизонтально под заголовком)
+		int wallet = handler.getSyncedWallet();
+		com.unnameduser.tradeoverhaul.common.component.VillagerCurrencyComponent villagerCurrency = new com.unnameduser.tradeoverhaul.common.component.VillagerCurrencyComponent();
+		villagerCurrency.setTotalCopper(wallet);
+		String villagerMoneyText = String.format("§6ЗМ: §f%d §fСМ: §f%d §fММ: §f%d", 
+			villagerCurrency.getGold(), villagerCurrency.getSilver(), villagerCurrency.getCopper());
+		context.drawText(this.textRenderer, villagerMoneyText,
+			x + this.renderVillagerX, labelY + 10, 0xFFFFFF, true);
+	}
+
+	@Override
+	protected void drawMouseoverTooltip(DrawContext context, int x, int y) {
+		if (this.focusedSlot != null && this.focusedSlot.hasStack()) {
+			ItemStack stack = this.focusedSlot.getStack();
+			int slotIndex = this.focusedSlot.id;
+			boolean shift = net.minecraft.client.gui.screen.Screen.hasShiftDown();
+
+			// Получаем стандартный tooltip
+			List<Text> tooltip = this.getTooltipFromItem(this.client, stack);
+
+			// Добавляем цену только в этом GUI
+			if (slotIndex >= VillagerTradeScreenHandler.FIRST_VILLAGER_SLOT_INDEX) {
+				// Покупка у жителя
+				int buyQty = handler.getClientBuyQuantityForSlot(slotIndex);
+				int price = handler.getClientBuyPrice(slotIndex);
+				
+				TradeOverhaulMod.LOGGER.info("Tooltip BUY: slotIndex={}, buyQty={}, price={}, stack={}", 
+					slotIndex, buyQty, price, stack.getItem().getTranslationKey());
+				
+				if (buyQty > 0 && price > 0) {
+					// Цена за 1 предмет
+					int pricePerItem = price / buyQty;
+					if (pricePerItem <= 0) pricePerItem = 1;
+					
+					boolean canAfford = handler.clientCanAffordBuy(pricePerItem);
+					boolean hasInventorySpace = handler.clientHasInventorySpaceForStack(stack, 1);
+
+					String colorCode = canAfford ? "§a" : "§c";
+
+					tooltip.add(Text.literal("§61 шт. = " + NumismaticHelper.formatMoney(pricePerItem)));
+					tooltip.add(Text.literal(colorCode + "Купить: " + NumismaticHelper.formatMoney(pricePerItem)));
+
+					// Показываем цену за весь стак только при зажатом Shift
+					if (shift) {
+						int stackSize = stack.getCount();
+						int totalCost = stackSize * pricePerItem;
+						tooltip.add(Text.literal("§7(Shift) Весь стак (" + stackSize + " шт.): " + NumismaticHelper.formatMoney(totalCost)));
+					}
+
+					if (!hasInventorySpace) {
+						tooltip.add(Text.literal("§c§oНет места в инвентаре"));
+					}
+				}
+			} else if (slotIndex >= VillagerTradeScreenHandler.FIRST_MAIN_GRID_SLOT_INDEX) {
+				// Продажа жителю (инвентарь игрока)
+				int sellQty = handler.getClientSellQuantity(stack);
+				int price = handler.getClientSellPrice(stack);
+				
+				TradeOverhaulMod.LOGGER.info("Tooltip SELL: sellQty={}, price={}, stack={}", 
+					sellQty, price, stack.getItem().getTranslationKey());
+				
+				if (sellQty > 0 && price > 0) {
+					// Цена за 1 предмет
+					int pricePerItem = price / sellQty;
+					if (pricePerItem <= 0) pricePerItem = 1;
+					
+					int totalEarned = shift ? (stack.getCount() * pricePerItem) : pricePerItem;
+					int totalItems = shift ? stack.getCount() : 1;
+					boolean canAfford = handler.villagerCanAffordSell(totalEarned);
+					String colorCode = canAfford ? "§b" : "§c";
+
+					tooltip.add(Text.literal("§61 шт. = " + NumismaticHelper.formatMoney(pricePerItem)));
+					tooltip.add(Text.literal(colorCode + "Продать: " + NumismaticHelper.formatMoney(pricePerItem)));
+
+					// Показываем цену за весь стак только при зажатом Shift
+					if (shift) {
+						tooltip.add(Text.literal("§7(Shift) Весь стак (" + stack.getCount() + " шт.): " + NumismaticHelper.formatMoney(totalEarned)));
+					}
+				}
+			}
+
+			context.drawTooltip(this.textRenderer, tooltip, x, y);
+			return;
+		}
+		super.drawMouseoverTooltip(context, x, y);
 	}
 
 	@Override
@@ -144,102 +269,43 @@ public class VillagerTradeScreen extends HandledScreen<VillagerTradeScreenHandle
 		context.fill(x + this.backgroundWidth - 3, y + 3, x + this.backgroundWidth - 2, y + this.backgroundHeight - 2, 0xFF404040); // Right inner shadow
 		context.fill(x + 3, y + this.backgroundHeight - 3, x + this.backgroundWidth - 3, y + this.backgroundHeight - 2, 0xFF404040); // Bottom inner shadow
 
-		// Draw center panel background (between inventories)
-		int centerX = x + this.layoutCenterStart - 24;
-		int centerWidth = this.layoutCenterWidth + 48;
-		context.fill(centerX, y + this.layoutPanelY - 2,
-			centerX + centerWidth, y + this.layoutPanelY + VillagerTradeScreenHandler.GRID_ROWS * 18 + 2,
-			CENTER_PANEL_COLOR);
-
-		// Draw vertical separators
-		int separatorX1 = x + this.layoutCenterStart - 24;
-		context.fill(separatorX1, y + this.layoutPanelY - 2,
-			separatorX1 + 2, y + this.layoutPanelY + VillagerTradeScreenHandler.GRID_ROWS * 18 + 2,
-			BORDER_COLOR);
-
-		int separatorX2 = x + this.layoutCenterStart + this.layoutCenterWidth + 24 - 2;
-		context.fill(separatorX2, y + this.layoutPanelY - 2,
-			separatorX2 + 2, y + this.layoutPanelY + VillagerTradeScreenHandler.GRID_ROWS * 18 + 2,
-			BORDER_COLOR);
-
-		// Draw wallet/info panel in center
-		drawCenterInfoPanel(context, x, y);
-
-		// Draw slot backgrounds (positions match slot positions from init())
+		// Draw slot backgrounds
 		drawSlotBackgrounds(context, x, y);
 	}
-	
-	private void drawCenterInfoPanel(DrawContext context, int x, int y) {
-		int centerX = x + this.layoutCenterStart;
-		int centerWidth = this.layoutCenterWidth;
-		int walletBoxWidth = 120;
-		int walletBoxHeight = 40;
-		int walletX = centerX + (centerWidth - walletBoxWidth) / 2;
-		int walletY = y + this.layoutPanelY + VillagerTradeScreenHandler.GRID_ROWS * 18 - walletBoxHeight - 4;
-		
-		// Wallet background
-		context.fill(walletX, walletY, walletX + walletBoxWidth, walletY + walletBoxHeight, WALLET_BG_COLOR);
-		context.fill(walletX + 1, walletY + 1, walletX + walletBoxWidth - 1, walletY + walletBoxHeight - 1, 0xFF303030);
-		
-		// Wallet text
-		String walletText = String.valueOf(handler.getSyncedWallet());
-		int textWidth = this.textRenderer.getWidth(walletText);
-		int textX = walletX + (walletBoxWidth - textWidth) / 2;
-		int textY = walletY + (walletBoxHeight - 8) / 2;
-		context.drawText(this.textRenderer, walletText, textX, textY, WALLET_TEXT_COLOR, false);
-		
-		// Price display for hovered item
-		if (this.focusedSlot != null && !this.focusedSlot.getStack().isEmpty()) {
-			int slotIndex = this.focusedSlot.id;
-			boolean shift = net.minecraft.client.gui.screen.Screen.hasShiftDown();
-			String priceText = "";
-			int priceColor = 0xFFFFFF;
-			
-			if (slotIndex >= VillagerTradeScreenHandler.FIRST_VILLAGER_SLOT_INDEX) {
-				// Buying from villager
-				int buy = handler.getClientBuyPriceForSlot(slotIndex);
-				if (buy > 0) {
-					priceText = "Купить: " + buy;
-					priceColor = handler.clientCanAffordBuy(slotIndex) ? 0x55FF55 : 0xFF5555;
-				}
-			} else {
-				// Selling to villager
-				int shown = handler.getDisplayedSellCost(this.focusedSlot.getStack(), shift);
-				if (shown > 0) {
-					priceText = "Продать: " + shown;
-					priceColor = handler.villagerCanAffordSellDisplay(this.focusedSlot.getStack(), shift) ? 0x55FFFF : 0xFF5555;
-				}
-			}
-			
-			if (!priceText.isEmpty()) {
-				int pTextWidth = this.textRenderer.getWidth(priceText);
-				int pTextX = centerX + (centerWidth - pTextWidth) / 2;
-				int pTextY = walletY + walletBoxHeight + 4;
-				context.drawText(this.textRenderer, priceText, pTextX, pTextY, priceColor, false);
-			}
-		}
-	}
-	
+
 	private void drawSlotBackgrounds(DrawContext context, int x, int y) {
-		// Player inventory slot backgrounds (positions match init())
-		int playerX = x + this.layoutCenterStart - 72;
+		int slotSize = 19; // Размер слота: 19x19 (на 1 пиксель больше стандарта)
+		int slotStep = 19; // Шаг позиционирования слотов сетки
+		int armorStep = 20; // Шаг позиционирования слотов брони (на 1 пиксель больше)
+
+		// Armor slot backgrounds (5 slots vertically on the left)
+		int armorX = x + this.renderArmorX;
+		for (int i = 0; i < VillagerTradeScreenHandler.ARMOR_SLOT_COUNT; i++) {
+			int slotX = armorX;
+			int slotY = y + this.layoutPanelY + i * armorStep - 1;
+			context.fill(slotX, slotY, slotX + slotSize - 1, slotY + slotSize - 1, SLOT_BG_COLOR);
+			context.fill(slotX + 1, slotY + 1, slotX + slotSize - 2, slotY + slotSize - 2, 0xFF303030);
+		}
+
+		// Player main grid slot backgrounds (6×6)
+		int playerGridX = x + this.renderPlayerGridX;
 		for (int col = 0; col < VillagerTradeScreenHandler.GRID_COLS; col++) {
 			for (int row = 0; row < VillagerTradeScreenHandler.GRID_ROWS; row++) {
-				int slotX = playerX + col * 18;
-				int slotY = y + this.layoutPanelY + row * 18;
-				context.fill(slotX, slotY, slotX + 18, slotY + 18, SLOT_BG_COLOR);
-				context.fill(slotX + 1, slotY + 1, slotX + 17, slotY + 17, 0xFF303030);
+				int slotX = playerGridX + col * slotStep;
+				int slotY = y + this.layoutPanelY + row * slotStep - 1;
+				context.fill(slotX, slotY, slotX + slotSize, slotY + slotSize, SLOT_BG_COLOR);
+				context.fill(slotX + 1, slotY + 1, slotX + slotSize - 2, slotY + slotSize - 2, 0xFF303030);
 			}
 		}
 
-		// Villager inventory slot backgrounds (positions match init())
-		int villagerX = x + this.layoutCenterStart + this.layoutCenterWidth;
+		// Villager inventory slot backgrounds (6×6)
+		int villagerX = x + this.renderVillagerX;
 		for (int col = 0; col < VillagerTradeScreenHandler.GRID_COLS; col++) {
 			for (int row = 0; row < VillagerTradeScreenHandler.GRID_ROWS; row++) {
-				int slotX = villagerX + col * 18;
-				int slotY = y + this.layoutPanelY + row * 18;
-				context.fill(slotX, slotY, slotX + 18, slotY + 18, SLOT_BG_COLOR);
-				context.fill(slotX + 1, slotY + 1, slotX + 17, slotY + 17, 0xFF303030);
+				int slotX = villagerX + col * slotStep;
+				int slotY = y + this.layoutPanelY + row * slotStep - 1;
+				context.fill(slotX, slotY, slotX + slotSize, slotY + slotSize, SLOT_BG_COLOR);
+				context.fill(slotX + 1, slotY + 1, slotX + slotSize - 2, slotY + slotSize - 2, 0xFF303030);
 			}
 		}
 	}
@@ -250,7 +316,7 @@ public class VillagerTradeScreen extends HandledScreen<VillagerTradeScreenHandle
 		double lx = mouseX - gx;
 		double ly = mouseY - gy;
 		for (Slot slot : this.handler.slots) {
-			if (lx >= slot.x && lx < slot.x + 16 && ly >= slot.y && ly < slot.y + 16) {
+			if (lx >= slot.x && lx < slot.x + 18 && ly >= slot.y && ly < slot.y + 18) {
 				return slot;
 			}
 		}
@@ -270,9 +336,17 @@ public class VillagerTradeScreen extends HandledScreen<VillagerTradeScreenHandle
 				if (!buying && slot.getStack().isEmpty()) {
 					return super.mouseClicked(mouseX, mouseY, button);
 				}
-				boolean bulkSell = net.minecraft.client.gui.screen.Screen.hasShiftDown() && !buying;
+				
+				// При покупке (ПКМ по слоту жителя) всегда покупаем по buyQuantity, 
+				// а при Shift+ПКМ покупаем максимально возможное количество
+				// При продаже (ПКМ по слоту игрока) продаем 1 пакет (sellQuantity), 
+				// а при Shift+ПКМ продаем максимально возможное количество
+				boolean shiftPressed = net.minecraft.client.gui.screen.Screen.hasShiftDown();
+				boolean sellWholeStack = shiftPressed && !buying;
+				boolean buyWholeStack = shiftPressed && buying;
+				
 				var buf = PacketByteBufs.create();
-				new TradePayload(handler.syncId, slotIndex, buying, bulkSell).write(buf);
+				new TradePayload(handler.syncId, slotIndex, buying, sellWholeStack, buyWholeStack).write(buf);
 				ClientPlayNetworking.send(TradePayload.ID, buf);
 				return true;
 			}
@@ -283,7 +357,7 @@ public class VillagerTradeScreen extends HandledScreen<VillagerTradeScreenHandle
 
 	@Override
 	protected void drawForeground(DrawContext context, int mouseX, int mouseY) {
-		super.drawForeground(context, mouseX, mouseY);
-		// Кошелёк и цена рисуются в drawBackground через drawCenterInfoPanel
+		// Не рисуем стандартный заголовок (title), так как у нас свои кастомные заголовки
+		// Стандартный заголовок "Инвентарь" нам не нужен
 	}
 }

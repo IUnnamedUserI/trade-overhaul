@@ -1,61 +1,82 @@
 {
 	"profession": "minecraft:armorer",
-	"offersCount": 7,
+	"offersCount": 12,
 	"staticPool": [
-		{ "item": "minecraft:iron_ingot", "buy": 8, "sell": 3, "maxStock": 32 },
-		{ "item": "minecraft:chainmail_helmet", "buy": 18, "sell": 8, "maxStock": 2 },
-		{ "item": "minecraft:chainmail_chestplate", "buy": 28, "sell": 12, "maxStock": 2 },
-		{ "item": "minecraft:chainmail_leggings", "buy": 24, "sell": 10, "maxStock": 2 },
-		{ "item": "minecraft:chainmail_boots", "buy": 14, "sell": 6, "maxStock": 2 },
-		{ "item": "minecraft:iron_helmet", "buy": 24, "sell": 10, "maxStock": 2 },
-		{ "item": "minecraft:iron_chestplate", "buy": 36, "sell": 16, "maxStock": 2 },
-		{ "item": "minecraft:iron_leggings", "buy": 32, "sell": 14, "maxStock": 2 },
-		{ "item": "minecraft:iron_boots", "buy": 20, "sell": 8, "maxStock": 2 },
-		{ "item": "minecraft:blast_furnace", "buy": 16, "sell": 6, "maxStock": 4 },
-		{ "item": "minecraft:anvil", "buy": 48, "sell": 20, "maxStock": 1 }
+		{ "item": "minecraft:iron_ingot", "buy": 400, "sell": 200, "buyQuantity": 2, "sellQuantity": 1, "minStock": 8, "maxStock": 24 },
+		{ "item": "minecraft:chainmail_helmet", "buy": 1800, "sell": 800, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 2 },
+		{ "item": "minecraft:chainmail_chestplate", "buy": 2800, "sell": 1200, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 2 },
+		{ "item": "minecraft:chainmail_leggings", "buy": 2400, "sell": 1000, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 2 },
+		{ "item": "minecraft:chainmail_boots", "buy": 1400, "sell": 600, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 2 },
+		{ "item": "minecraft:iron_helmet", "buy": 2400, "sell": 1000, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 2 },
+		{ "item": "minecraft:iron_chestplate", "buy": 3600, "sell": 1600, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 2 },
+		{ "item": "minecraft:iron_leggings", "buy": 3200, "sell": 1400, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 2 },
+		{ "item": "minecraft:iron_boots", "buy": 2000, "sell": 800, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 2 },
+		{ "item": "minecraft:blast_furnace", "buy": 1600, "sell": 600, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:anvil", "buy": 4800, "sell": 2000, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 2 },
+		{ "item": "minecraft:iron_nugget", "buy": 45, "sell": 20, "buyQuantity": 18, "sellQuantity": 9, "minStock": 36, "maxStock": 108 },
+		{ "item": "minecraft:bucket", "buy": 1200, "sell": 500, "buyQuantity": 2, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
+		{ "item": "minecraft:cauldron", "buy": 2400, "sell": 1000, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:iron_bars", "buy": 240, "sell": 100, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 48 }
 	],
 	"weaponPool": [],
 	"toolPool": [],
 	"generalPool": [
 		{
 			"tag": "minecraft:armor",
+			"minStock": 1,
 			"maxStock": 2,
-			"buyPrice": 20,
-			"sellPrice": 8,
+			"buyPrice": 2000,
+			"sellPrice": 800,
+			"buyQuantity": 1,
+			"sellQuantity": 1,
 			"useDurability": true
 		},
 		{
 			"tag": "c:ingots/iron",
-			"maxStock": 32,
-			"buyPrice": 8,
-			"sellPrice": 3
+			"minStock": 8,
+			"maxStock": 24,
+			"buyPrice": 400,
+			"sellPrice": 100,
+			"buyQuantity": 2,
+			"sellQuantity": 1
 		}
 	],
 	"buyPool": [
 		{
 			"tag": "minecraft:coals",
-			"buyPrice": 2,
+			"buyPrice": 200,
+			"buyQuantity": 8,
 			"discountFactor": 60
 		},
 		{
 			"tag": "c:ores/iron",
-			"buyPrice": 4,
+			"buyPrice": 400,
+			"buyQuantity": 4,
 			"discountFactor": 50
 		},
 		{
 			"tag": "c:ingots/gold",
-			"buyPrice": 6,
+			"buyPrice": 600,
+			"buyQuantity": 2,
 			"discountFactor": 40
 		},
 		{
 			"tag": "c:gems/diamond",
-			"buyPrice": 12,
+			"buyPrice": 1200,
+			"buyQuantity": 1,
 			"discountFactor": 30
 		},
 		{
 			"tag": "c:obsidians",
-			"buyPrice": 8,
+			"buyPrice": 800,
+			"buyQuantity": 2,
 			"discountFactor": 50
+		},
+		{
+			"tag": "c:ingots/copper",
+			"buyPrice": 250,
+			"buyQuantity": 4,
+			"discountFactor": 55
 		}
 	],
 	"itemPriceMultipliers": {
@@ -79,9 +100,9 @@
 		"minecraft:diamond_chestplate": 2.5,
 		"minecraft:diamond_leggings": 2.5,
 		"minecraft:diamond_boots": 2.5,
-		"minecraft:netherite_helmet": 4.0,
-		"minecraft:netherite_chestplate": 4.0,
-		"minecraft:netherite_leggings": 4.0,
-		"minecraft:netherite_boots": 4.0
+		"minecraft:netherite_helmet": 5.0,
+		"minecraft:netherite_chestplate": 5.0,
+		"minecraft:netherite_leggings": 5.0,
+		"minecraft:netherite_boots": 5.0
 	}
 }

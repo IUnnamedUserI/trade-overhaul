@@ -87,20 +87,23 @@ public class TradeOverhaulCommand {
 	private static boolean refreshVillager(VillagerEntity villager, ServerCommandSource source) {
 		Identifier profId = Registries.VILLAGER_PROFESSION.getId(villager.getVillagerData().getProfession());
 		if (profId == null) return false;
-		
+
 		ProfessionTradeFile file = TradeConfigLoader.getProfession(profId);
 		if (file == null) return false;
-		
+
 		VillagerTradeData data = (VillagerTradeData) villager;
 		TradeOverhaulSettings settings = TradeConfigLoader.getSettings();
-		
-		// Clear current offers
-		data.tradeOverhaul$setOfferSlots(new int[0]);
+
+		// Сбрасываем таймер и слоты для принудительного обновления
+		data.tradeOverhaul$setOfferSlots(null);
 		data.tradeOverhaul$setEmptySinceTick(-1L);
 		
-		// Trigger restock on next tick
-		TradeRestock.tick(villager);
-		
+		// Сбрасываем кошелёк до значения по умолчанию
+		data.tradeOverhaul$setWalletEmeralds(0);
+
+		// Вызываем restock напрямую
+		TradeRestock.forceRestock(villager, file, settings);
+
 		return true;
 	}
 }

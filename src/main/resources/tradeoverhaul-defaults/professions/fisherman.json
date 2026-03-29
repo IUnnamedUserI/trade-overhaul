@@ -1,0 +1,61 @@
+{
+	"profession": "minecraft:fisherman",
+	"offersCount": 10,
+	"staticPool": [
+		{ "item": "minecraft:cod", "buy": 100, "sell": 50, "buyQuantity": 10, "sellQuantity": 5, "minStock": 20, "maxStock": 60 },
+		{ "item": "minecraft:salmon", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 48 },
+		{ "item": "minecraft:tropical_fish", "buy": 60, "sell": 30, "buyQuantity": 6, "sellQuantity": 3, "minStock": 12, "maxStock": 36 },
+		{ "item": "minecraft:pufferfish", "buy": 60, "sell": 30, "buyQuantity": 6, "sellQuantity": 3, "minStock": 12, "maxStock": 36 },
+		{ "item": "minecraft:cooked_cod", "buy": 200, "sell": 100, "buyQuantity": 5, "sellQuantity": 2, "minStock": 10, "maxStock": 30 },
+		{ "item": "minecraft:cooked_salmon", "buy": 200, "sell": 100, "buyQuantity": 4, "sellQuantity": 2, "minStock": 8, "maxStock": 24 },
+		{ "item": "minecraft:campfire", "buy": 400, "sell": 180, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
+		{ "item": "minecraft:fishing_rod", "buy": 600, "sell": 250, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:barrel", "buy": 300, "sell": 120, "buyQuantity": 2, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
+		{ "item": "minecraft:water_bucket", "buy": 400, "sell": 180, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:kelp", "buy": 80, "sell": 40, "buyQuantity": 12, "sellQuantity": 6, "minStock": 24, "maxStock": 72 },
+		{ "item": "minecraft:dried_kelp_block", "buy": 720, "sell": 300, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:heart_of_the_sea", "buy": 5000, "sell": 2000, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 2 }
+	],
+	"weaponPool": [],
+	"toolPool": [
+		{
+			"tag": "minecraft:rods",
+			"minStock": 2,
+			"maxStock": 4,
+			"buyPerEfficiency": 20,
+			"sellPerEfficiency": 10,
+			"buyBase": 400,
+			"sellBase": 200,
+			"useDurability": true,
+			"buyQuantity": 1,
+			"sellQuantity": 1
+		}
+	],
+	"generalPool": [],
+	"buyPool": [
+		{
+			"tag": "c:fishes",
+			"buyPrice": 100,
+			"buyQuantity": 8,
+			"discountFactor": 60
+		},
+		{
+			"tag": "c:strings",
+			"buyPrice": 160,
+			"buyQuantity": 8,
+			"discountFactor": 55
+		},
+		{
+			"tag": "minecraft:logs",
+			"buyPrice": 80,
+			"buyQuantity": 12,
+			"discountFactor": 65
+		}
+	],
+	"itemPriceMultipliers": {
+		"minecraft:cod": 1.0,
+		"minecraft:salmon": 0.8,
+		"minecraft:tropical_fish": 0.6,
+		"minecraft:pufferfish": 0.6
+	}
+}

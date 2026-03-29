@@ -1,59 +1,59 @@
 {
 	"profession": "minecraft:leatherworker",
-	"offersCount": 7,
+	"offersCount": 10,
 	"staticPool": [
-		{ "item": "minecraft:leather", "buy": 4, "sell": 2, "maxStock": 32 },
-		{ "item": "minecraft:rabbit_hide", "buy": 3, "sell": 1, "maxStock": 16 },
-		{ "item": "minecraft:string", "buy": 2, "sell": 1, "maxStock": 48 },
-		{ "item": "minecraft:leather_helmet", "buy": 18, "sell": 8, "maxStock": 2 },
-		{ "item": "minecraft:leather_chestplate", "buy": 28, "sell": 12, "maxStock": 2 },
-		{ "item": "minecraft:leather_leggings", "buy": 24, "sell": 10, "maxStock": 2 },
-		{ "item": "minecraft:leather_boots", "buy": 14, "sell": 6, "maxStock": 2 },
-		{ "item": "minecraft:saddle", "buy": 32, "sell": 14, "maxStock": 1 },
-		{ "item": "minecraft:lead", "buy": 8, "sell": 3, "maxStock": 4 },
-		{ "item": "minecraft:name_tag", "buy": 20, "sell": 8, "maxStock": 2 }
+		{ "item": "minecraft:leather", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 48 },
+		{ "item": "minecraft:rabbit_hide", "buy": 120, "sell": 60, "buyQuantity": 12, "sellQuantity": 6, "minStock": 24, "maxStock": 72 },
+		{ "item": "minecraft:leather_helmet", "buy": 200, "sell": 100, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 },
+		{ "item": "minecraft:leather_chestplate", "buy": 300, "sell": 150, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 },
+		{ "item": "minecraft:leather_leggings", "buy": 200, "sell": 100, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 },
+		{ "item": "minecraft:leather_boots", "buy": 100, "sell": 50, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 },
+		{ "item": "minecraft:saddle", "buy": 500, "sell": 200, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 5 },
+		{ "item": "minecraft:leather_horse_armor", "buy": 400, "sell": 180, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 },
+		{ "item": "minecraft:item_frame", "buy": 150, "sell": 70, "buyQuantity": 2, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
+		{ "item": "minecraft:armor_stand", "buy": 300, "sell": 120, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:book", "buy": 120, "sell": 60, "buyQuantity": 4, "sellQuantity": 2, "minStock": 8, "maxStock": 24 },
+		{ "item": "minecraft:lead", "buy": 300, "sell": 120, "buyQuantity": 2, "sellQuantity": 1, "minStock": 4, "maxStock": 12 }
 	],
-	"weaponPool": [
-		{
-			"tag": "minecraft:swords",
-			"maxStock": 1,
-			"buyPerDamage": 4,
-			"sellPerDamage": 2,
-			"buyBase": 2,
-			"sellBase": 1,
-			"useDurability": true
-		}
-	],
+	"weaponPool": [],
 	"toolPool": [],
 	"generalPool": [
 		{
-			"tag": "minecraft:armor",
-			"maxStock": 2,
-			"buyPrice": 15,
-			"sellPrice": 6,
-			"useDurability": true
+			"tag": "c:leather_products",
+			"minStock": 6,
+			"maxStock": 18,
+			"buyPrice": 100,
+			"sellPrice": 50,
+			"buyQuantity": 6,
+			"sellQuantity": 3
 		}
 	],
 	"buyPool": [
 		{
-			"tag": "c:feathers",
-			"buyPrice": 2,
-			"discountFactor": 60
+			"tag": "c:rabbit_hides",
+			"buyPrice": 100,
+			"buyQuantity": 10,
+			"discountFactor": 75
 		},
 		{
-			"tag": "c:rods/blaze",
-			"buyPrice": 8,
-			"discountFactor": 35
+			"tag": "c:leather",
+			"buyPrice": 80,
+			"buyQuantity": 6,
+			"discountFactor": 80
 		},
 		{
-			"tag": "c:gems/lapis",
-			"buyPrice": 3,
-			"discountFactor": 50
-		},
-		{
-			"tag": "c:inks",
-			"buyPrice": 4,
-			"discountFactor": 45
+			"tag": "c:strings",
+			"buyPrice": 160,
+			"buyQuantity": 8,
+			"discountFactor": 55
 		}
-	]
+	],
+	"itemPriceMultipliers": {
+		"minecraft:tropical_fish_bucket": 3.0,
+		"minecraft:leather_horse_armor": 4.0,
+		"minecraft:leather_helmet": 1.0,
+		"minecraft:leather_chestplate": 1.5,
+		"minecraft:leather_leggings": 1.2,
+		"minecraft:leather_boots": 0.8
+	}
 }

@@ -1,0 +1,53 @@
+{
+	"profession": "minecraft:cleric",
+	"offersCount": 10,
+	"staticPool": [
+		{ "item": "minecraft:rotten_flesh", "buy": 100, "sell": 50, "buyQuantity": 20, "sellQuantity": 10, "minStock": 40, "maxStock": 120 },
+		{ "item": "minecraft:gold_ingot", "buy": 1200, "sell": 500, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
+		{ "item": "minecraft:redstone", "buy": 160, "sell": 80, "buyQuantity": 16, "sellQuantity": 8, "minStock": 32, "maxStock": 96 },
+		{ "item": "minecraft:lapis_lazuli", "buy": 200, "sell": 100, "buyQuantity": 4, "sellQuantity": 2, "minStock": 8, "maxStock": 24 },
+		{ "item": "minecraft:ender_pearl", "buy": 800, "sell": 350, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:glowstone_dust", "buy": 200, "sell": 100, "buyQuantity": 4, "sellQuantity": 2, "minStock": 8, "maxStock": 24 },
+		{ "item": "minecraft:experience_bottle", "buy": 300, "sell": 120, "buyQuantity": 3, "sellQuantity": 1, "minStock": 6, "maxStock": 18 },
+		{ "item": "minecraft:glowstone", "buy": 800, "sell": 350, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
+		{ "item": "minecraft:brewing_stand", "buy": 1500, "sell": 600, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:blaze_powder", "buy": 400, "sell": 180, "buyQuantity": 2, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
+		{ "item": "minecraft:fermented_spider_eye", "buy": 500, "sell": 220, "buyQuantity": 2, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
+		{ "item": "minecraft:magma_cream", "buy": 600, "sell": 250, "buyQuantity": 2, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
+		{ "item": "minecraft:ghast_tear", "buy": 1500, "sell": 600, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:dragon_breath", "buy": 2000, "sell": 800, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 }
+	],
+	"weaponPool": [],
+	"toolPool": [],
+	"generalPool": [],
+	"buyPool": [
+		{
+			"tag": "c:gems",
+			"buyPrice": 200,
+			"buyQuantity": 4,
+			"discountFactor": 50
+		},
+		{
+			"tag": "c:ender_pearls",
+			"buyPrice": 800,
+			"buyQuantity": 1,
+			"discountFactor": 35
+		},
+		{
+			"tag": "c:dusts/redstone",
+			"buyPrice": 160,
+			"buyQuantity": 12,
+			"discountFactor": 55
+		},
+		{
+			"tag": "c:foods/rotten_flesh",
+			"buyPrice": 100,
+			"buyQuantity": 16,
+			"discountFactor": 70
+		}
+	],
+	"itemPriceMultipliers": {
+		"minecraft:experience_bottle": 1.2,
+		"minecraft:ender_pearl": 1.5
+	}
+}
