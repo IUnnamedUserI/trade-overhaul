@@ -67,29 +67,36 @@ public class VillagerCurrencyComponent {
 	}
 	
 	/**
-	 * Форматирует деньги в строку.
+	 * Форматирует деньги в строку для отображения в GUI.
+	 * Формат: "ЗМ: X СМ: Y ММ: Z"
+	 */
+	public String formatMoneyVertical() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("§6ЗМ: §f").append(gold).append(" ");
+		sb.append("§fСМ: §f").append(silver).append(" ");
+		sb.append("§eММ: §f").append(copper);
+		return sb.toString();
+	}
+	
+	/**
+	 * Форматирует деньги в читаемую строку с падежами.
 	 */
 	public String formatMoney() {
 		StringBuilder sb = new StringBuilder();
+		
 		if (gold > 0) {
-			sb.append(gold).append(" золот");
-			if (gold % 10 == 1 && gold % 100 != 11) sb.append("ая");
-			else if (gold % 10 >= 2 && gold % 10 <= 4 && (gold % 100 < 10 || gold % 100 >= 20)) sb.append("ые");
-			else sb.append("ых");
+			sb.append(gold).append(" ");
+			sb.append(getCurrencyName(gold, "золот", "золотая", "золотых"));
 		}
 		if (silver > 0) {
 			if (sb.length() > 0) sb.append(", ");
-			sb.append(silver).append(" серебрян");
-			if (silver % 10 == 1 && silver % 100 != 11) sb.append("ая");
-			else if (silver % 10 >= 2 && silver % 10 <= 4 && (silver % 100 < 10 || silver % 100 >= 20)) sb.append("ые");
-			else sb.append("ых");
+			sb.append(silver).append(" ");
+			sb.append(getCurrencyName(silver, "серебрян", "серебряная", "серебряных"));
 		}
 		if (copper > 0) {
 			if (sb.length() > 0) sb.append(", ");
-			sb.append(copper).append(" медн");
-			if (copper % 10 == 1 && copper % 100 != 11) sb.append("ая");
-			else if (copper % 10 >= 2 && copper % 10 <= 4 && (copper % 100 < 10 || copper % 100 >= 20)) sb.append("ые");
-			else sb.append("ых");
+			sb.append(copper).append(" ");
+			sb.append(getCurrencyName(copper, "медн", "медная", "медных"));
 		}
 		if (sb.length() == 0) {
 			sb.append("0 монет");
@@ -98,14 +105,25 @@ public class VillagerCurrencyComponent {
 	}
 	
 	/**
-	 * Форматирует деньги в столбец.
+	 * Возвращает название валюты в правильном падеже.
 	 */
-	public String formatMoneyVertical() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("§6Золотые: ").append(gold).append("\n");
-		sb.append("§fСеребряные: ").append(silver).append("\n");
-		sb.append("§7Медные: ").append(copper);
-		return sb.toString();
+	private String getCurrencyName(int amount, String base, String singular, String plural) {
+		int lastDigit = amount % 10;
+		int lastTwoDigits = amount % 100;
+		
+		if (lastTwoDigits >= 11 && lastTwoDigits <= 19) {
+			return base + "ых";
+		}
+		
+		if (lastDigit == 1) {
+			return singular;
+		}
+		
+		if (lastDigit >= 2 && lastDigit <= 4) {
+			return base + "ые";
+		}
+		
+		return plural;
 	}
 	
 	/**

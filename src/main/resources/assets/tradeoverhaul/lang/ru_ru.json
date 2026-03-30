@@ -1,0 +1,52 @@
+# Trade Overhaul Russian Translation
+# Currency abbreviations
+currency.gold.short=ЗМ
+currency.silver.short=СМ
+currency.copper.short=ММ
+
+# Currency full names
+currency.gold=золот
+currency.silver=серебрян
+currency.copper=медн
+
+# Currency cases (for proper grammar)
+currency.gold.nom=золотая
+currency.gold.gen=золотых
+currency.gold.dat=золотой
+currency.gold.acc=золотую
+currency.gold.ins=золотой
+currency.gold.pre=золотой
+
+currency.silver.nom=серебряная
+currency.silver.gen=серебряных
+currency.silver.dat=серебряной
+currency.silver.acc=серебряную
+currency.silver.ins=серебряной
+currency.silver.pre=серебряной
+
+currency.copper.nom=медная
+currency.copper.gen=медных
+currency.copper.dat=медной
+currency.copper.acc=медную
+currency.copper.ins=медной
+currency.copper.pre=медной
+
+# Trade actions
+trade.buy=Купить
+trade.sell=Продать
+trade.buy.all=Купить всё
+trade.sell.all=Продать всё
+
+# Trade messages
+trade.no_inventory_space=§c§oНет места в инвентаре
+trade.not_enough_money=§e§oНе хватает денег
+trade.villager_no_money=§e§oУ жителя не хватает денег
+
+# Inventory labels
+gui.tradeoverhaul.player_inventory=Инвентарь
+gui.tradeoverhaul.villager_inventory=Инвентарь жителя
+
+# Money display
+money.gold_coins=§6ЗМ: §f%d
+money.silver_coins=§fСМ: §f%d
+money.copper_coins=§eММ: §f%d

@@ -23,12 +23,66 @@
 		{
 			"tag": "minecraft:hoes",
 			"minStock": 1,
-			"maxStock": 2,
+			"maxStock": 1,
 			"buyPerEfficiency": 30,
 			"sellPerEfficiency": 15,
 			"buyBase": 200,
 			"sellBase": 100,
 			"useDurability": true,
+			"buyQuantity": 1,
+			"sellQuantity": 1
+		},
+		{
+			"tag": "minecraft:wooden_hoes",
+			"minStock": 1,
+			"maxStock": 1,
+			"buyPrice": 150,
+			"sellPrice": 60,
+			"buyQuantity": 1,
+			"sellQuantity": 1
+		},
+		{
+			"tag": "minecraft:stone_hoes",
+			"minStock": 1,
+			"maxStock": 1,
+			"buyPrice": 250,
+			"sellPrice": 100,
+			"buyQuantity": 1,
+			"sellQuantity": 1
+		},
+		{
+			"tag": "minecraft:iron_hoes",
+			"minStock": 1,
+			"maxStock": 1,
+			"buyPrice": 400,
+			"sellPrice": 180,
+			"buyQuantity": 1,
+			"sellQuantity": 1
+		},
+		{
+			"tag": "minecraft:golden_hoes",
+			"minStock": 1,
+			"maxStock": 1,
+			"buyPrice": 300,
+			"sellPrice": 120,
+			"buyQuantity": 1,
+			"sellQuantity": 1
+		},
+		{
+			"tag": "minecraft:diamond_hoes",
+			"minStock": 1,
+			"maxStock": 1,
+			"buyPrice": 800,
+			"sellPrice": 350,
+			"buyQuantity": 1,
+			"sellQuantity": 1
+		},
+		{
+			"tag": "minecraft:netherite_hoes",
+			"minStock": 1,
+			"maxStock": 1,
+			"buyPrice": 2000,
+			"sellPrice": 800,
 			"buyQuantity": 1,
 			"sellQuantity": 1
 		}

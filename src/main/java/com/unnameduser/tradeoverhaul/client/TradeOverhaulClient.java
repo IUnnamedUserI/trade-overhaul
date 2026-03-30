@@ -3,6 +3,7 @@ package com.unnameduser.tradeoverhaul.client;
 import com.unnameduser.tradeoverhaul.TradeOverhaulMod;
 import com.unnameduser.tradeoverhaul.client.gui.VillagerTradeScreen;
 import com.unnameduser.tradeoverhaul.client.gui.VillagerTradeScreenHandler;
+import com.unnameduser.tradeoverhaul.common.network.ProfessionLevelSyncPayload;
 import com.unnameduser.tradeoverhaul.common.network.VillagerInventorySyncPayload;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
@@ -17,14 +18,14 @@ public class TradeOverhaulClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		// Регистрируем экран с помощью ванильного метода
 		HandledScreens.register(TradeOverhaulMod.VILLAGER_TRADE_SCREEN_HANDLER, VillagerTradeScreen::new);
-		
+
 		// Регистрируем обработчик синхронизации инвентаря жителя
 		ClientPlayNetworking.registerGlobalReceiver(VillagerInventorySyncPayload.ID, (client, handler, buf, responseSender) -> {
 			VillagerInventorySyncPayload payload = VillagerInventorySyncPayload.read(buf);
 			client.execute(() -> {
-				TradeOverhaulMod.LOGGER.info("Received inventory sync: syncId={}, inventory size={}", 
+				TradeOverhaulMod.LOGGER.info("Received inventory sync: syncId={}, inventory size={}",
 					payload.syncId(), payload.inventory().length);
-				
+
 				if (client.player != null && client.player.currentScreenHandler instanceof VillagerTradeScreenHandler tradeHandler
 						&& tradeHandler.syncId == payload.syncId()) {
 					// Обновляем инвентарь жителя
@@ -37,11 +38,25 @@ public class TradeOverhaulClient implements ClientModInitializer {
 					}
 					TradeOverhaulMod.LOGGER.info("Inventory sync complete");
 				} else {
-					TradeOverhaulMod.LOGGER.warn("Inventory sync failed: player={}, handler={}, syncId match={}", 
-						client.player != null, 
+					TradeOverhaulMod.LOGGER.warn("Inventory sync failed: player={}, handler={}, syncId match={}",
+						client.player != null,
 						client.player.currentScreenHandler instanceof VillagerTradeScreenHandler,
-						client.player != null && client.player.currentScreenHandler instanceof VillagerTradeScreenHandler ? 
+						client.player != null && client.player.currentScreenHandler instanceof VillagerTradeScreenHandler ?
 							((VillagerTradeScreenHandler)client.player.currentScreenHandler).syncId == payload.syncId() : "N/A");
+				}
+			});
+		});
+		
+		// Регистрируем обработчик синхронизации уровня профессии
+		ClientPlayNetworking.registerGlobalReceiver(ProfessionLevelSyncPayload.ID, (client, handler, buf, responseSender) -> {
+			ProfessionLevelSyncPayload payload = ProfessionLevelSyncPayload.read(buf);
+			client.execute(() -> {
+				if (client.player != null && client.player.currentScreenHandler instanceof VillagerTradeScreenHandler tradeHandler
+						&& tradeHandler.syncId == payload.syncId()) {
+					// Обновляем данные о профессии (с трекингом предметов)
+					tradeHandler.updateProfessionLevel(payload.level(), payload.experience(), payload.tradesCompleted(), payload.soldItemsTracker());
+					TradeOverhaulMod.LOGGER.debug("Received profession level sync: level={}, exp={}, soldItems={}", 
+						payload.level(), payload.experience(), payload.soldItemsTracker() != null ? payload.soldItemsTracker().getKeys().size() : 0);
 				}
 			});
 		});

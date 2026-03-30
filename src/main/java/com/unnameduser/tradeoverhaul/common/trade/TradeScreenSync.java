@@ -17,6 +17,8 @@ public final class TradeScreenSync {
 	public static void write(PacketByteBuf buf, VillagerEntity villager, ProfessionTradeFile profession) {
 		// Синхронизация кошелька Numismatic
 		buf.writeVarInt(NumismaticHelper.getTotalMoney(villager));
+		
+		// ПРИМЕЧАНИЕ: Данные о профессии (уровень, опыт, трекинг) теперь передаются в writeScreenOpeningData
 
 		// Синхронизация инвентаря жителя с buyQuantity и sellQuantity
 		VillagerInventoryComponent inv = ((VillagerTradeData) villager).tradeOverhaul$getInventory();

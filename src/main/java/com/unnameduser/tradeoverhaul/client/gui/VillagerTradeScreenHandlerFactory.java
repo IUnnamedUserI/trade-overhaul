@@ -1,6 +1,7 @@
 package com.unnameduser.tradeoverhaul.client.gui;
 
 import com.unnameduser.tradeoverhaul.TradeOverhaulMod;
+import com.unnameduser.tradeoverhaul.common.VillagerTradeData;
 import com.unnameduser.tradeoverhaul.common.config.TradeConfigLoader;
 import com.unnameduser.tradeoverhaul.common.trade.TradeScreenSync;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
@@ -41,6 +42,20 @@ public class VillagerTradeScreenHandlerFactory implements ExtendedScreenHandlerF
 		Identifier pid = Registries.VILLAGER_PROFESSION.getId(villager.getVillagerData().getProfession());
 		// Пишем ID профессии для клиента
 		buf.writeVarInt(Registries.VILLAGER_PROFESSION.getRawId(villager.getVillagerData().getProfession()));
+		
+		// Записываем данные о профессии (уровень, опыт, трекинг предметов)
+		VillagerTradeData data = (VillagerTradeData) villager;
+		buf.writeVarInt(data.tradeOverhaul$getProfession().getLevel());
+		buf.writeVarInt(data.tradeOverhaul$getProfession().getExperience());
+		buf.writeVarInt(data.tradeOverhaul$getProfession().getTradesCompleted());
+		
+		// Записываем трекинг проданных предметов
+		net.minecraft.nbt.NbtCompound soldItemsTracker = new net.minecraft.nbt.NbtCompound();
+		for (java.util.Map.Entry<String, Integer> entry : data.tradeOverhaul$getProfession().soldItemsTracker.entrySet()) {
+			soldItemsTracker.putInt(entry.getKey(), entry.getValue());
+		}
+		buf.writeNbt(soldItemsTracker);
+		
 		TradeScreenSync.write(buf, villager, TradeConfigLoader.getProfession(pid));
 	}
 }

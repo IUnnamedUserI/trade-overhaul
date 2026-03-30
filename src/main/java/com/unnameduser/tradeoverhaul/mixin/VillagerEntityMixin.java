@@ -5,6 +5,7 @@ import com.unnameduser.tradeoverhaul.common.VillagerTradeData;
 import com.unnameduser.tradeoverhaul.common.component.BulletinBoardComponent;
 import com.unnameduser.tradeoverhaul.common.component.VillagerCurrencyComponent;
 import com.unnameduser.tradeoverhaul.common.component.VillagerInventoryComponent;
+import com.unnameduser.tradeoverhaul.common.component.VillagerProfessionComponent;
 import com.unnameduser.tradeoverhaul.common.trade.TradeRestock;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -32,6 +33,9 @@ public class VillagerEntityMixin implements VillagerTradeData {
 
 	@Unique
 	private VillagerCurrencyComponent tradeOverhaul_currency;
+	
+	@Unique
+	private VillagerProfessionComponent tradeOverhaul_profession;
 
 	@Unique
 	private int[] tradeOverhaul_offerSlots;
@@ -62,6 +66,14 @@ public class VillagerEntityMixin implements VillagerTradeData {
 			tradeOverhaul_currency = new VillagerCurrencyComponent();
 		}
 		return tradeOverhaul_currency;
+	}
+	
+	@Override
+	public VillagerProfessionComponent tradeOverhaul$getProfession() {
+		if (tradeOverhaul_profession == null) {
+			tradeOverhaul_profession = new VillagerProfessionComponent();
+		}
+		return tradeOverhaul_profession;
 	}
 
 	@Override
@@ -166,6 +178,12 @@ public class VillagerEntityMixin implements VillagerTradeData {
 			tradeOverhaul_currency.writeNbt(currencyNbt);
 			nbt.put("TradeOverhaulCurrency", currencyNbt);
 		}
+		// Сохраняем мастерство жителя
+		if (tradeOverhaul_profession != null) {
+			NbtCompound professionNbt = new NbtCompound();
+			tradeOverhaul_profession.writeNbt(professionNbt);
+			nbt.put("TradeOverhaulProfession", professionNbt);
+		}
 		// Don't save active trader - it's session-only
 	}
 
@@ -186,6 +204,9 @@ public class VillagerEntityMixin implements VillagerTradeData {
 		}
 		if (nbt.contains("TradeOverhaulCurrency")) {
 			tradeOverhaul$getCurrency().readNbt(nbt.getCompound("TradeOverhaulCurrency"));
+		}
+		if (nbt.contains("TradeOverhaulProfession")) {
+			tradeOverhaul$getProfession().readNbt(nbt.getCompound("TradeOverhaulProfession"));
 		}
 		// Active trader is always null after load
 		tradeOverhaul_activeTrader = null;

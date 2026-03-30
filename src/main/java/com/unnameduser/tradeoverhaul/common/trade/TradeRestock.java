@@ -1,5 +1,6 @@
 package com.unnameduser.tradeoverhaul.common.trade;
 
+import com.unnameduser.tradeoverhaul.TradeOverhaulMod;
 import com.unnameduser.tradeoverhaul.common.VillagerTradeData;
 import com.unnameduser.tradeoverhaul.common.component.VillagerInventoryComponent;
 import com.unnameduser.tradeoverhaul.common.config.ProfessionTradeFile;
@@ -85,20 +86,78 @@ public final class TradeRestock {
 			inv.setStack(i, ItemStack.EMPTY);
 		}
 
+		// Получаем уровень жителя
+		int villagerLevel = data.tradeOverhaul$getProfession().getLevel();
+		
+		TradeOverhaulMod.LOGGER.info("Restock: villagerLevel={}, profession={}", villagerLevel, 
+			Registries.VILLAGER_PROFESSION.getId(villager.getVillagerData().getProfession()));
+		
 		List<PoolChoice> pool = new ArrayList<>();
-		for (ProfessionTradeFile.StaticPoolEntry e : file.staticPool) {
-			pool.add(new StaticChoice(e));
+		
+		// Проверяем, есть ли в конфиге пулы по уровням
+		boolean hasLevelPools = (file.level1Pool != null && !file.level1Pool.isEmpty()) ||
+			(file.level2Pool != null && !file.level2Pool.isEmpty()) ||
+			(file.level3Pool != null && !file.level3Pool.isEmpty()) ||
+			(file.level4Pool != null && !file.level4Pool.isEmpty()) ||
+			(file.level5Pool != null && !file.level5Pool.isEmpty());
+		
+		if (hasLevelPools) {
+			// Используем новую систему с уровнями
+			TradeOverhaulMod.LOGGER.info("Restock: using level-based pools");
+			TradeOverhaulMod.LOGGER.info("Restock: level1Pool size={}", file.level1Pool != null ? file.level1Pool.size() : 0);
+			
+			if (villagerLevel >= 1 && file.level1Pool != null) {
+				for (ProfessionTradeFile.LevelPoolEntry e : file.level1Pool) {
+					pool.add(new LevelChoice(e, 1));
+				}
+			}
+			if (villagerLevel >= 2 && file.level2Pool != null) {
+				for (ProfessionTradeFile.LevelPoolEntry e : file.level2Pool) {
+					pool.add(new LevelChoice(e, 2));
+				}
+			}
+			if (villagerLevel >= 3 && file.level3Pool != null) {
+				for (ProfessionTradeFile.LevelPoolEntry e : file.level3Pool) {
+					pool.add(new LevelChoice(e, 3));
+				}
+			}
+			if (villagerLevel >= 4 && file.level4Pool != null) {
+				for (ProfessionTradeFile.LevelPoolEntry e : file.level4Pool) {
+					pool.add(new LevelChoice(e, 4));
+				}
+			}
+			if (villagerLevel >= 5 && file.level5Pool != null) {
+				for (ProfessionTradeFile.LevelPoolEntry e : file.level5Pool) {
+					pool.add(new LevelChoice(e, 5));
+				}
+			}
+		} else {
+			// Используем старую систему (обратная совместимость)
+			TradeOverhaulMod.LOGGER.info("Restock: using legacy static pools");
+			for (ProfessionTradeFile.StaticPoolEntry e : file.staticPool) {
+				pool.add(new StaticChoice(e));
+			}
+			for (ProfessionTradeFile.WeaponPoolEntry w : file.weaponPool) {
+				pool.add(new WeaponChoice(w));
+			}
+			for (ProfessionTradeFile.ToolPoolEntry t : file.toolPool) {
+				pool.add(new ToolChoice(t));
+			}
+			for (ProfessionTradeFile.GeneralPoolEntry g : file.generalPool) {
+				pool.add(new GeneralChoice(g));
+			}
 		}
-		for (ProfessionTradeFile.WeaponPoolEntry w : file.weaponPool) {
-			pool.add(new WeaponChoice(w));
+		
+		// Добавляем зачарованные книги для библиотекаря (2 отдельных слота)
+		if (file.enchantments != null && !file.enchantments.isEmpty()) {
+			pool.add(new EnchantmentChoice(file.enchantments, villagerLevel));
+			pool.add(new EnchantmentChoice(file.enchantments, villagerLevel));
 		}
-		for (ProfessionTradeFile.ToolPoolEntry t : file.toolPool) {
-			pool.add(new ToolChoice(t));
-		}
-		for (ProfessionTradeFile.GeneralPoolEntry g : file.generalPool) {
-			pool.add(new GeneralChoice(g));
-		}
+		
+		TradeOverhaulMod.LOGGER.info("Restock: total pool size={}", pool.size());
+		
 		if (pool.isEmpty()) {
+			TradeOverhaulMod.LOGGER.warn("Restock: pool is empty! No items will be stocked.");
 			data.tradeOverhaul$setOfferSlots(new int[0]);
 			data.tradeOverhaul$setEmptySinceTick(-1L);
 			return;
@@ -131,29 +190,50 @@ public final class TradeRestock {
 		}
 
 		data.tradeOverhaul$setOfferSlots(slots);
-		// Рандомизация изумрудов: обновляем только если у жителя меньше минимума
-		int currentEmeralds = data.tradeOverhaul$getWalletEmeralds();
-		if (currentEmeralds < settings.walletAfterRestockMin) {
-			int newEmeralds = settings.walletAfterRestockMin + random.nextInt(
-				settings.walletAfterRestockMax - settings.walletAfterRestockMin + 1
-			);
-			data.tradeOverhaul$setWalletEmeralds(newEmeralds);
-		}
-		// Если изумрудов >= walletAfterRestockMin, не трогаем кошелёк (житель "богатый")
 		
-		// Пополнение монет жителя (3-6 серебряных + 0-99 медных)
+		// Пополнение кошелька жителя в зависимости от уровня
 		if (data.tradeOverhaul$getCurrency() != null) {
 			int currentCopper = data.tradeOverhaul$getCurrency().getTotalCopper();
-			// Добавляем только если у жителя меньше 3 серебряных (300 медных)
-			if (currentCopper < 300) {
-				int silverToAdd = 3 + random.nextInt(4); // 3-6 серебряных = 300-600 медных
-				int copperToAdd = random.nextInt(100);  // 0-99 медных
-				int totalToAdd = silverToAdd * 100 + copperToAdd;
-				data.tradeOverhaul$getCurrency().addMoney(totalToAdd);
+			
+			// Получаем настройки денег для текущего уровня
+			int restockMoney = getRestockMoneyForLevel(file, villagerLevel, settings);
+			
+			// Добавляем деньги только если у жителя меньше положенного по уровню
+			if (currentCopper < restockMoney) {
+				int moneyToAdd = restockMoney - currentCopper;
+				data.tradeOverhaul$getCurrency().addMoney(moneyToAdd);
 			}
 		}
-		
+
 		data.tradeOverhaul$setEmptySinceTick(-1L);
+	}
+	
+	/**
+	 * Возвращает количество денег для рестокa в зависимости от уровня жителя
+	 */
+	private static int getRestockMoneyForLevel(ProfessionTradeFile file, int level, TradeOverhaulSettings settings) {
+		if (file.levelMoneySettings != null) {
+			return switch (level) {
+				case 2 -> file.levelMoneySettings.level2RestockMoney != null ? 
+					file.levelMoneySettings.level2RestockMoney : 700;
+				case 3 -> file.levelMoneySettings.level3RestockMoney != null ? 
+					file.levelMoneySettings.level3RestockMoney : 1100;
+				case 4 -> file.levelMoneySettings.level4RestockMoney != null ? 
+					file.levelMoneySettings.level4RestockMoney : 1600;
+				case 5 -> file.levelMoneySettings.level5RestockMoney != null ? 
+					file.levelMoneySettings.level5RestockMoney : 2500;
+				default -> file.levelMoneySettings.level1RestockMoney != null ? 
+					file.levelMoneySettings.level1RestockMoney : 400;
+			};
+		}
+		// Значения по умолчанию
+		return switch (level) {
+			case 2 -> 700;
+			case 3 -> 1100;
+			case 4 -> 1600;
+			case 5 -> 2500;
+			default -> 400;
+		};
 	}
 
 	/**
@@ -212,21 +292,35 @@ public final class TradeRestock {
 			if (id == null) return ItemStack.EMPTY;
 			Item item = Registries.ITEM.get(id);
 			if (item == Items.AIR) return ItemStack.EMPTY;
-			
+
 			// Получаем количество за 1 изумруд (для кратности)
 			int quantity = entry.buyQuantity != null && entry.buyQuantity > 0 ? entry.buyQuantity : 1;
-			
+
 			int min = entry.minStock != null ? entry.minStock : settings.maxStockDefault;
 			int max = entry.maxStock != null ? entry.maxStock : settings.maxStockDefault;
 			min = Math.max(quantity, min);  // Минимум кратен quantity
 			max = Math.max(min, max);
-			
+
 			// Генерируем количество, кратное quantity
 			int multiples = (max / quantity) - (min / quantity) + 1;
 			int count = (random.nextInt(multiples) + (min / quantity)) * quantity;
 			count = Math.max(min, Math.min(max, count));
+
+			ItemStack stack = new ItemStack(item, count);
 			
-			return new ItemStack(item, count);
+			// Обработка зачарованных книг
+			if (item == Items.ENCHANTED_BOOK && entry.enchantment != null) {
+				Identifier enchantId = Identifier.tryParse(entry.enchantment);
+				if (enchantId != null) {
+					net.minecraft.enchantment.Enchantment enchant = Registries.ENCHANTMENT.get(enchantId);
+					if (enchant != null) {
+						int level = entry.enchantment_level != null ? entry.enchantment_level : 1;
+						stack.addEnchantment(enchant, level);
+					}
+				}
+			}
+			
+			return stack;
 		}
 	}
 
@@ -328,6 +422,140 @@ public final class TradeRestock {
 			count = Math.max(min, Math.min(max, count));
 			
 			return new ItemStack(pick, count);
+		}
+	}
+	
+	/**
+	 * Генерирует случайную зачарованную книгу для библиотекаря.
+	 * Каждая книга генерируется независимо с рандомным зачарованием и уровнем.
+	 * Уровень зачарования зависит от уровня жителя.
+	 */
+	private record EnchantmentChoice(List<ProfessionTradeFile.EnchantmentEntry> enchantments, int villagerLevel) implements PoolChoice {
+		@Override
+		public ItemStack createStack(Random random, TradeOverhaulSettings settings) {
+			if (enchantments == null || enchantments.isEmpty()) return ItemStack.EMPTY;
+
+			// Выбираем случайное зачарование
+			ProfessionTradeFile.EnchantmentEntry entry = enchantments.get(random.nextInt(enchantments.size()));
+
+			Identifier enchantId = Identifier.tryParse(entry.enchantment);
+			if (enchantId == null) return ItemStack.EMPTY;
+
+			net.minecraft.enchantment.Enchantment enchant = Registries.ENCHANTMENT.get(enchantId);
+			if (enchant == null) return ItemStack.EMPTY;
+
+			// Выбираем случайный уровень в зависимости от уровня жителя
+			// Уровень 1: только минимальные уровни зачарований
+			// Уровень 5: могут быть максимальные уровни
+			int minLevel = entry.min_level != null ? entry.min_level : 1;
+			int maxLevel = entry.max_level != null ? entry.max_level : 1;
+			
+			// Ограничиваем максимальный уровень зачарования уровнем жителя
+			// Уровень 1: до 20% от maxLevel
+			// Уровень 2: до 40% от maxLevel
+			// Уровень 3: до 60% от maxLevel
+			// Уровень 4: до 80% от maxLevel
+			// Уровень 5: 100% от maxLevel
+			float levelFactor = switch (villagerLevel) {
+				case 2 -> 0.4f;
+				case 3 -> 0.6f;
+				case 4 -> 0.8f;
+				case 5 -> 1.0f;
+				default -> 0.2f;
+			};
+			
+			int effectiveMaxLevel = Math.max(minLevel, (int) (minLevel + (maxLevel - minLevel) * levelFactor));
+			int level = minLevel == effectiveMaxLevel ? minLevel : random.nextInt(effectiveMaxLevel - minLevel + 1) + minLevel;
+
+			// Создаём зачарованную книгу с правильным NBT (StoredEnchantments)
+			ItemStack book = new ItemStack(Items.ENCHANTED_BOOK);
+			net.minecraft.nbt.NbtCompound nbt = book.getOrCreateNbt();
+
+			// Создаём список зачарований
+			net.minecraft.nbt.NbtList enchantList = new net.minecraft.nbt.NbtList();
+			net.minecraft.nbt.NbtCompound enchantNbt = new net.minecraft.nbt.NbtCompound();
+
+			// Записываем ID зачарования и уровень
+			enchantNbt.putString("id", enchantId.toString());
+			enchantNbt.putShort("lvl", (short) level);
+
+			enchantList.add(enchantNbt);
+			nbt.put("StoredEnchantments", enchantList);
+
+			book.setNbt(nbt);
+			book.setCount(1);
+
+			return book;
+		}
+	}
+	
+	/**
+	 * Выбор из пула определённого уровня.
+	 */
+	private record LevelChoice(ProfessionTradeFile.LevelPoolEntry entry, int level) implements PoolChoice {
+		@Override
+		public ItemStack createStack(Random random, TradeOverhaulSettings settings) {
+			// Предмет из статического пула
+			if (entry.item != null) {
+				Identifier id = Identifier.tryParse(entry.item);
+				if (id == null) return ItemStack.EMPTY;
+				net.minecraft.item.Item item = Registries.ITEM.get(id);
+				if (item == Items.AIR) return ItemStack.EMPTY;
+
+				int min = entry.minStock != null ? entry.minStock : settings.maxStockDefault;
+				int max = entry.maxStock != null ? entry.maxStock : settings.maxStockDefault;
+				min = Math.max(1, min);
+				max = Math.max(min, max);
+				int count = min == max ? min : random.nextInt(max - min + 1) + min;
+				
+				ItemStack stack = new ItemStack(item, count);
+				
+				// Обработка зачарованных книг
+				if (item == Items.ENCHANTED_BOOK && entry.enchantment != null) {
+					Identifier enchantId = Identifier.tryParse(entry.enchantment);
+					if (enchantId != null) {
+						net.minecraft.enchantment.Enchantment enchant = Registries.ENCHANTMENT.get(enchantId);
+						if (enchant != null) {
+							int enchantLevel = entry.enchantment_level != null ? entry.enchantment_level : 1;
+							stack.addEnchantment(enchant, enchantLevel);
+						}
+					}
+				}
+				
+				return stack;
+			}
+			
+			// Предмет из общего пула (по тегу)
+			if (entry.tag != null) {
+				Identifier tagId = Identifier.tryParse(entry.tag);
+				if (tagId == null) return ItemStack.EMPTY;
+				TagKey<net.minecraft.item.Item> tag = TagKey.of(RegistryKeys.ITEM, tagId);
+				List<net.minecraft.item.Item> candidates = new ArrayList<>();
+				for (net.minecraft.item.Item item : Registries.ITEM.stream().toList()) {
+					if (item == Items.EMERALD) continue;
+					ItemStack probe = new ItemStack(item);
+					if (probe.isIn(tag)) {
+						// Исключаем незеритовые предметы
+						if (ItemCombatPricing.getMaterialTier(probe) >= 4) continue;
+						candidates.add(item);
+					}
+				}
+				if (candidates.isEmpty()) return ItemStack.EMPTY;
+				net.minecraft.item.Item pick = candidates.get(random.nextInt(candidates.size()));
+				
+				int min = entry.minStock != null ? entry.minStock : settings.maxStockDefault;
+				int max = entry.maxStock != null ? entry.maxStock : settings.maxStockDefault;
+				min = Math.max(1, min);
+				max = Math.max(min, max);
+				int maxStack = pick.getMaxCount();
+				min = Math.min(min, maxStack);
+				max = Math.min(max, maxStack);
+				int count = min == max ? min : random.nextInt(max - min + 1) + min;
+				
+				return new ItemStack(pick, count);
+			}
+			
+			return ItemStack.EMPTY;
 		}
 	}
 }

@@ -36,6 +36,7 @@ public final class TradeConfigLoader {
 			copyDefaultIfMissing(root.resolve("professions/armourer.json"), "tradeoverhaul-defaults/professions/armourer.json");
 			copyDefaultIfMissing(root.resolve("professions/weaponsmith.json"), "tradeoverhaul-defaults/professions/weaponsmith.json");
 			copyDefaultIfMissing(root.resolve("professions/fletcher.json"), "tradeoverhaul-defaults/professions/fletcher.json");
+			copyDefaultIfMissing(root.resolve("professions/librarian.json"), "tradeoverhaul-defaults/professions/librarian.json");
 
 			settings = readSettings(root.resolve("settings.json"));
 
@@ -54,6 +55,13 @@ public final class TradeConfigLoader {
 									if (file.toolPool == null) file.toolPool = new ArrayList<>();
 									if (file.generalPool == null) file.generalPool = new ArrayList<>();
 									if (file.buyPool == null) file.buyPool = new ArrayList<>();
+									if (file.enchantments == null) file.enchantments = new ArrayList<>();
+									if (file.level1Pool == null) file.level1Pool = new ArrayList<>();
+									if (file.level2Pool == null) file.level2Pool = new ArrayList<>();
+									if (file.level3Pool == null) file.level3Pool = new ArrayList<>();
+									if (file.level4Pool == null) file.level4Pool = new ArrayList<>();
+									if (file.level5Pool == null) file.level5Pool = new ArrayList<>();
+									if (file.levelMoneySettings == null) file.levelMoneySettings = new ProfessionTradeFile.LevelMoneySettings();
 									sanitizeProfession(file, id, log);
 									map.put(id, file);
 								}
@@ -131,6 +139,63 @@ public final class TradeConfigLoader {
 			}
 			return false;
 		});
+
+		// Sanitize enchantments (for librarian)
+		if (file.enchantments != null) {
+			file.enchantments.removeIf(e -> {
+				if (e.enchantment == null) {
+					log.warn("Removing enchantment entry without enchantment ID in {}", professionId);
+					return true;
+				}
+				Identifier enchantId = Identifier.tryParse(e.enchantment);
+				if (enchantId == null) {
+					log.warn("Removing enchantment entry with invalid ID {} in {}", e.enchantment, professionId);
+					return true;
+				}
+				// Проверяем, существует ли такое зачарование в реестре
+				if (!net.minecraft.registry.Registries.ENCHANTMENT.containsId(enchantId)) {
+					log.warn("Removing unknown enchantment {} in {}", e.enchantment, professionId);
+					return true;
+				}
+				// Проверяем корректность уровней
+				if (e.min_level == null || e.min_level < 1) {
+					e.min_level = 1;
+					log.warn("Fixed min_level for {} in {} to 1", e.enchantment, professionId);
+				}
+				if (e.max_level == null || e.max_level < e.min_level) {
+					e.max_level = e.min_level;
+					log.warn("Fixed max_level for {} in {} to {}", e.enchantment, professionId, e.max_level);
+				}
+				// Проверяем цены
+				if (e.base_price == null || e.base_price < 0) {
+					e.base_price = 400;
+					log.warn("Fixed base_price for {} in {} to 400", e.enchantment, professionId);
+				}
+				if (e.price_per_level == null || e.price_per_level < 0) {
+					e.price_per_level = 0;
+					log.warn("Fixed price_per_level for {} in {} to 0", e.enchantment, professionId);
+				}
+				return false;
+			});
+			log.info("Loaded {} enchantments for {}", file.enchantments.size(), professionId);
+		}
+		
+		// Инициализация настроек денег по умолчанию
+		if (file.levelMoneySettings != null) {
+			if (file.levelMoneySettings.level1StartMoney == null) file.levelMoneySettings.level1StartMoney = 300;
+			if (file.levelMoneySettings.level2StartMoney == null) file.levelMoneySettings.level2StartMoney = 500;
+			if (file.levelMoneySettings.level3StartMoney == null) file.levelMoneySettings.level3StartMoney = 800;
+			if (file.levelMoneySettings.level4StartMoney == null) file.levelMoneySettings.level4StartMoney = 1200;
+			if (file.levelMoneySettings.level5StartMoney == null) file.levelMoneySettings.level5StartMoney = 2000;
+			
+			if (file.levelMoneySettings.level1RestockMoney == null) file.levelMoneySettings.level1RestockMoney = 400;
+			if (file.levelMoneySettings.level2RestockMoney == null) file.levelMoneySettings.level2RestockMoney = 700;
+			if (file.levelMoneySettings.level3RestockMoney == null) file.levelMoneySettings.level3RestockMoney = 1100;
+			if (file.levelMoneySettings.level4RestockMoney == null) file.levelMoneySettings.level4RestockMoney = 1600;
+			if (file.levelMoneySettings.level5RestockMoney == null) file.levelMoneySettings.level5RestockMoney = 2500;
+			
+			log.info("Loaded level money settings for {}", professionId);
+		}
 	}
 
 	private static TradeOverhaulSettings readSettings(Path path) throws IOException {
