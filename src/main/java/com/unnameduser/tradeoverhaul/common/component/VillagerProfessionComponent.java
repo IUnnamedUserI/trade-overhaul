@@ -42,6 +42,9 @@ public class VillagerProfessionComponent {
 	// Ключ: itemId, Значение: сколько раз продано
 	public Map<String, Integer> soldItemsTracker = new HashMap<>();
 	
+	// Накопитель дробного XP (для предметов с низким XP)
+	private float fractionalXpAccumulator = 0f;
+	
 	public VillagerProfessionComponent() {
 	}
 	
@@ -77,6 +80,8 @@ public class VillagerProfessionComponent {
 	 */
 	public int getXpForNextLevel() {
 		if (level >= MAX_LEVEL) return 0;
+		// XP_REQUIRED = {0, 10, 30, 60, 100} для уровней 1-5
+		// Для уровня 1 нужно 10 XP, для уровня 2 нужно 30 XP, и т.д.
 		return XP_REQUIRED[level];
 	}
 	
@@ -85,7 +90,7 @@ public class VillagerProfessionComponent {
 	 */
 	public float getLevelProgress() {
 		if (level >= MAX_LEVEL) return 1.0f;
-		int required = getXpForNextLevel();
+		int required = XP_REQUIRED[level];
 		if (required <= 0) return 1.0f;
 		return Math.min(1.0f, (float) experience / required);
 	}
@@ -118,34 +123,59 @@ public class VillagerProfessionComponent {
 	}
 	
 	/**
-	 * Добавляет опыт с плавающей точкой (для diminishing returns)
+	 * Добавляет опыт с плавающей точкой (для предметов с низким XP)
+	 * Использует накопитель для дробного XP.
 	 * @param amount Количество опыта (может быть дробным)
 	 * @return true, если уровень повысился
 	 */
 	public boolean addExperienceFloat(float amount) {
 		if (isMaxLevel()) return false;
+		if (amount <= 0) return false;
 		
-		// Округляем до целого, но минимум 1 если amount > 0
-		int xpToAdd = amount > 0 && amount < 1 ? 1 : (int) Math.floor(amount);
-		experience += xpToAdd;
-		tradesCompleted++;
+		boolean leveledUp = false;
 		
-		// Проверяем повышение уровня
-		int required = getXpForNextLevel();
-		if (experience >= required) {
-			levelUp();
-			return true;
+		// Добавляем XP к накопителю
+		fractionalXpAccumulator += amount;
+		
+		// Если накопилось >= 1 XP, добавляем целый XP
+		int xpToAdd = (int) fractionalXpAccumulator;
+		if (xpToAdd > 0) {
+			fractionalXpAccumulator -= xpToAdd;
+			experience += xpToAdd;
+			tradesCompleted++;
+			
+			// Проверяем и применяем повышение уровня (с переносом излишка)
+			while (experience >= getXpForNextLevel() && !isMaxLevel()) {
+				levelUp();
+				leveledUp = true;
+			}
 		}
-		return false;
+		
+		return leveledUp;
 	}
 	
 	/**
-	 * Повышает уровень жителя
+	 * Получает текущий накопленный дробный XP (для отладки)
+	 */
+	public float getFractionalXpAccumulator() {
+		return fractionalXpAccumulator;
+	}
+	
+	/**
+	 * Повышает уровень жителя с переносом излишка опыта
 	 */
 	private void levelUp() {
 		if (level < MAX_LEVEL) {
+			int required = XP_REQUIRED[level];  // Опыт, требуемый для текущего уровня (до повышения)
+			int excess = experience - required;  // Излишек опыта
+			
 			level++;
-			experience = 0; // Сбрасываем опыт после повышения
+			experience = Math.max(0, excess);  // Сохраняем излишек для следующего уровня
+			
+			// Если после повышения всё ещё достаточно опыта для следующего уровня, повышаем ещё раз
+			if (experience >= XP_REQUIRED[level] && level < MAX_LEVEL) {
+				levelUp();  // Рекурсивное повышение
+			}
 		}
 	}
 	
@@ -169,37 +199,14 @@ public class VillagerProfessionComponent {
 	public void incrementSoldCount(String itemId, int amount) {
 		soldItemsTracker.put(itemId, getTimesSold(itemId) + amount);
 	}
-	
+
 	/**
 	 * Сбрасывает счётчик продаж предмета (при рестокe)
 	 */
 	public void resetSoldCount(String itemId) {
 		soldItemsTracker.remove(itemId);
 	}
-	
-	/**
-	 * Рассчитывает XP для предмета с учётом diminishing returns
-	 */
-	public float calculateXpForItem(String itemId, int amount) {
-		float totalXp = 0f;
-		int timesSold = getTimesSold(itemId);
-		
-		for (int i = 0; i < amount; i++) {
-			float xp = com.unnameduser.tradeoverhaul.common.config.VillagerXpConfig.calculateXpWithDiminishingReturns(1.0f, itemId, timesSold + i);
-			totalXp += xp;
-		}
-		
-		return totalXp;
-	}
-	
-	/**
-	 * Рассчитывает ожидаемый XP для предмета (без применения)
-	 * Используется для превью в GUI
-	 */
-	public float calculateExpectedXp(String itemId, int amount) {
-		return calculateXpForItem(itemId, amount);
-	}
-	
+
 	/**
 	 * Применяет опыт и обновляет трекинг предметов
 	 * @param itemId ID предмета
@@ -207,8 +214,15 @@ public class VillagerProfessionComponent {
 	 * @return true, если уровень повысился
 	 */
 	public boolean applyXpFromSale(String itemId, int amount) {
-		float xp = calculateXpForItem(itemId, amount);
+		// Рассчитываем XP: multiplier × amount
+		// multiplier уже содержит XP за 1 предмет (семена: 0.01, пшеница: 0.05, книги: 1.0)
+		float multiplier = com.unnameduser.tradeoverhaul.common.config.VillagerXpConfig.getXpMultiplier(itemId);
+		float xp = multiplier * amount;
+		
+		// Обновляем трекинг
 		incrementSoldCount(itemId, amount);
+		
+		// Добавляем XP
 		return addExperienceFloat(xp);
 	}
 	
@@ -224,6 +238,9 @@ public class VillagerProfessionComponent {
 		}
 		if (nbt.contains("TradesCompleted")) {
 			tradesCompleted = nbt.getInt("TradesCompleted");
+		}
+		if (nbt.contains("FractionalXpAccumulator")) {
+			fractionalXpAccumulator = nbt.getFloat("FractionalXpAccumulator");
 		}
 		
 		// Читаем трекинг проданных предметов
@@ -246,6 +263,7 @@ public class VillagerProfessionComponent {
 		nbt.putInt("ProfessionLevel", level);
 		nbt.putInt("ProfessionExperience", experience);
 		nbt.putInt("TradesCompleted", tradesCompleted);
+		nbt.putFloat("FractionalXpAccumulator", fractionalXpAccumulator);
 		
 		// Записываем трекинг проданных предметов
 		NbtList trackerList = new NbtList();

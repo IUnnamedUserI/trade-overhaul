@@ -54,9 +54,9 @@ public class TradeOverhaulClient implements ClientModInitializer {
 				if (client.player != null && client.player.currentScreenHandler instanceof VillagerTradeScreenHandler tradeHandler
 						&& tradeHandler.syncId == payload.syncId()) {
 					// Обновляем данные о профессии (с трекингом предметов)
-					tradeHandler.updateProfessionLevel(payload.level(), payload.experience(), payload.tradesCompleted(), payload.soldItemsTracker());
-					TradeOverhaulMod.LOGGER.debug("Received profession level sync: level={}, exp={}, soldItems={}", 
-						payload.level(), payload.experience(), payload.soldItemsTracker() != null ? payload.soldItemsTracker().getKeys().size() : 0);
+					tradeHandler.updateProfessionLevel(payload.level(), payload.experience(), payload.tradesCompleted(), payload.fractionalXp(), payload.soldItemsTracker());
+					TradeOverhaulMod.LOGGER.debug("Received profession level sync: level={}, exp={}, fractionalXp={}", 
+						payload.level(), payload.experience(), payload.fractionalXp());
 				}
 			});
 		});

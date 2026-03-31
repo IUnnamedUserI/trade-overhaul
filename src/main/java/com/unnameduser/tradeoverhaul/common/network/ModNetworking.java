@@ -42,15 +42,8 @@ public class ModNetworking {
 	/**
 	 * Отправляет клиенту синхронизацию уровня профессии жителя.
 	 */
-	public static void sendProfessionLevelSync(net.minecraft.server.network.ServerPlayerEntity player, int syncId, int level, int experience, int tradesCompleted) {
-		sendProfessionLevelSync(player, syncId, level, experience, tradesCompleted, null);
-	}
-	
-	/**
-	 * Отправляет клиенту синхронизацию уровня профессии жителя с трекингом предметов.
-	 */
-	public static void sendProfessionLevelSync(net.minecraft.server.network.ServerPlayerEntity player, int syncId, int level, int experience, int tradesCompleted, net.minecraft.nbt.NbtCompound soldItemsTracker) {
-		ProfessionLevelSyncPayload payload = new ProfessionLevelSyncPayload(syncId, level, experience, tradesCompleted, soldItemsTracker);
+	public static void sendProfessionLevelSync(net.minecraft.server.network.ServerPlayerEntity player, int syncId, int level, int experience, int tradesCompleted, float fractionalXp, net.minecraft.nbt.NbtCompound soldItemsTracker) {
+		ProfessionLevelSyncPayload payload = new ProfessionLevelSyncPayload(syncId, level, experience, tradesCompleted, fractionalXp, soldItemsTracker);
 		var buf = net.fabricmc.fabric.api.networking.v1.PacketByteBufs.create();
 		payload.write(buf);
 		ServerPlayNetworking.send(player, ProfessionLevelSyncPayload.ID, buf);

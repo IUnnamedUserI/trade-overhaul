@@ -6,7 +6,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 
 /** S2C синхронизация уровня профессии жителя */
-public record ProfessionLevelSyncPayload(int syncId, int level, int experience, int tradesCompleted, NbtCompound soldItemsTracker) {
+public record ProfessionLevelSyncPayload(int syncId, int level, int experience, int tradesCompleted, float fractionalXp, NbtCompound soldItemsTracker) {
 	public static final Identifier ID = new Identifier(TradeOverhaulMod.MOD_ID, "profession_level_sync");
 
 	public void write(PacketByteBuf buf) {
@@ -14,6 +14,7 @@ public record ProfessionLevelSyncPayload(int syncId, int level, int experience, 
 		buf.writeVarInt(level);
 		buf.writeVarInt(experience);
 		buf.writeVarInt(tradesCompleted);
+		buf.writeFloat(fractionalXp);
 		buf.writeNbt(soldItemsTracker);
 	}
 
@@ -23,6 +24,7 @@ public record ProfessionLevelSyncPayload(int syncId, int level, int experience, 
 			buf.readVarInt(),
 			buf.readVarInt(),
 			buf.readVarInt(),
+			buf.readFloat(),
 			buf.readNbt()
 		);
 	}

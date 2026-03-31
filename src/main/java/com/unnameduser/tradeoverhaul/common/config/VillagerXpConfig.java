@@ -41,22 +41,14 @@ public class VillagerXpConfig {
 	}
 	
 	/**
-	 * Рассчитывает XP с учётом diminishing returns
+	 * Рассчитывает XP для предмета
 	 * @param baseXp Базовый XP (обычно 1)
 	 * @param itemId ID предмета
-	 * @param timesSold Сколько раз этот предмет уже продавали
+	 * @param timesSold Сколько раз этот предмет уже продавали (больше не используется)
 	 * @return Итоговый XP
 	 */
 	public static float calculateXpWithDiminishingReturns(float baseXp, String itemId, int timesSold) {
 		float multiplier = getXpMultiplier(itemId);
-		float xp = baseXp * multiplier;
-		
-		// Diminishing returns: каждый следующий предмет даёт на 50% меньше XP
-		// Формула: xp * (0.5 ^ timesSold)
-		for (int i = 0; i < timesSold; i++) {
-			xp *= 0.5f;
-		}
-		
-		return xp;
+		return baseXp * multiplier;
 	}
 }

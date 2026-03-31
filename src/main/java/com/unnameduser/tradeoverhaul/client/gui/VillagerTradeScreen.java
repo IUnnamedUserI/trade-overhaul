@@ -165,9 +165,13 @@ public class VillagerTradeScreen extends HandledScreen<VillagerTradeScreenHandle
 
 		// 1. Полоска прогресса (над заголовками, но с отступом)
 		int level = handler.getProfessionLevel();
-		float progress = handler.getProfessionLevelProgress();
 		int xpForNext = handler.getXpForNextLevel();
 		int experience = handler.getProfessionExperience();
+		float fractionalXp = handler.getClientFractionalXp();
+		
+		// Общий XP (целый + дробный)
+		float totalXp = experience + fractionalXp;
+		float progress = xpForNext > 0 ? Math.min(1.0f, totalXp / xpForNext) : 1.0f;
 
 		if (progress < 1.0f && xpForNext > 0) {
 			int barWidth = VillagerTradeScreenHandler.GRID_COLS * 19;
@@ -197,7 +201,7 @@ public class VillagerTradeScreen extends HandledScreen<VillagerTradeScreenHandle
 
 			// Показатель XP (над полосой) с ожидаемым XP
 			String expectedXpText = expectedXp > 0 ? String.format(" +%.2f", expectedXp) : "";
-			Text xpText = Text.literal(String.format("%.2f", (float)experience) + expectedXpText + " / " + xpForNext + " XP");
+			Text xpText = Text.literal(String.format("%.2f", totalXp) + expectedXpText + " / " + xpForNext + " XP");
 			context.drawText(this.textRenderer, xpText, barX, barY - 9, 0x808080, true);
 		} else if (level >= 5) {
 			// Максимальный уровень (над заголовками)

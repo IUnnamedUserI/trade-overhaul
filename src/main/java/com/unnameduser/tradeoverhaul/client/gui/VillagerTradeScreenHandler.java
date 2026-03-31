@@ -58,22 +58,24 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 	private int clientProfessionLevel = 1;
 	private int clientProfessionExperience = 0;
 	private int clientProfessionTradesCompleted = 0;
+	private float clientFractionalXp = 0f;
 	private java.util.Map<String, Integer> clientSoldItemsTracker = new java.util.HashMap<>();
+	
+	/**
+	 * Получает накопленный дробный XP (для GUI)
+	 */
+	public float getClientFractionalXp() {
+		return clientFractionalXp;
+	}
 	
 	/**
 	 * Обновляет данные о профессии (вызывается при получении сетевого пакета)
 	 */
-	public void updateProfessionLevel(int level, int experience, int tradesCompleted) {
-		updateProfessionLevel(level, experience, tradesCompleted, null);
-	}
-	
-	/**
-	 * Обновляет данные о профессии с трекингом предметов (вызывается при получении сетевого пакета)
-	 */
-	public void updateProfessionLevel(int level, int experience, int tradesCompleted, net.minecraft.nbt.NbtCompound soldItemsTracker) {
+	public void updateProfessionLevel(int level, int experience, int tradesCompleted, float fractionalXp, net.minecraft.nbt.NbtCompound soldItemsTracker) {
 		this.clientProfessionLevel = level;
 		this.clientProfessionExperience = experience;
 		this.clientProfessionTradesCompleted = tradesCompleted;
+		this.clientFractionalXp = fractionalXp;
 		
 		if (soldItemsTracker != null) {
 			this.clientSoldItemsTracker.clear();
@@ -100,6 +102,7 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 		this.clientProfessionLevel = buf.readVarInt();
 		this.clientProfessionExperience = buf.readVarInt();
 		this.clientProfessionTradesCompleted = buf.readVarInt();
+		this.clientFractionalXp = buf.readFloat();
 		net.minecraft.nbt.NbtCompound soldItemsTrackerNbt = buf.readNbt();
 		if (soldItemsTrackerNbt != null) {
 			this.clientSoldItemsTracker.clear();
@@ -143,6 +146,7 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 			this.clientProfessionLevel = data.tradeOverhaul$getProfession().getLevel();
 			this.clientProfessionExperience = data.tradeOverhaul$getProfession().getExperience();
 			this.clientProfessionTradesCompleted = data.tradeOverhaul$getProfession().getTradesCompleted();
+			this.clientFractionalXp = data.tradeOverhaul$getProfession().getFractionalXpAccumulator();
 			
 			// Копируем трекинг предметов
 			this.clientSoldItemsTracker.clear();
@@ -280,20 +284,16 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 		int level = getProfessionLevel();
 		if (level >= 5) return 0;
 		// XP_REQUIRED = {0, 10, 30, 60, 100} для уровней 1-5
-		return switch (level) {
-			case 1 -> 10;
-			case 2 -> 30;
-			case 3 -> 60;
-			case 4 -> 100;
-			default -> 0;
-		};
+		// Для уровня 1 нужно 10 XP, для уровня 2 нужно 30 XP, и т.д.
+		int[] xpRequired = {0, 10, 30, 60, 100};
+		return xpRequired[level];
 	}
 	
 	/**
 	 * Рассчитывает ожидаемый XP за покупку предмета из слота жителя
 	 * @param screenSlot Индекс слота в GUI
 	 * @param amount Количество предметов для покупки
-	 * @return Ожидаемый XP (с учётом diminishing returns)
+	 * @return Ожидаемый XP (с учётом множителей предметов)
 	 */
 	public float getExpectedXpForBuy(int screenSlot, int amount) {
 		Slot sl = getSlot(screenSlot);
@@ -303,15 +303,15 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 		
 		String itemId = net.minecraft.registry.Registries.ITEM.getId(sl.getStack().getItem()).toString();
 		
-		// Получаем, сколько раз этот предмет уже продавался
-		int timesSold = clientSoldItemsTracker.getOrDefault(itemId, 0);
-		
-		// Рассчитываем XP с учётом diminishing returns
-		float totalXp = 0f;
-		for (int i = 0; i < amount; i++) {
-			float xp = com.unnameduser.tradeoverhaul.common.config.VillagerXpConfig.calculateXpWithDiminishingReturns(1.0f, itemId, timesSold + i);
-			totalXp += xp;
+		// Проверяем, не были ли предметы проданы игроком ранее
+		if (com.unnameduser.tradeoverhaul.common.util.ItemTagHelper.isPlayerSold(sl.getStack())) {
+			return 0f;  // XP не даётся за предметы, проданные игроком
 		}
+		
+		// Рассчитываем XP: multiplier × amount
+		// multiplier уже содержит XP за 1 предмет (семена: 0.01, пшеница: 0.05, книги: 1.0)
+		float multiplier = com.unnameduser.tradeoverhaul.common.config.VillagerXpConfig.getXpMultiplier(itemId);
+		float totalXp = multiplier * amount;
 		
 		return totalXp;
 	}
@@ -454,15 +454,24 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 		if (!player.getInventory().insertStack(copy)) return;
 
 		NumismaticHelper.removeMoney(player, totalCost);
+		
+		// Получаем itemId ДО уменьшения стака!
+		String itemId = net.minecraft.registry.Registries.ITEM.getId(villagerStack.getItem()).toString();
+		
+		// Проверяем тег PlayerSold ДО уменьшения стака
+		boolean wasPlayerSold = com.unnameduser.tradeoverhaul.common.util.ItemTagHelper.isPlayerSold(villagerStack);
+		
 		villagerStack.decrement(toBuy);
+		
 		// Добавляем монеты жителю через новый компонент
 		if (villager instanceof VillagerTradeData data) {
 			data.tradeOverhaul$getCurrency().addMoney(totalCost);
-			
+
 			// Добавляем опыт жителю за ПОКУПКУ у жителя (игрок покупает, житель продаёт)
-			// XP даётся за то, что житель избавился от предмета
-			String itemId = net.minecraft.registry.Registries.ITEM.getId(villagerStack.getItem()).toString();
-			boolean leveledUp = data.tradeOverhaul$getProfession().applyXpFromSale(itemId, toBuy);
+			// XP НЕ даётся, если предмет был продан игроком ранее
+			if (!wasPlayerSold) {
+				data.tradeOverhaul$getProfession().applyXpFromSale(itemId, toBuy);
+			}
 
 			// Отправляем синхронизацию уровня профессии клиенту (с трекингом предметов)
 			if (player instanceof net.minecraft.server.network.ServerPlayerEntity serverPlayer) {
@@ -475,6 +484,7 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 					data.tradeOverhaul$getProfession().getLevel(),
 					data.tradeOverhaul$getProfession().getExperience(),
 					data.tradeOverhaul$getProfession().getTradesCompleted(),
+					data.tradeOverhaul$getProfession().getFractionalXpAccumulator(),
 					soldItemsTracker
 				);
 			}
@@ -546,8 +556,6 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 			if (!currencyData2.tradeOverhaul$getCurrency().removeMoney(totalEarned)) {
 				return; // Недостаточно монет
 			}
-			// ПРИМЕЧАНИЕ: Опыт НЕ даётся при продаже предметов жителю
-			// Опыт даётся только когда игрок покупает у жителя (житель продаёт)
 		}
 		NumismaticHelper.addMoney(player, totalEarned);
 
@@ -556,6 +564,50 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 		if (player instanceof net.minecraft.server.network.ServerPlayerEntity serverPlayer) {
 			ModNetworking.sendInventorySync(serverPlayer, this.syncId, villagerInventory);
 		}
+	}
+	
+	/**
+	 * Вставляет предметы в инвентарь жителя, помечая их как проданные игроком
+	 */
+	private boolean insertItemCountIntoVillager(ItemStack template, int count) {
+		ItemStack remaining = template.copy();
+		remaining.setCount(count);
+
+		// Помечаем все предметы как проданные игроком
+		com.unnameduser.tradeoverhaul.common.util.ItemTagHelper.markAsPlayerSold(remaining);
+
+		// Определяем максимальный размер стака для этого предмета
+		int maxStackSize = getMaxStackSizeForItem(template);
+
+		// Сначала пытаемся добавить в существующие стакающиеся слоты (с тегом)
+		for (int i = 0; i < villagerInventory.size() && !remaining.isEmpty(); i++) {
+			ItemStack slotStack = villagerInventory.getStack(i);
+			if (ItemStack.areItemsEqual(slotStack, remaining) &&
+				slotStack.getCount() < maxStackSize &&
+				canStackItems(slotStack, remaining)) {
+				int space = maxStackSize - slotStack.getCount();
+				int put = Math.min(remaining.getCount(), space);
+				slotStack.increment(put);
+				remaining.decrement(put);
+			}
+		}
+
+		// Затем занимаем пустые слоты
+		while (!remaining.isEmpty()) {
+			boolean moved = false;
+			for (int i = 0; i < villagerInventory.size(); i++) {
+				ItemStack slotStack = villagerInventory.getStack(i);
+				if (slotStack.isEmpty()) {
+					int put = Math.min(remaining.getCount(), maxStackSize);
+					villagerInventory.setStack(i, remaining.copyWithCount(put));
+					remaining.decrement(put);
+					moved = true;
+					break;
+				}
+			}
+			if (!moved) return false;
+		}
+		return true;
 	}
 
 	private int maxInventorySpaceForStack(PlayerEntity player, ItemStack template, int want) {
@@ -589,44 +641,6 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 		return space;
 	}
 
-	private boolean insertItemCountIntoVillager(ItemStack template, int count) {
-		ItemStack remaining = template.copy();
-		remaining.setCount(count);
-		
-		// Определяем максимальный размер стака для этого предмета
-		int maxStackSize = getMaxStackSizeForItem(template);
-		
-		// Сначала пытаемся добавить в существующие стакающиеся слоты
-		for (int i = 0; i < villagerInventory.size() && !remaining.isEmpty(); i++) {
-			ItemStack slotStack = villagerInventory.getStack(i);
-			if (ItemStack.areItemsEqual(slotStack, remaining) && 
-				slotStack.getCount() < maxStackSize &&
-				canStackItems(slotStack, remaining)) {
-				int space = maxStackSize - slotStack.getCount();
-				int put = Math.min(remaining.getCount(), space);
-				slotStack.increment(put);
-				remaining.decrement(put);
-			}
-		}
-		
-		// Затем занимаем пустые слоты
-		while (!remaining.isEmpty()) {
-			boolean moved = false;
-			for (int i = 0; i < villagerInventory.size(); i++) {
-				ItemStack slotStack = villagerInventory.getStack(i);
-				if (slotStack.isEmpty()) {
-					int put = Math.min(remaining.getCount(), maxStackSize);
-					villagerInventory.setStack(i, remaining.copyWithCount(put));
-					remaining.decrement(put);
-					moved = true;
-					break;
-				}
-			}
-			if (!moved) return false;
-		}
-		return true;
-	}
-	
 	/**
 	 * Возвращает максимальный размер стака для предмета.
 	 * Инструменты, броня, оружие не стакаются (maxCount=1).
@@ -652,7 +666,7 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 	 */
 	private boolean canStackItems(ItemStack stack1, ItemStack stack2) {
 		if (!ItemStack.areItemsEqual(stack1, stack2)) return false;
-		
+
 		// Зачарованные предметы, переименованные предметы не стакаются
 		if (stack1.hasEnchantments() || stack2.hasEnchantments() ||
 			stack1.hasCustomName() || stack2.hasCustomName() ||
@@ -660,6 +674,13 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 			return false;
 		}
 		
+		// Предметы с тегом PlayerSold и без тега не стакаются
+		boolean tag1 = com.unnameduser.tradeoverhaul.common.util.ItemTagHelper.isPlayerSold(stack1);
+		boolean tag2 = com.unnameduser.tradeoverhaul.common.util.ItemTagHelper.isPlayerSold(stack2);
+		if (tag1 != tag2) {
+			return false;  // Один с тегом, другой без — не стакаются
+		}
+
 		return true;
 	}
 
