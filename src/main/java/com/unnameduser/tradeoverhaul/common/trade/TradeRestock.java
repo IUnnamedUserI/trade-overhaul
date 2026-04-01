@@ -86,50 +86,64 @@ public final class TradeRestock {
 			inv.setStack(i, ItemStack.EMPTY);
 		}
 
-		// Получаем уровень жителя
+		// Получаем уровень жителя из компонента профессии
 		int villagerLevel = data.tradeOverhaul$getProfession().getLevel();
 		
-		TradeOverhaulMod.LOGGER.info("Restock: villagerLevel={}, profession={}", villagerLevel, 
-			Registries.VILLAGER_PROFESSION.getId(villager.getVillagerData().getProfession()));
-		
+		// Отладка: проверяем уровень
+		TradeOverhaulMod.LOGGER.info("=== RESTOCK DEBUG ===");
+		TradeOverhaulMod.LOGGER.info("villagerLevel from component: {}", villagerLevel);
+		TradeOverhaulMod.LOGGER.info("villager vanilla level: {}", villager.getVillagerData().getLevel());
+		TradeOverhaulMod.LOGGER.info("profession: {}", Registries.VILLAGER_PROFESSION.getId(villager.getVillagerData().getProfession()));
+		TradeOverhaulMod.LOGGER.info("level1Pool size: {}", file.level1Pool != null ? file.level1Pool.size() : "null");
+		TradeOverhaulMod.LOGGER.info("level2Pool size: {}", file.level2Pool != null ? file.level2Pool.size() : "null");
+
 		List<PoolChoice> pool = new ArrayList<>();
-		
+
 		// Проверяем, есть ли в конфиге пулы по уровням
 		boolean hasLevelPools = (file.level1Pool != null && !file.level1Pool.isEmpty()) ||
 			(file.level2Pool != null && !file.level2Pool.isEmpty()) ||
 			(file.level3Pool != null && !file.level3Pool.isEmpty()) ||
 			(file.level4Pool != null && !file.level4Pool.isEmpty()) ||
 			(file.level5Pool != null && !file.level5Pool.isEmpty());
-		
+
 		if (hasLevelPools) {
 			// Используем новую систему с уровнями
-			TradeOverhaulMod.LOGGER.info("Restock: using level-based pools");
-			TradeOverhaulMod.LOGGER.info("Restock: level1Pool size={}", file.level1Pool != null ? file.level1Pool.size() : 0);
-			
+			TradeOverhaulMod.LOGGER.info("Using level-based pools for villager level {}", villagerLevel);
+
+			// Уровень 1: только level1Pool
+			// Уровень 2: level1Pool + level2Pool
+			// и т.д.
 			if (villagerLevel >= 1 && file.level1Pool != null) {
 				for (ProfessionTradeFile.LevelPoolEntry e : file.level1Pool) {
 					pool.add(new LevelChoice(e, 1));
 				}
+				TradeOverhaulMod.LOGGER.info("Added level1Pool: {} items", file.level1Pool.size());
+			} else if (villagerLevel >= 1 && file.level1Pool == null) {
+				TradeOverhaulMod.LOGGER.warn("villagerLevel >= 1 but level1Pool is null for profession {}", Registries.VILLAGER_PROFESSION.getId(villager.getVillagerData().getProfession()));
 			}
 			if (villagerLevel >= 2 && file.level2Pool != null) {
 				for (ProfessionTradeFile.LevelPoolEntry e : file.level2Pool) {
 					pool.add(new LevelChoice(e, 2));
 				}
+				TradeOverhaulMod.LOGGER.info("Added level2Pool: {} items", file.level2Pool.size());
 			}
 			if (villagerLevel >= 3 && file.level3Pool != null) {
 				for (ProfessionTradeFile.LevelPoolEntry e : file.level3Pool) {
 					pool.add(new LevelChoice(e, 3));
 				}
+				TradeOverhaulMod.LOGGER.info("Added level3Pool: {} items", file.level3Pool.size());
 			}
 			if (villagerLevel >= 4 && file.level4Pool != null) {
 				for (ProfessionTradeFile.LevelPoolEntry e : file.level4Pool) {
 					pool.add(new LevelChoice(e, 4));
 				}
+				TradeOverhaulMod.LOGGER.info("Added level4Pool: {} items", file.level4Pool.size());
 			}
 			if (villagerLevel >= 5 && file.level5Pool != null) {
 				for (ProfessionTradeFile.LevelPoolEntry e : file.level5Pool) {
 					pool.add(new LevelChoice(e, 5));
 				}
+				TradeOverhaulMod.LOGGER.info("Added level5Pool: {} items", file.level5Pool.size());
 			}
 		} else {
 			// Используем старую систему (обратная совместимость)
@@ -147,14 +161,15 @@ public final class TradeRestock {
 				pool.add(new GeneralChoice(g));
 			}
 		}
-		
+
 		// Добавляем зачарованные книги для библиотекаря (2 отдельных слота)
 		if (file.enchantments != null && !file.enchantments.isEmpty()) {
 			pool.add(new EnchantmentChoice(file.enchantments, villagerLevel));
 			pool.add(new EnchantmentChoice(file.enchantments, villagerLevel));
 		}
-		
+
 		TradeOverhaulMod.LOGGER.info("Restock: total pool size={}", pool.size());
+		TradeOverhaulMod.LOGGER.info("=== END RESTOCK DEBUG ===");
 		
 		if (pool.isEmpty()) {
 			TradeOverhaulMod.LOGGER.warn("Restock: pool is empty! No items will be stocked.");

@@ -178,7 +178,7 @@ public class VillagerProfessionComponent {
 			}
 		}
 	}
-	
+
 	/**
 	 * Получает количество совершённых сделок
 	 */
@@ -277,7 +277,7 @@ public class VillagerProfessionComponent {
 	}
 	
 	/**
-	 * Устанавливает уровень (для команд / командной строки)
+	 * Устанавливает уровень (для синхронизации с ванильным уровнем)
 	 */
 	public void setLevel(int level) {
 		this.level = Math.max(1, Math.min(MAX_LEVEL, level));

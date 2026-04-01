@@ -72,6 +72,9 @@ public class VillagerEntityMixin implements VillagerTradeData {
 	public VillagerProfessionComponent tradeOverhaul$getProfession() {
 		if (tradeOverhaul_profession == null) {
 			tradeOverhaul_profession = new VillagerProfessionComponent();
+			// Синхронизируем с ванильным уровнем при первой инициализации
+			VillagerEntity villager = (VillagerEntity) (Object) this;
+			tradeOverhaul_profession.setLevel(villager.getVillagerData().getLevel());
 		}
 		return tradeOverhaul_profession;
 	}
@@ -118,6 +121,18 @@ public class VillagerEntityMixin implements VillagerTradeData {
 	@Inject(method = "tick", at = @At("TAIL"))
 	private void tradeOverhaul$onTick(CallbackInfo ci) {
 		VillagerEntity villager = (VillagerEntity) (Object) this;
+		
+		// Синхронизируем уровень профессии с ванильным уровнем жителя ПЕРЕД рестокoм
+		// Это критически важно для правильной фильтрации товаров по уровням
+		VillagerProfessionComponent profession = this.tradeOverhaul$getProfession();
+		int vanillaLevel = villager.getVillagerData().getLevel();
+		int modLevel = profession.getLevel();
+		if (vanillaLevel != modLevel) {
+			// Используем ванильный уровень как приоритетный
+			profession.setLevel(vanillaLevel);
+		}
+		
+		// Теперь вызываем ресток с правильным уровнем
 		TradeRestock.tick(villager);
 
 		// Check if active trader is too far or disconnected
@@ -152,7 +167,9 @@ public class VillagerEntityMixin implements VillagerTradeData {
 			if (!villager.getWorld().isClient) {
 				tradeOverhaul_activeTrader = player;
 				// Инициализируем компонент валюты (создаётся при первом вызове getCurrency)
-				com.unnameduser.tradeoverhaul.TradeOverhaulMod.LOGGER.info("Opening trade screen for villager {}", villager.getUuid());
+				var profId = net.minecraft.registry.Registries.VILLAGER_PROFESSION.getId(profession);
+				com.unnameduser.tradeoverhaul.TradeOverhaulMod.LOGGER.info("Opening trade screen for villager {} (profession: {}, level: {})", 
+					villager.getUuid(), profId, villager.getVillagerData().getLevel());
 				player.openHandledScreen(new VillagerTradeScreenHandlerFactory(villager.getDisplayName(), villager));
 			}
 
@@ -208,6 +225,14 @@ public class VillagerEntityMixin implements VillagerTradeData {
 		if (nbt.contains("TradeOverhaulProfession")) {
 			tradeOverhaul$getProfession().readNbt(nbt.getCompound("TradeOverhaulProfession"));
 		}
+
+		// Синхронизируем уровень профессии с ванильным уровнем при загрузке
+		// Это нужно для корректной работы до первого tick()
+		if (tradeOverhaul_profession != null) {
+			int vanillaLevel = ((VillagerEntity)(Object)this).getVillagerData().getLevel();
+			tradeOverhaul_profession.setLevel(vanillaLevel);
+		}
+		
 		// Active trader is always null after load
 		tradeOverhaul_activeTrader = null;
 	}

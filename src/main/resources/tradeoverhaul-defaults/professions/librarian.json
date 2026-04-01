@@ -95,8 +95,7 @@
 	"level2Pool": [
 		{ "item": "minecraft:bookshelf", "buy": 400, "sell": 180, "buyQuantity": 2, "sellQuantity": 1, "minStock": 8, "maxStock": 24 },
 		{ "item": "minecraft:lantern", "buy": 600, "sell": 280, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
-		{ "item": "minecraft:glass", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 48 },
-		{ "item": "minecraft:written_book", "buy": 600, "sell": 250, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
+		{ "item": "minecraft:glass", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 48 }
 	],
 	
 	"level3Pool": [

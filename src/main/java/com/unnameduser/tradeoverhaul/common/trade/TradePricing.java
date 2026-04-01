@@ -32,6 +32,43 @@ public final class TradePricing {
 			}
 		}
 
+		// Level pools (проверяем все уровни)
+		if (profession.level1Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level1Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
+					return e.buyQuantity != null && e.buyQuantity > 0 ? e.buyQuantity : 1;
+				}
+			}
+		}
+		if (profession.level2Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level2Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
+					return e.buyQuantity != null && e.buyQuantity > 0 ? e.buyQuantity : 1;
+				}
+			}
+		}
+		if (profession.level3Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level3Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
+					return e.buyQuantity != null && e.buyQuantity > 0 ? e.buyQuantity : 1;
+				}
+			}
+		}
+		if (profession.level4Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level4Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
+					return e.buyQuantity != null && e.buyQuantity > 0 ? e.buyQuantity : 1;
+				}
+			}
+		}
+		if (profession.level5Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level5Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
+					return e.buyQuantity != null && e.buyQuantity > 0 ? e.buyQuantity : 1;
+				}
+			}
+		}
+
 		// Weapon pool
 		if (profession.weaponPool != null && !profession.weaponPool.isEmpty()) {
 			for (ProfessionTradeFile.WeaponPoolEntry w : profession.weaponPool) {
@@ -84,6 +121,43 @@ public final class TradePricing {
 			}
 		}
 
+		// Level pools (проверяем все уровни)
+		if (profession.level1Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level1Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
+					return e.sellQuantity != null && e.sellQuantity > 0 ? e.sellQuantity : 1;
+				}
+			}
+		}
+		if (profession.level2Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level2Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
+					return e.sellQuantity != null && e.sellQuantity > 0 ? e.sellQuantity : 1;
+				}
+			}
+		}
+		if (profession.level3Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level3Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
+					return e.sellQuantity != null && e.sellQuantity > 0 ? e.sellQuantity : 1;
+				}
+			}
+		}
+		if (profession.level4Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level4Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
+					return e.sellQuantity != null && e.sellQuantity > 0 ? e.sellQuantity : 1;
+				}
+			}
+		}
+		if (profession.level5Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level5Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
+					return e.sellQuantity != null && e.sellQuantity > 0 ? e.sellQuantity : 1;
+				}
+			}
+		}
+
 		// Weapon pool
 		if (profession.weaponPool != null && !profession.weaponPool.isEmpty()) {
 			for (ProfessionTradeFile.WeaponPoolEntry w : profession.weaponPool) {
@@ -125,34 +199,67 @@ public final class TradePricing {
 	 */
 	public static boolean canVillagerBuyItem(ItemStack stack, VillagerEntity villager, ProfessionTradeFile profession) {
 		if (stack.isEmpty() || profession == null) return false;
-		
+
 		// Зачарованные книги можно продавать библиотекарю
 		if (stack.getItem() == net.minecraft.item.Items.ENCHANTED_BOOK && profession.enchantments != null && !profession.enchantments.isEmpty()) {
 			return true;
 		}
-		
+
 		Identifier id = Registries.ITEM.getId(stack.getItem());
 
+		// Static pool
 		if (profession.staticPool != null && !profession.staticPool.isEmpty()) {
 			for (ProfessionTradeFile.StaticPoolEntry e : profession.staticPool) {
 				if (e.item != null && id.equals(Identifier.tryParse(e.item))) return true;
 			}
 		}
+
+		// Level pools (проверяем все уровни)
+		if (profession.level1Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level1Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) return true;
+			}
+		}
+		if (profession.level2Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level2Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) return true;
+			}
+		}
+		if (profession.level3Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level3Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) return true;
+			}
+		}
+		if (profession.level4Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level4Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) return true;
+			}
+		}
+		if (profession.level5Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level5Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) return true;
+			}
+		}
+
+		// Weapon pool
 		if (profession.weaponPool != null && !profession.weaponPool.isEmpty()) {
 			for (ProfessionTradeFile.WeaponPoolEntry w : profession.weaponPool) {
 				if (w.tag != null && stack.isIn(getTag(w.tag))) return true;
 			}
 		}
+		// Tool pool
 		if (profession.toolPool != null && !profession.toolPool.isEmpty()) {
 			for (ProfessionTradeFile.ToolPoolEntry t : profession.toolPool) {
 				if (t.tag != null && stack.isIn(getTag(t.tag))) return true;
 			}
 		}
+		// General pool
 		if (profession.generalPool != null && !profession.generalPool.isEmpty()) {
 			for (ProfessionTradeFile.GeneralPoolEntry g : profession.generalPool) {
 				if (g.tag != null && stack.isIn(getTag(g.tag))) return true;
 			}
 		}
+		// Buy pool
 		if (profession.buyPool != null && !profession.buyPool.isEmpty()) {
 			for (ProfessionTradeFile.BuyOnlyEntry b : profession.buyPool) {
 				if (b.tag != null && stack.isIn(getTag(b.tag))) return true;
@@ -166,7 +273,7 @@ public final class TradePricing {
 	 */
 	public static int getBuyPrice(ItemStack stack, ProfessionTradeFile profession) {
 		if (stack.isEmpty() || profession == null) return 0;
-		
+
 		// Обработка зачарованных книг
 		if (stack.getItem() == net.minecraft.item.Items.ENCHANTED_BOOK) {
 			if (profession.enchantments == null || profession.enchantments.isEmpty()) {
@@ -185,7 +292,44 @@ public final class TradePricing {
 				}
 			}
 		}
-		
+
+		// Level pools (проверяем все уровни)
+		if (profession.level1Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level1Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
+					return Math.max(1, e.buy != null ? e.buy : e.buyPrice != null ? e.buyPrice : 0);
+				}
+			}
+		}
+		if (profession.level2Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level2Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
+					return Math.max(1, e.buy != null ? e.buy : e.buyPrice != null ? e.buyPrice : 0);
+				}
+			}
+		}
+		if (profession.level3Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level3Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
+					return Math.max(1, e.buy != null ? e.buy : e.buyPrice != null ? e.buyPrice : 0);
+				}
+			}
+		}
+		if (profession.level4Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level4Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
+					return Math.max(1, e.buy != null ? e.buy : e.buyPrice != null ? e.buyPrice : 0);
+				}
+			}
+		}
+		if (profession.level5Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level5Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
+					return Math.max(1, e.buy != null ? e.buy : e.buyPrice != null ? e.buyPrice : 0);
+				}
+			}
+		}
+
 		// Проверяем toolPool для мотыг с фиксированной ценой
 		if (profession.toolPool != null && !profession.toolPool.isEmpty()) {
 			for (ProfessionTradeFile.ToolPoolEntry t : profession.toolPool) {
@@ -196,7 +340,7 @@ public final class TradePricing {
 				}
 			}
 		}
-		
+
 		return 0;
 	}
 	
@@ -259,6 +403,14 @@ public final class TradePricing {
 	public static int getSellPrice(ItemStack stack, ProfessionTradeFile profession) {
 		if (stack.isEmpty() || profession == null) return 0;
 		Identifier id = Registries.ITEM.getId(stack.getItem());
+		
+		// Отладка для бронника
+		if (profession.profession != null && profession.profession.equals("minecraft:armourer")) {
+			TradeOverhaulMod.LOGGER.info("getSellPrice called for armourer: item={}, level1Pool={}, level2Pool={}", 
+				id, 
+				profession.level1Pool != null ? profession.level1Pool.size() : "null",
+				profession.level2Pool != null ? profession.level2Pool.size() : "null");
+		}
 
 		// Зачарованные книги можно продавать (50% от цены покупки, минимум 2 серебряных = 200 медных)
 		if (stack.getItem() == net.minecraft.item.Items.ENCHANTED_BOOK && profession.enchantments != null) {
@@ -274,7 +426,45 @@ public final class TradePricing {
 				}
 			}
 		}
-		
+
+		// Level pools (проверяем все уровни)
+		if (profession.level1Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level1Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
+					TradeOverhaulMod.LOGGER.info("getSellPrice found in level1Pool: {} -> buy={}", id, e.buy);
+					return Math.max(1, e.buy != null ? e.buy : e.buyPrice != null ? e.buyPrice : 0);
+				}
+			}
+		}
+		if (profession.level2Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level2Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
+					return Math.max(1, e.buy != null ? e.buy : e.buyPrice != null ? e.buyPrice : 0);
+				}
+			}
+		}
+		if (profession.level3Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level3Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
+					return Math.max(1, e.buy != null ? e.buy : e.buyPrice != null ? e.buyPrice : 0);
+				}
+			}
+		}
+		if (profession.level4Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level4Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
+					return Math.max(1, e.buy != null ? e.buy : e.buyPrice != null ? e.buyPrice : 0);
+				}
+			}
+		}
+		if (profession.level5Pool != null) {
+			for (ProfessionTradeFile.LevelPoolEntry e : profession.level5Pool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
+					return Math.max(1, e.buy != null ? e.buy : e.buyPrice != null ? e.buyPrice : 0);
+				}
+			}
+		}
+
 		// Проверяем toolPool для мотыг с фиксированной ценой
 		if (profession.toolPool != null && !profession.toolPool.isEmpty()) {
 			for (ProfessionTradeFile.ToolPoolEntry t : profession.toolPool) {
@@ -285,7 +475,7 @@ public final class TradePricing {
 				}
 			}
 		}
-		
+
 		// Проверяем generalPool
 		if (profession.generalPool != null && !profession.generalPool.isEmpty()) {
 			for (ProfessionTradeFile.GeneralPoolEntry g : profession.generalPool) {
@@ -296,7 +486,7 @@ public final class TradePricing {
 				}
 			}
 		}
-		
+
 		// Проверяем buyPool
 		if (profession.buyPool != null && !profession.buyPool.isEmpty()) {
 			for (ProfessionTradeFile.BuyOnlyEntry b : profession.buyPool) {
@@ -307,7 +497,7 @@ public final class TradePricing {
 				}
 			}
 		}
-		
+
 		return 0;
 	}
 

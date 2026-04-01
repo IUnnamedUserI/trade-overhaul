@@ -50,6 +50,14 @@ public final class TradeConfigLoader {
 							if (file != null && file.profession != null) {
 								Identifier id = Identifier.tryParse(file.profession);
 								if (id != null) {
+									log.info("Loaded profession {}: staticPool={}, level1Pool={}, level2Pool={}, level3Pool={}, level4Pool={}, level5Pool={}", 
+										id, 
+										file.staticPool != null ? file.staticPool.size() : "null",
+										file.level1Pool != null ? file.level1Pool.size() : "null",
+										file.level2Pool != null ? file.level2Pool.size() : "null",
+										file.level3Pool != null ? file.level3Pool.size() : "null",
+										file.level4Pool != null ? file.level4Pool.size() : "null",
+										file.level5Pool != null ? file.level5Pool.size() : "null");
 									if (file.staticPool == null) file.staticPool = new ArrayList<>();
 									if (file.weaponPool == null) file.weaponPool = new ArrayList<>();
 									if (file.toolPool == null) file.toolPool = new ArrayList<>();

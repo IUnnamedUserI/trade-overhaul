@@ -471,6 +471,13 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 			// XP НЕ даётся, если предмет был продан игроком ранее
 			if (!wasPlayerSold) {
 				data.tradeOverhaul$getProfession().applyXpFromSale(itemId, toBuy);
+				
+				// Синхронизируем ванильный уровень с нашим компонентом
+				int modLevel = data.tradeOverhaul$getProfession().getLevel();
+				int vanillaLevel = villager.getVillagerData().getLevel();
+				if (modLevel > vanillaLevel) {
+					villager.setVillagerData(villager.getVillagerData().withLevel(modLevel));
+				}
 			}
 
 			// Отправляем синхронизацию уровня профессии клиенту (с трекингом предметов)

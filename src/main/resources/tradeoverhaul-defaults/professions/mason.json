@@ -1,72 +1,66 @@
 {
 	"profession": "minecraft:mason",
-	"offersCount": 12,
-	"staticPool": [
-		{ "item": "minecraft:clay", "buy": 100, "sell": 50, "buyQuantity": 10, "sellQuantity": 5, "minStock": 20, "maxStock": 60 },
-		{ "item": "minecraft:brick", "buy": 120, "sell": 60, "buyQuantity": 12, "sellQuantity": 6, "minStock": 24, "maxStock": 72 },
-		{ "item": "minecraft:stone", "buy": 200, "sell": 100, "buyQuantity": 20, "sellQuantity": 10, "minStock": 40, "maxStock": 120 },
-		{ "item": "minecraft:granite", "buy": 200, "sell": 100, "buyQuantity": 20, "sellQuantity": 10, "minStock": 40, "maxStock": 120 },
-		{ "item": "minecraft:diorite", "buy": 200, "sell": 100, "buyQuantity": 20, "sellQuantity": 10, "minStock": 40, "maxStock": 120 },
-		{ "item": "minecraft:andesite", "buy": 200, "sell": 100, "buyQuantity": 20, "sellQuantity": 10, "minStock": 40, "maxStock": 120 },
-		{ "item": "minecraft:terracotta", "buy": 200, "sell": 100, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 48 },
-		{ "item": "minecraft:stonecutter", "buy": 1000, "sell": 400, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
-		{ "item": "minecraft:bricks", "buy": 480, "sell": 200, "buyQuantity": 4, "sellQuantity": 2, "minStock": 8, "maxStock": 24 },
-		{ "item": "minecraft:quartz", "buy": 300, "sell": 120, "buyQuantity": 4, "sellQuantity": 2, "minStock": 8, "maxStock": 24 },
-		{ "item": "minecraft:nether_brick", "buy": 250, "sell": 100, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 48 },
-		{ "item": "minecraft:smooth_stone", "buy": 400, "sell": 180, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 48 },
-		{ "item": "minecraft:flower_pot", "buy": 150, "sell": 70, "buyQuantity": 4, "sellQuantity": 2, "minStock": 8, "maxStock": 24 },
-		{ "item": "minecraft:glazed_terracotta", "buy": 800, "sell": 350, "buyQuantity": 2, "sellQuantity": 1, "minStock": 4, "maxStock": 12 }
-	],
+	"offersCount": 10,
+	"staticPool": [],
 	"weaponPool": [],
 	"toolPool": [],
-	"generalPool": [
-		{
-			"tag": "minecraft:stone_bricks",
-			"minStock": 16,
-			"maxStock": 48,
-			"buyPrice": 200,
-			"sellPrice": 100,
-			"buyQuantity": 8,
-			"sellQuantity": 4
-		},
-		{
-			"tag": "minecraft:terracotta",
-			"minStock": 8,
-			"maxStock": 24,
-			"buyPrice": 200,
-			"sellPrice": 100,
-			"buyQuantity": 8,
-			"sellQuantity": 4
-		}
-	],
+	"generalPool": [],
 	"buyPool": [
 		{
-			"tag": "c:clay_blocks",
-			"buyPrice": 100,
-			"buyQuantity": 8,
-			"discountFactor": 50
-		},
-		{
 			"tag": "c:stones",
-			"buyPrice": 200,
-			"buyQuantity": 16,
-			"discountFactor": 60
+			"buyPrice": 20,
+			"buyQuantity": 24,
+			"discountFactor": 75
 		},
 		{
-			"tag": "c:gems/quartz",
-			"buyPrice": 300,
-			"buyQuantity": 4,
-			"discountFactor": 45
-		},
-		{
-			"tag": "c:sands",
-			"buyPrice": 80,
+			"tag": "c:clay_balls",
+			"buyPrice": 25,
 			"buyQuantity": 16,
-			"discountFactor": 65
+			"discountFactor": 70
 		}
 	],
-	"itemPriceMultipliers": {
-		"minecraft:quartz_block": 1.2,
-		"minecraft:nether_brick": 1.0
-	}
+	"itemPriceMultipliers": {},
+	
+	"levelMoneySettings": {
+		"level1StartMoney": 300,
+		"level2StartMoney": 500,
+		"level3StartMoney": 800,
+		"level4StartMoney": 1200,
+		"level5StartMoney": 2000,
+		"level1RestockMoney": 400,
+		"level2RestockMoney": 700,
+		"level3RestockMoney": 1100,
+		"level4RestockMoney": 1600,
+		"level5RestockMoney": 2500
+	},
+	
+	"level1Pool": [
+		{ "item": "minecraft:clay", "buy": 40, "sell": 20, "buyQuantity": 12, "sellQuantity": 6, "minStock": 48, "maxStock": 144 },
+		{ "item": "minecraft:brick", "buy": 60, "sell": 30, "buyQuantity": 10, "sellQuantity": 5, "minStock": 40, "maxStock": 120 },
+		{ "item": "minecraft:stone", "buy": 30, "sell": 15, "buyQuantity": 20, "sellQuantity": 10, "minStock": 80, "maxStock": 240 }
+	],
+	
+	"level2Pool": [
+		{ "item": "minecraft:bricks", "buy": 120, "sell": 60, "buyQuantity": 4, "sellQuantity": 2, "minStock": 16, "maxStock": 48 },
+		{ "item": "minecraft:stone_bricks", "buy": 100, "sell": 50, "buyQuantity": 6, "sellQuantity": 3, "minStock": 24, "maxStock": 72 },
+		{ "item": "minecraft:terracotta", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 32, "maxStock": 96 }
+	],
+	
+	"level3Pool": [
+		{ "item": "minecraft:smooth_stone", "buy": 150, "sell": 75, "buyQuantity": 4, "sellQuantity": 2, "minStock": 16, "maxStock": 48 },
+		{ "item": "minecraft:chiseled_stone_bricks", "buy": 200, "sell": 100, "buyQuantity": 4, "sellQuantity": 2, "minStock": 16, "maxStock": 48 },
+		{ "item": "minecraft:flower_pot", "buy": 100, "sell": 50, "buyQuantity": 4, "sellQuantity": 2, "minStock": 16, "maxStock": 48 }
+	],
+	
+	"level4Pool": [
+		{ "item": "minecraft:quartz_block", "buy": 300, "sell": 150, "buyQuantity": 2, "sellQuantity": 1, "minStock": 8, "maxStock": 24 },
+		{ "item": "minecraft:nether_bricks", "buy": 250, "sell": 125, "buyQuantity": 4, "sellQuantity": 2, "minStock": 16, "maxStock": 48 },
+		{ "item": "minecraft:prismarine_bricks", "buy": 350, "sell": 175, "buyQuantity": 2, "sellQuantity": 1, "minStock": 8, "maxStock": 24 }
+	],
+	
+	"level5Pool": [
+		{ "item": "minecraft:quartz_pillar", "buy": 500, "sell": 250, "buyQuantity": 2, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
+		{ "item": "minecraft:end_stone_bricks", "buy": 400, "sell": 200, "buyQuantity": 2, "sellQuantity": 1, "minStock": 8, "maxStock": 24 },
+		{ "item": "minecraft:respawn_anchor", "buy": 2000, "sell": 1000, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 2 }
+	]
 }

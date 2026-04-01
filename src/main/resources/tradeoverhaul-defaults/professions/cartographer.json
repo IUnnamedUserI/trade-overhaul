@@ -1,53 +1,65 @@
 {
 	"profession": "minecraft:cartographer",
 	"offersCount": 10,
-	"staticPool": [
-		{ "item": "minecraft:paper", "buy": 80, "sell": 40, "buyQuantity": 24, "sellQuantity": 12, "minStock": 48, "maxStock": 144 },
-		{ "item": "minecraft:compass", "buy": 800, "sell": 350, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
-		{ "item": "minecraft:clock", "buy": 800, "sell": 350, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
-		{ "item": "minecraft:map", "buy": 1200, "sell": 500, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
-		{ "item": "minecraft:filled_map", "buy": 1600, "sell": 700, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
-		{ "item": "minecraft:cartography_table", "buy": 700, "sell": 300, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
-		{ "item": "minecraft:banner", "buy": 400, "sell": 180, "buyQuantity": 2, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
-		{ "item": "minecraft:glass_pane", "buy": 60, "sell": 30, "buyQuantity": 12, "sellQuantity": 6, "minStock": 24, "maxStock": 72 },
-		{ "item": "minecraft:ender_eye", "buy": 1500, "sell": 600, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
-		{ "item": "minecraft:glob_banner_pattern", "buy": 2000, "sell": 800, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 },
-		{ "item": "minecraft:flower_banner_pattern", "buy": 1800, "sell": 700, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 }
-	],
+	"staticPool": [],
 	"weaponPool": [],
 	"toolPool": [],
-	"generalPool": [
-		{
-			"tag": "minecraft:banners",
-			"minStock": 4,
-			"maxStock": 12,
-			"buyPrice": 400,
-			"sellPrice": 180,
-			"buyQuantity": 2,
-			"sellQuantity": 1
-		}
-	],
+	"generalPool": [],
 	"buyPool": [
 		{
-			"tag": "c:paper",
-			"buyPrice": 80,
-			"buyQuantity": 24,
-			"discountFactor": 50
-		},
-		{
 			"tag": "c:dyes",
-			"buyPrice": 100,
+			"buyPrice": 50,
 			"buyQuantity": 12,
-			"discountFactor": 55
+			"discountFactor": 60
 		},
 		{
-			"tag": "c:strings",
-			"buyPrice": 160,
-			"buyQuantity": 8,
-			"discountFactor": 60
+			"tag": "c:paper",
+			"buyPrice": 30,
+			"buyQuantity": 16,
+			"discountFactor": 70
 		}
 	],
-	"itemPriceMultipliers": {
-		"minecraft:filled_map": 1.5
-	}
+	"itemPriceMultipliers": {},
+	
+	"levelMoneySettings": {
+		"level1StartMoney": 300,
+		"level2StartMoney": 500,
+		"level3StartMoney": 800,
+		"level4StartMoney": 1200,
+		"level5StartMoney": 2000,
+		"level1RestockMoney": 400,
+		"level2RestockMoney": 700,
+		"level3RestockMoney": 1100,
+		"level4RestockMoney": 1600,
+		"level5RestockMoney": 2500
+	},
+	
+	"level1Pool": [
+		{ "item": "minecraft:paper", "buy": 30, "sell": 15, "buyQuantity": 16, "sellQuantity": 8, "minStock": 64, "maxStock": 192 },
+		{ "item": "minecraft:map", "buy": 100, "sell": 50, "buyQuantity": 4, "sellQuantity": 2, "minStock": 16, "maxStock": 48 },
+		{ "item": "minecraft:compass", "buy": 600, "sell": 300, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 }
+	],
+	
+	"level2Pool": [
+		{ "item": "minecraft:filled_map", "buy": 200, "sell": 100, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
+		{ "item": "minecraft:item_frame", "buy": 150, "sell": 75, "buyQuantity": 2, "sellQuantity": 1, "minStock": 8, "maxStock": 24 },
+		{ "item": "minecraft:painting", "buy": 100, "sell": 50, "buyQuantity": 4, "sellQuantity": 2, "minStock": 16, "maxStock": 48 }
+	],
+	
+	"level3Pool": [
+		{ "item": "minecraft:banner", "buy": 300, "sell": 150, "buyQuantity": 2, "sellQuantity": 1, "minStock": 8, "maxStock": 24 },
+		{ "item": "minecraft:book", "buy": 120, "sell": 60, "buyQuantity": 6, "sellQuantity": 3, "minStock": 24, "maxStock": 72 },
+		{ "item": "minecraft:writable_book", "buy": 200, "sell": 100, "buyQuantity": 2, "sellQuantity": 1, "minStock": 8, "maxStock": 24 }
+	],
+	
+	"level4Pool": [
+		{ "item": "minecraft:clock", "buy": 800, "sell": 400, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 },
+		{ "item": "minecraft:spyglass", "buy": 1200, "sell": 600, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 2 },
+		{ "item": "minecraft:glow_item_frame", "buy": 300, "sell": 150, "buyQuantity": 2, "sellQuantity": 1, "minStock": 8, "maxStock": 24 }
+	],
+	
+	"level5Pool": [
+		{ "item": "minecraft:knowledge_book", "buy": 2000, "sell": 1000, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:written_book", "buy": 600, "sell": 300, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 }
+	]
 }
