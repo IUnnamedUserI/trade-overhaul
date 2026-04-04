@@ -35,31 +35,26 @@
 	},
 	
 	"level1Pool": [
-		{ "item": "minecraft:coal", "buy": 50, "sell": 25, "buyQuantity": 12, "sellQuantity": 6, "minStock": 48, "maxStock": 144 },
-		{ "item": "minecraft:iron_ingot", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 32, "maxStock": 96 },
-		{ "item": "minecraft:stick", "buy": 20, "sell": 10, "buyQuantity": 32, "sellQuantity": 16, "minStock": 128, "maxStock": 384 }
+		{ "item": "minecraft:coal", "buy": 12, "sell": 6, "buyQuantity": 12, "sellQuantity": 6, "minStock": 12, "maxStock": 36 },
+		{ "item": "minecraft:iron_sword", "buy": 800, "sell": 400, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:iron_axe", "buy": 1000, "sell": 500, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
 	],
 	
 	"level2Pool": [
-		{ "item": "minecraft:iron_sword", "buy": 400, "sell": 200, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
-		{ "item": "minecraft:iron_axe", "buy": 350, "sell": 175, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
-		{ "item": "minecraft:arrow", "buy": 60, "sell": 30, "buyQuantity": 16, "sellQuantity": 8, "minStock": 64, "maxStock": 192 }
+		{ "item": "minecraft:iron_ingot", "buy": 200, "sell": 110, "buyQuantity": 8, "sellQuantity": 4, "minStock": 4, "maxStock": 12 },
+		{ "item": "minecraft:bell", "buy": 1800, "sell": 800, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
 	],
 	
 	"level3Pool": [
-		{ "item": "minecraft:bow", "buy": 600, "sell": 300, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
-		{ "item": "minecraft:crossbow", "buy": 800, "sell": 400, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 },
-		{ "item": "minecraft:spectral_arrow", "buy": 150, "sell": 75, "buyQuantity": 8, "sellQuantity": 4, "minStock": 32, "maxStock": 96 }
+		{ "item": "minecraft:flint", "buy": 25, "sell": 10, "buyQuantity": 1, "sellQuantity": 1, "minStock": 8, "maxStock": 32 }
 	],
 	
 	"level4Pool": [
-		{ "item": "minecraft:diamond_sword", "buy": 1500, "sell": 750, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 },
-		{ "item": "minecraft:diamond_axe", "buy": 1200, "sell": 600, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 },
-		{ "item": "minecraft:tipped_arrow", "buy": 200, "sell": 100, "buyQuantity": 8, "sellQuantity": 4, "minStock": 32, "maxStock": 96 }
+		{ "item": "minecraft:diamond_axe", "buy": 4000, "sell": 1800, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:diamond", "buy": 1200, "sell": 600, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
 	],
 	
 	"level5Pool": [
-		{ "item": "minecraft:netherite_sword", "buy": 5000, "sell": 2500, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:trident", "buy": 8000, "sell": 4000, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
+		{ "item": "minecraft:diamond_sword", "buy": 3600, "sell": 750, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
 	]
 }

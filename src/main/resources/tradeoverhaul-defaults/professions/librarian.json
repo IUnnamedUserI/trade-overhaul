@@ -86,34 +86,31 @@
 	},
 	
 	"level1Pool": [
-		{ "item": "minecraft:book", "buy": 120, "sell": 60, "buyQuantity": 12, "sellQuantity": 6, "minStock": 24, "maxStock": 72 },
-		{ "item": "minecraft:paper", "buy": 80, "sell": 40, "buyQuantity": 24, "sellQuantity": 12, "minStock": 48, "maxStock": 144 },
-		{ "item": "minecraft:ink_sac", "buy": 150, "sell": 70, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 48 },
-		{ "item": "minecraft:leather", "buy": 200, "sell": 100, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 48 }
+		{ "item": "minecraft:book", "buy": 120, "sell": 60, "buyQuantity": 12, "sellQuantity": 6, "minStock": 6, "maxStock": 32 },
+		{ "item": "minecraft:paper", "buy": 30, "sell": 15, "buyQuantity": 24, "sellQuantity": 12, "minStock": 12, "maxStock": 48 },
+		{ "item": "minecraft:ink_sac", "buy": 60, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 4, "maxStock": 12 }
 	],
 	
 	"level2Pool": [
-		{ "item": "minecraft:bookshelf", "buy": 400, "sell": 180, "buyQuantity": 2, "sellQuantity": 1, "minStock": 8, "maxStock": 24 },
+		{ "item": "minecraft:bookshelf", "buy": 400, "sell": 180, "buyQuantity": 2, "sellQuantity": 1, "minStock": 4, "maxStock": 8 },
 		{ "item": "minecraft:lantern", "buy": 600, "sell": 280, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
-		{ "item": "minecraft:glass", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 48 }
+		{ "item": "minecraft:glass", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 8, "maxStock": 24 }
 	],
 	
 	"level3Pool": [
-		{ "item": "minecraft:lectern", "buy": 800, "sell": 350, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:clock", "buy": 800, "sell": 350, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:experience_bottle", "buy": 300, "sell": 120, "buyQuantity": 3, "sellQuantity": 1, "minStock": 6, "maxStock": 18 },
-		{ "item": "minecraft:chiseled_bookshelf", "buy": 600, "sell": 250, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
+		{ "item": "minecraft:lectern", "buy": 600, "sell": 300, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:clock", "buy": 800, "sell": 350, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 },
+		{ "item": "minecraft:chiseled_bookshelf", "buy": 300, "sell": 150, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 8 },
+		{ "item": "minecraft:compass", "buy": 500, "sell": 250, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 }
 	],
 	
 	"level4Pool": [
-		{ "item": "minecraft:spyglass", "buy": 1200, "sell": 500, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:name_tag", "buy": 1000, "sell": 400, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:enchanting_table", "buy": 3000, "sell": 1200, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
+		{ "item": "minecraft:spyglass", "buy": 1200, "sell": 500, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 },
+		{ "item": "minecraft:name_tag", "buy": 300, "sell": 150, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 6 },
+		{ "item": "minecraft:writable_book", "buy": 500, "sell": 300, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 }
 	],
 	
 	"level5Pool": [
-		{ "item": "minecraft:nether_star", "buy": 10000, "sell": 5000, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:elytra", "buy": 15000, "sell": 8000, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:totem_of_undying", "buy": 8000, "sell": 4000, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
+		{ "item": "minecraft:enchanting_table", "buy": 20000, "sell": 1200, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
 	]
 }

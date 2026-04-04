@@ -35,31 +35,103 @@
 	},
 	
 	"level1Pool": [
-		{ "item": "minecraft:white_wool", "buy": 40, "sell": 20, "buyQuantity": 12, "sellQuantity": 6, "minStock": 48, "maxStock": 144 },
-		{ "item": "minecraft:shears", "buy": 200, "sell": 100, "buyQuantity": 2, "sellQuantity": 1, "minStock": 8, "maxStock": 24 },
-		{ "item": "minecraft:string", "buy": 50, "sell": 25, "buyQuantity": 12, "sellQuantity": 6, "minStock": 48, "maxStock": 144 }
+		{ "item": "minecraft:white_wool", "buy": 40, "sell": 20, "buyQuantity": 12, "sellQuantity": 6, "minStock": 16, "maxStock": 64 },
+		{ "item": "minecraft:brown_wool", "buy": 45, "sell": 25, "buyQuantity": 12, "sellQuantity": 6, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:black_wool", "buy": 45, "sell": 25, "buyQuantity": 12, "sellQuantity": 6, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:gray_wool", "buy": 45, "sell": 25, "buyQuantity": 12, "sellQuantity": 6, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:shears", "buy": 200, "sell": 100, "buyQuantity": 2, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:string", "buy": 30, "sell": 15, "buyQuantity": 12, "sellQuantity": 6, "minStock": 8, "maxStock": 32 }
 	],
 	
 	"level2Pool": [
-		{ "item": "minecraft:gray_wool", "buy": 50, "sell": 25, "buyQuantity": 10, "sellQuantity": 5, "minStock": 40, "maxStock": 120 },
-		{ "item": "minecraft:black_wool", "buy": 50, "sell": 25, "buyQuantity": 10, "sellQuantity": 5, "minStock": 40, "maxStock": 120 },
-		{ "item": "minecraft:painting", "buy": 100, "sell": 50, "buyQuantity": 4, "sellQuantity": 2, "minStock": 16, "maxStock": 48 }
+		{ "item": "minecraft:black_dye", "buy": 30, "sell": 10, "buyQuantity": 10, "sellQuantity": 5, "minStock": 4, "maxStock": 16 },
+		{ "item": "minecraft:lime_dye", "buy": 30, "sell": 10, "buyQuantity": 10, "sellQuantity": 5, "minStock": 4, "maxStock": 16 },
+		{ "item": "minecraft:gray_dye", "buy": 30, "sell": 10, "buyQuantity": 10, "sellQuantity": 5, "minStock": 4, "maxStock": 16 },
+		{ "item": "minecraft:light_blue_dye", "buy": 30, "sell": 10, "buyQuantity": 10, "sellQuantity": 5, "minStock": 4, "maxStock": 16 },
+		{ "item": "minecraft:white_dye", "buy": 30, "sell": 10, "buyQuantity": 10, "sellQuantity": 5, "minStock": 4, "maxStock": 16 },
+		{ "item": "minecraft:light_gray_wool", "buy": 45, "sell": 25, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:orange_wool", "buy": 45, "sell": 25, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:yellow_wool", "buy": 45, "sell": 25, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:lime_wool", "buy": 45, "sell": 25, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:green_wool", "buy": 45, "sell": 25, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:cyan_wool", "buy": 45, "sell": 25, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:blue_wool", "buy": 45, "sell": 25, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:light_blue_wool", "buy": 45, "sell": 25, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:purple_wool", "buy": 45, "sell": 25, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:magenta_wool", "buy": 45, "sell": 25, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:pink_wool", "buy": 45, "sell": 25, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:red_wool", "buy": 45, "sell": 25, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 32 },
+
+		{ "item": "minecraft:white_carpet", "buy": 15, "sell": 5, "buyQuantity": 12, "sellQuantity": 6, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:brown_carpet", "buy": 15, "sell": 5, "buyQuantity": 12, "sellQuantity": 6, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:black_carpet", "buy": 15, "sell": 5, "buyQuantity": 12, "sellQuantity": 6, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:gray_carpet", "buy": 15, "sell": 5, "buyQuantity": 12, "sellQuantity": 6, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:light_gray_carpet", "buy": 15, "sell": 5, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:orange_carpet", "buy": 15, "sell": 5, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:yellow_carpet", "buy": 15, "sell": 5, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:lime_carpet", "buy": 15, "sell": 5, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:green_carpet", "buy": 15, "sell": 5, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:cyan_carpet", "buy": 15, "sell": 5, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:blue_carpet", "buy": 15, "sell": 5, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:light_blue_carpet", "buy": 15, "sell": 5, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:purple_carpet", "buy": 15, "sell": 5, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:magenta_carpet", "buy": 15, "sell": 5, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:pink_carpet", "buy": 15, "sell": 5, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:red_carpet", "buy": 15, "sell": 5, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 32 }
 	],
 	
 	"level3Pool": [
-		{ "item": "minecraft:blue_wool", "buy": 60, "sell": 30, "buyQuantity": 8, "sellQuantity": 4, "minStock": 32, "maxStock": 96 },
-		{ "item": "minecraft:red_wool", "buy": 60, "sell": 30, "buyQuantity": 8, "sellQuantity": 4, "minStock": 32, "maxStock": 96 },
-		{ "item": "minecraft:bed", "buy": 300, "sell": 150, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 12 }
+		{ "item": "minecraft:red_dye", "buy": 30, "sell": 10, "buyQuantity": 10, "sellQuantity": 5, "minStock": 4, "maxStock": 16 },
+		{ "item": "minecraft:light_gray_dye", "buy": 30, "sell": 10, "buyQuantity": 10, "sellQuantity": 5, "minStock": 4, "maxStock": 16 },
+		{ "item": "minecraft:pink_dye", "buy": 30, "sell": 10, "buyQuantity": 10, "sellQuantity": 5, "minStock": 4, "maxStock": 16 },
+		{ "item": "minecraft:yellow_dye", "buy": 30, "sell": 10, "buyQuantity": 10, "sellQuantity": 5, "minStock": 4, "maxStock": 16 },
+		{ "item": "minecraft:orange_dye", "buy": 30, "sell": 10, "buyQuantity": 10, "sellQuantity": 5, "minStock": 4, "maxStock": 16 },
+		
+		{ "item": "minecraft:white_bed", "buy": 110, "sell": 50, "buyQuantity": 12, "sellQuantity": 6, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:brown_bed", "buy": 110, "sell": 50, "buyQuantity": 12, "sellQuantity": 6, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:black_bed", "buy": 110, "sell": 50, "buyQuantity": 12, "sellQuantity": 6, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:gray_bed", "buy": 110, "sell": 50, "buyQuantity": 12, "sellQuantity": 6, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:light_gray_bed", "buy": 110, "sell": 50, "buyQuantity": 10, "sellQuantity": 5, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:orange_bed", "buy": 110, "sell": 50, "buyQuantity": 10, "sellQuantity": 5, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:yellow_bed", "buy": 110, "sell": 50, "buyQuantity": 10, "sellQuantity": 5, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:lime_bed", "buy": 110, "sell": 50, "buyQuantity": 10, "sellQuantity": 5, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:green_bed", "buy": 110, "sell": 50, "buyQuantity": 10, "sellQuantity": 5, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:cyan_bed", "buy": 110, "sell": 50, "buyQuantity": 10, "sellQuantity": 5, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:blue_bed", "buy": 110, "sell": 50, "buyQuantity": 10, "sellQuantity": 5, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:light_blue_bed", "buy": 110, "sell": 50, "buyQuantity": 10, "sellQuantity": 5, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:purple_bed", "buy": 110, "sell": 50, "buyQuantity": 10, "sellQuantity": 5, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:magenta_bed", "buy": 110, "sell": 50, "buyQuantity": 10, "sellQuantity": 5, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:pink_bed", "buy": 110, "sell": 50, "buyQuantity": 10, "sellQuantity": 5, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:red_bed", "buy": 110, "sell": 50, "buyQuantity": 10, "sellQuantity": 5, "minStock": 1, "maxStock": 1 }
 	],
 	
 	"level4Pool": [
-		{ "item": "minecraft:banner", "buy": 300, "sell": 150, "buyQuantity": 2, "sellQuantity": 1, "minStock": 8, "maxStock": 24 },
-		{ "item": "minecraft:carpet", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 32, "maxStock": 96 },
-		{ "item": "minecraft:loom", "buy": 400, "sell": 200, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 }
+		{ "item": "minecraft:green_dye", "buy": 30, "sell": 10, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 16 },
+		{ "item": "minecraft:brown_dye", "buy": 30, "sell": 10, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 16 },
+		{ "item": "minecraft:blue_dye", "buy": 30, "sell": 10, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 16 },
+		{ "item": "minecraft:purple_dye", "buy": 30, "sell": 10, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 16 },
+		{ "item": "minecraft:cyan_dye", "buy": 30, "sell": 10, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 16 },
+		{ "item": "minecraft:magenta_dye", "buy": 30, "sell": 10, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 16 },
+
+		{ "item": "minecraft:white_banner", "buy": 200, "sell": 100, "buyQuantity": 12, "sellQuantity": 6, "minStock": 3, "maxStock": 8 },
+		{ "item": "minecraft:brown_banner", "buy": 200, "sell": 100, "buyQuantity": 12, "sellQuantity": 6, "minStock": 3, "maxStock": 8 },
+		{ "item": "minecraft:black_banner", "buy": 200, "sell": 100, "buyQuantity": 12, "sellQuantity": 6, "minStock": 3, "maxStock": 8 },
+		{ "item": "minecraft:gray_banner", "buy": 200, "sell": 100, "buyQuantity": 12, "sellQuantity": 6, "minStock": 3, "maxStock": 8 },
+		{ "item": "minecraft:light_gray_banner", "buy": 200, "sell": 100, "buyQuantity": 10, "sellQuantity": 5, "minStock": 3, "maxStock": 8 },
+		{ "item": "minecraft:orange_banner", "buy": 200, "sell": 100, "buyQuantity": 10, "sellQuantity": 5, "minStock": 3, "maxStock": 8 },
+		{ "item": "minecraft:yellow_banner", "buy": 200, "sell": 100, "buyQuantity": 10, "sellQuantity": 5, "minStock": 3, "maxStock": 8 },
+		{ "item": "minecraft:lime_banner", "buy": 200, "sell": 100, "buyQuantity": 10, "sellQuantity": 5, "minStock": 3, "maxStock": 8 },
+		{ "item": "minecraft:green_banner", "buy": 200, "sell": 100, "buyQuantity": 10, "sellQuantity": 5, "minStock": 3, "maxStock": 8 },
+		{ "item": "minecraft:cyan_banner", "buy": 200, "sell": 100, "buyQuantity": 10, "sellQuantity": 5, "minStock": 3, "maxStock": 8 },
+		{ "item": "minecraft:blue_banner", "buy": 200, "sell": 100, "buyQuantity": 10, "sellQuantity": 5, "minStock": 3, "maxStock": 8 },
+		{ "item": "minecraft:light_blue_banner", "buy": 200, "sell": 100, "buyQuantity": 10, "sellQuantity": 5, "minStock": 3, "maxStock": 8 },
+		{ "item": "minecraft:purple_banner", "buy": 200, "sell": 100, "buyQuantity": 10, "sellQuantity": 5, "minStock": 3, "maxStock": 8 },
+		{ "item": "minecraft:magenta_banner", "buy": 200, "sell": 100, "buyQuantity": 10, "sellQuantity": 5, "minStock": 3, "maxStock": 8 },
+		{ "item": "minecraft:pink_banner", "buy": 200, "sell": 100, "buyQuantity": 10, "sellQuantity": 5, "minStock": 3, "maxStock": 8 },
+		{ "item": "minecraft:red_banner", "buy": 200, "sell": 100, "buyQuantity": 10, "sellQuantity": 5, "minStock": 3, "maxStock": 8 }
 	],
 	
 	"level5Pool": [
-		{ "item": "minecraft:golden_wool", "buy": 500, "sell": 250, "buyQuantity": 2, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
-		{ "item": "minecraft:rainbow_wool", "buy": 800, "sell": 400, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 }
+		{ "item": "minecraft:painting", "buy": 200, "sell": 100, "buyQuantity": 2, "sellQuantity": 1, "minStock": 2, "maxStock": 4 }
 	]
 }

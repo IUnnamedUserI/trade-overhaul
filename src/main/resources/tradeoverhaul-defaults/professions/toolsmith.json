@@ -35,31 +35,33 @@
 	},
 	
 	"level1Pool": [
-		{ "item": "minecraft:coal", "buy": 50, "sell": 25, "buyQuantity": 12, "sellQuantity": 6, "minStock": 48, "maxStock": 144 },
-		{ "item": "minecraft:iron_ingot", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 32, "maxStock": 96 },
-		{ "item": "minecraft:stick", "buy": 20, "sell": 10, "buyQuantity": 32, "sellQuantity": 16, "minStock": 128, "maxStock": 384 }
+		{ "item": "minecraft:coal", "buy": 12, "sell": 6, "buyQuantity": 12, "sellQuantity": 6, "minStock": 12, "maxStock": 36 },
+		{ "item": "minecraft:stone_axe", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 1, "maxStock": 3 },
+		{ "item": "minecraft:stone_shovel", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 1, "maxStock": 3 },
+		{ "item": "minecraft:stone_pickaxe", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 1, "maxStock": 3 },
+		{ "item": "minecraft:stone_hoe", "buy": 90, "sell": 45, "buyQuantity": 8, "sellQuantity": 4, "minStock": 1, "maxStock": 3 }
 	],
 	
 	"level2Pool": [
-		{ "item": "minecraft:iron_pickaxe", "buy": 400, "sell": 200, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
-		{ "item": "minecraft:iron_shovel", "buy": 250, "sell": 125, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
-		{ "item": "minecraft:compass", "buy": 600, "sell": 300, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 }
+		{ "item": "minecraft:iron_ingot", "buy": 200, "sell": 100, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
+		{ "item": "minecraft:bell", "buy": 1800, "sell": 800, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
 	],
 	
 	"level3Pool": [
-		{ "item": "minecraft:iron_axe", "buy": 350, "sell": 175, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
-		{ "item": "minecraft:flint_and_steel", "buy": 300, "sell": 150, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
-		{ "item": "minecraft:bucket", "buy": 200, "sell": 100, "buyQuantity": 2, "sellQuantity": 1, "minStock": 8, "maxStock": 24 }
+		{ "item": "minecraft:flint", "buy": 25, "sell": 10, "buyQuantity": 1, "sellQuantity": 1, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:iron_axe", "buy": 1200, "sell": 600, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:iron_shovel", "buy": 800, "sell": 450, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:iron_pickaxe", "buy": 1200, "sell": 600, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:diamond_hoe", "buy": 1800, "sell": 900, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
 	],
 	
 	"level4Pool": [
-		{ "item": "minecraft:diamond_pickaxe", "buy": 1500, "sell": 750, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 },
-		{ "item": "minecraft:diamond_shovel", "buy": 1000, "sell": 500, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 },
-		{ "item": "minecraft:diamond_axe", "buy": 1200, "sell": 600, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 }
+		{ "item": "minecraft:diamond_shovel", "buy": 3800, "sell": 1900, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:diamond_axe", "buy": 4200, "sell": 2100, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:diamond", "buy": 1200, "sell": 600, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 }
 	],
 	
 	"level5Pool": [
-		{ "item": "minecraft:netherite_pickaxe", "buy": 5000, "sell": 2500, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:beacon", "buy": 10000, "sell": 5000, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
+		{ "item": "minecraft:diamond_pickaxe", "buy": 4500, "sell": 2250, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
 	]
 }
