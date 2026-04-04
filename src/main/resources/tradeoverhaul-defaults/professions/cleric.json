@@ -35,32 +35,35 @@
 	},
 	
 	"level1Pool": [
-		{ "item": "minecraft:rotten_flesh", "buy": 30, "sell": 15, "buyQuantity": 16, "sellQuantity": 8, "minStock": 64, "maxStock": 192 },
-		{ "item": "minecraft:gunpowder", "buy": 60, "sell": 30, "buyQuantity": 10, "sellQuantity": 5, "minStock": 40, "maxStock": 120 },
-		{ "item": "minecraft:redstone", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 32, "maxStock": 96 }
+		{ "item": "minecraft:rotten_flesh", "buy": 15, "sell": 10, "buyQuantity": 16, "sellQuantity": 8, "minStock": 6, "maxStock": 42 },
+		{ "item": "minecraft:gunpowder", "buy": 60, "sell": 30, "buyQuantity": 10, "sellQuantity": 5, "minStock": 3, "maxStock": 12 },
+		{ "item": "minecraft:redstone", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 4, "maxStock": 16 }
 	],
 	
 	"level2Pool": [
-		{ "item": "minecraft:glowstone_dust", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 32, "maxStock": 96 },
-		{ "item": "minecraft:spider_eye", "buy": 50, "sell": 25, "buyQuantity": 12, "sellQuantity": 6, "minStock": 48, "maxStock": 144 },
-		{ "item": "minecraft:fermented_spider_eye", "buy": 150, "sell": 75, "buyQuantity": 4, "sellQuantity": 2, "minStock": 16, "maxStock": 48 }
+		{ "item": "minecraft:glowstone_dust", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 4, "maxStock": 16 },
+		{ "item": "minecraft:spider_eye", "buy": 45, "sell": 25, "buyQuantity": 12, "sellQuantity": 6, "minStock": 4, "maxStock": 16 },
+		{ "item": "minecraft:fermented_spider_eye", "buy": 150, "sell": 75, "buyQuantity": 4, "sellQuantity": 2, "minStock": 2, "maxStock": 4 },
+		{ "item": "minecraft:gold_ingot", "buy": 325, "sell": 175, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 12},
+		{ "item": "minecraft:lapis_lazuli", "buy": 175, "sell": 75, "buyQuantity": 1, "sellQuantity": 1, "minStock": 6, "maxStock": 24}
 	],
 	
 	"level3Pool": [
-		{ "item": "minecraft:blaze_powder", "buy": 200, "sell": 100, "buyQuantity": 4, "sellQuantity": 2, "minStock": 16, "maxStock": 48 },
-		{ "item": "minecraft:magma_cream", "buy": 250, "sell": 125, "buyQuantity": 4, "sellQuantity": 2, "minStock": 16, "maxStock": 48 },
-		{ "item": "minecraft:glass_bottle", "buy": 40, "sell": 20, "buyQuantity": 16, "sellQuantity": 8, "minStock": 64, "maxStock": 192 }
+		{ "item": "minecraft:blaze_powder", "buy": 500, "sell": 200, "buyQuantity": 4, "sellQuantity": 2, "minStock": 2, "maxStock": 4 },
+		{ "item": "minecraft:magma_cream", "buy": 350, "sell": 125, "buyQuantity": 4, "sellQuantity": 2, "minStock": 2, "maxStock": 4 },
+		{ "item": "minecraft:glass_bottle", "buy": 10, "sell": 5, "buyQuantity": 16, "sellQuantity": 8, "minStock": 8, "maxStock": 48 },
+		{ "item": "minecraft:rabbit_foot", "buy": 700, "sell": 350, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 4}
 	],
 	
 	"level4Pool": [
-		{ "item": "minecraft:ender_pearl", "buy": 400, "sell": 200, "buyQuantity": 2, "sellQuantity": 1, "minStock": 8, "maxStock": 24 },
-		{ "item": "minecraft:experience_bottle", "buy": 300, "sell": 150, "buyQuantity": 3, "sellQuantity": 1, "minStock": 12, "maxStock": 36 },
-		{ "item": "minecraft:ghast_tear", "buy": 500, "sell": 250, "buyQuantity": 2, "sellQuantity": 1, "minStock": 4, "maxStock": 12 }
+		{ "item": "minecraft:ender_pearl", "buy": 1000, "sell": 400, "buyQuantity": 2, "sellQuantity": 1, "minStock": 2, "maxStock": 8 },
+		{ "item": "minecraft:experience_bottle", "buy": 300, "sell": 150, "buyQuantity": 3, "sellQuantity": 1, "minStock": 4, "maxStock": 8 },
+		{ "item": "minecraft:ghast_tear", "buy": 1200, "sell": 400, "buyQuantity": 2, "sellQuantity": 1, "minStock": 1, "maxStock": 3 },
+		{ "item": "minecraft:nether_wart", "buy": 300, "sell": 50, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 12}
 	],
 	
 	"level5Pool": [
-		{ "item": "minecraft:dragon_breath", "buy": 800, "sell": 400, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
-		{ "item": "minecraft:shulker_shell", "buy": 1000, "sell": 500, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
-		{ "item": "minecraft:totem_of_undying", "buy": 5000, "sell": 2500, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 2 }
+		{ "item": "minecraft:totem_of_undying", "buy": 5000, "sell": 2500, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 2 },
+		{ "item": "minecraft:scute", "buy": 400, "sell": 100, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 4}
 	]
 }

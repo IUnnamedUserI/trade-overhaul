@@ -35,32 +35,32 @@
 	},
 	
 	"level1Pool": [
-		{ "item": "minecraft:cod", "buy": 40, "sell": 20, "buyQuantity": 12, "sellQuantity": 6, "minStock": 48, "maxStock": 144 },
-		{ "item": "minecraft:salmon", "buy": 50, "sell": 25, "buyQuantity": 10, "sellQuantity": 5, "minStock": 40, "maxStock": 120 },
-		{ "item": "minecraft:string", "buy": 50, "sell": 25, "buyQuantity": 12, "sellQuantity": 6, "minStock": 48, "maxStock": 144 }
+		{ "item": "minecraft:cod", "buy": 40, "sell": 20, "buyQuantity": 12, "sellQuantity": 6, "minStock": 8, "maxStock": 24 },
+		{ "item": "minecraft:salmon", "buy": 50, "sell": 25, "buyQuantity": 10, "sellQuantity": 5, "minStock": 8, "maxStock": 24 },
+		{ "item": "minecraft:string", "buy": 40, "sell": 20, "buyQuantity": 12, "sellQuantity": 6, "minStock": 6, "maxStock": 16 },
+		{ "item": "minecraft:coal", "buy": 10, "sell": 5, "buyQuantity": 12, "sellQuantity": 6, "minStock": 12, "maxStock": 36 }
 	],
 	
 	"level2Pool": [
-		{ "item": "minecraft:cooked_cod", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 32, "maxStock": 96 },
-		{ "item": "minecraft:cooked_salmon", "buy": 100, "sell": 50, "buyQuantity": 6, "sellQuantity": 3, "minStock": 24, "maxStock": 72 },
-		{ "item": "minecraft:fishing_rod", "buy": 300, "sell": 150, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 }
+		{ "item": "minecraft:cooked_cod", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 6, "maxStock": 20 },
+		{ "item": "minecraft:cooked_salmon", "buy": 100, "sell": 50, "buyQuantity": 6, "sellQuantity": 3, "minStock": 6, "maxStock": 20 },
+		{ "item": "minecraft:fishing_rod", "buy": 300, "sell": 100, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
 	],
 	
 	"level3Pool": [
-		{ "item": "minecraft:tropical_fish", "buy": 70, "sell": 35, "buyQuantity": 8, "sellQuantity": 4, "minStock": 32, "maxStock": 96 },
-		{ "item": "minecraft:pufferfish", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 32, "maxStock": 96 },
-		{ "item": "minecraft:campfire", "buy": 200, "sell": 100, "buyQuantity": 2, "sellQuantity": 1, "minStock": 8, "maxStock": 24 }
+		{ "item": "minecraft:tropical_fish", "buy": 130, "sell": 80, "buyQuantity": 8, "sellQuantity": 4, "minStock": 4, "maxStock": 8 },
+		{ "item": "minecraft:pufferfish", "buy": 200, "sell": 100, "buyQuantity": 8, "sellQuantity": 4, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:campfire", "buy": 300, "sell": 100, "buyQuantity": 2, "sellQuantity": 1, "minStock": 2, "maxStock": 4 }
 	],
 	
 	"level4Pool": [
-		{ "item": "minecraft:barrel", "buy": 250, "sell": 125, "buyQuantity": 2, "sellQuantity": 1, "minStock": 8, "maxStock": 24 },
-		{ "item": "minecraft:water_bucket", "buy": 100, "sell": 50, "buyQuantity": 4, "sellQuantity": 2, "minStock": 16, "maxStock": 48 },
-		{ "item": "minecraft:boat", "buy": 300, "sell": 150, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 12 }
+		{ "item": "minecraft:barrel", "buy": 250, "sell": 125, "buyQuantity": 2, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
+		{ "item": "minecraft:boat", "buy": 150, "sell": 50, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:ink_sac", "buy": 50, "sell": 20, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 12}
 	],
 	
 	"level5Pool": [
-		{ "item": "minecraft:heart_of_the_sea", "buy": 5000, "sell": 2500, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 2 },
-		{ "item": "minecraft:conduit", "buy": 10000, "sell": 5000, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:nautilus_shell", "buy": 800, "sell": 400, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 }
+		{ "item": "minecraft:nautilus_shell", "buy": 800, "sell": 400, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:prismarine_crystals", "buy": 600, "sell": 300, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 }
 	]
 }

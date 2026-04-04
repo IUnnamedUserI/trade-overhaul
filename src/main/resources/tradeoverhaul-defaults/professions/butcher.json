@@ -35,31 +35,32 @@
 	},
 	
 	"level1Pool": [
-		{ "item": "minecraft:chicken", "buy": 40, "sell": 20, "buyQuantity": 12, "sellQuantity": 6, "minStock": 48, "maxStock": 144 },
-		{ "item": "minecraft:porkchop", "buy": 50, "sell": 25, "buyQuantity": 10, "sellQuantity": 5, "minStock": 40, "maxStock": 120 },
-		{ "item": "minecraft:beef", "buy": 60, "sell": 30, "buyQuantity": 8, "sellQuantity": 4, "minStock": 32, "maxStock": 96 }
+		{ "item": "minecraft:chicken", "buy": 45, "sell": 20, "buyQuantity": 1, "sellQuantity": 1, "minStock": 3, "maxStock": 14 },
+		{ "item": "minecraft:porkchop", "buy": 60, "sell": 25, "buyQuantity": 1, "sellQuantity": 1, "minStock": 3, "maxStock": 14 },
+		{ "item": "minecraft:beef", "buy": 65, "sell": 30, "buyQuantity": 1, "sellQuantity": 1, "minStock": 3, "maxStock": 14 }
 	],
 	
 	"level2Pool": [
-		{ "item": "minecraft:cooked_chicken", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 32, "maxStock": 96 },
-		{ "item": "minecraft:cooked_porkchop", "buy": 100, "sell": 50, "buyQuantity": 6, "sellQuantity": 3, "minStock": 24, "maxStock": 72 },
-		{ "item": "minecraft:cooked_beef", "buy": 120, "sell": 60, "buyQuantity": 6, "sellQuantity": 3, "minStock": 24, "maxStock": 72 }
+		{ "item": "minecraft:cooked_chicken", "buy": 65, "sell": 30, "buyQuantity": 1, "sellQuantity": 1, "minStock": 3, "maxStock": 14 },
+		{ "item": "minecraft:cooked_porkchop", "buy": 85, "sell": 40, "buyQuantity": 1, "sellQuantity": 1, "minStock": 3, "maxStock": 14 },
+		{ "item": "minecraft:cooked_beef", "buy": 90, "sell": 55, "buyQuantity": 1, "sellQuantity": 1, "minStock": 3, "maxStock": 14 }
 	],
 	
 	"level3Pool": [
-		{ "item": "minecraft:rabbit", "buy": 70, "sell": 35, "buyQuantity": 8, "sellQuantity": 4, "minStock": 32, "maxStock": 96 },
-		{ "item": "minecraft:cooked_rabbit", "buy": 140, "sell": 70, "buyQuantity": 6, "sellQuantity": 3, "minStock": 24, "maxStock": 72 },
-		{ "item": "minecraft:mutton", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 32, "maxStock": 96 }
+		{ "item": "minecraft:rabbit", "buy": 150, "sell": 80, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:cooked_rabbit", "buy": 170, "sell": 100, "buyQuantity": 1, "sellQuantity": 3, "minStock": 2, "maxStock": 6 },
+		{ "item": "minecraft:mutton", "buy": 45, "sell": 20, "buyQuantity": 1, "sellQuantity": 1, "minStock": 3, "maxStock": 14 },
+		{ "item": "minecraft:cooked_mutton", "buy": 65, "sell": 30, "buyQuantity": 1, "sellQuantity": 1, "minStock": 3, "maxStock": 14 }
 	],
 	
 	"level4Pool": [
-		{ "item": "minecraft:cooked_mutton", "buy": 160, "sell": 80, "buyQuantity": 6, "sellQuantity": 3, "minStock": 24, "maxStock": 72 },
-		{ "item": "minecraft:rabbit_stew", "buy": 300, "sell": 150, "buyQuantity": 2, "sellQuantity": 1, "minStock": 8, "maxStock": 24 },
-		{ "item": "minecraft:cake", "buy": 250, "sell": 125, "buyQuantity": 2, "sellQuantity": 1, "minStock": 8, "maxStock": 24 }
+		{ "item": "minecraft:rabbit_stew", "buy": 270, "sell": 130, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 4 },
+		{ "item": "minecraft:cake", "buy": 320, "sell": 140, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 2 },
+		{ "item": "minecraft:pumpkin_pie", "buy": 220, "sell": 60, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3},
+		{ "item": "minecraft:mushroom_stew", "buy": 100, "sell": 30, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3}
 	],
 	
 	"level5Pool": [
-		{ "item": "minecraft:golden_carrot", "buy": 600, "sell": 300, "buyQuantity": 2, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
-		{ "item": "minecraft:suspicious_stew", "buy": 400, "sell": 200, "buyQuantity": 2, "sellQuantity": 1, "minStock": 4, "maxStock": 12 }
+		{ "item": "minecraft:suspicious_stew", "buy": 230, "sell": 100, "buyQuantity": 2, "sellQuantity": 1, "minStock": 1, "maxStock": 3 }
 	]
 }

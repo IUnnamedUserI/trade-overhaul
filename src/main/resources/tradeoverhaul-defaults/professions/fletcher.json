@@ -35,31 +35,29 @@
 	},
 	
 	"level1Pool": [
-		{ "item": "minecraft:stick", "buy": 20, "sell": 10, "buyQuantity": 32, "sellQuantity": 16, "minStock": 128, "maxStock": 384 },
-		{ "item": "minecraft:flint", "buy": 40, "sell": 20, "buyQuantity": 16, "sellQuantity": 8, "minStock": 64, "maxStock": 192 },
-		{ "item": "minecraft:feather", "buy": 50, "sell": 25, "buyQuantity": 12, "sellQuantity": 6, "minStock": 48, "maxStock": 144 }
+		{ "item": "minecraft:stick", "buy": 10, "sell": 5, "buyQuantity": 32, "sellQuantity": 16, "minStock": 16, "maxStock": 48 },
+		{ "item": "minecraft:flint", "buy": 30, "sell": 10, "buyQuantity": 16, "sellQuantity": 8, "minStock": 8, "maxStock": 24 },
+		{ "item": "minecraft:feather", "buy": 20, "sell": 10, "buyQuantity": 12, "sellQuantity": 6, "minStock": 8, "maxStock": 24 },
+		{ "item": "minecraft:string", "buy": 35, "sell": 25, "buyQuantity": 12, "sellQuantity": 6, "minStock": 8, "maxStock": 24 }
 	],
 	
 	"level2Pool": [
-		{ "item": "minecraft:arrow", "buy": 60, "sell": 30, "buyQuantity": 16, "sellQuantity": 8, "minStock": 64, "maxStock": 192 },
-		{ "item": "minecraft:bow", "buy": 600, "sell": 300, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
-		{ "item": "minecraft:crossbow", "buy": 800, "sell": 400, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 }
+		{ "item": "minecraft:arrow", "buy": 20, "sell": 7, "buyQuantity": 16, "sellQuantity": 8, "minStock": 16, "maxStock": 64 },
+		{ "item": "minecraft:bow", "buy": 300, "sell": 100, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:crossbow", "buy": 600, "sell": 300, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
 	],
 	
 	"level3Pool": [
-		{ "item": "minecraft:spectral_arrow", "buy": 150, "sell": 75, "buyQuantity": 8, "sellQuantity": 4, "minStock": 32, "maxStock": 96 },
-		{ "item": "minecraft:tipped_arrow", "buy": 200, "sell": 100, "buyQuantity": 8, "sellQuantity": 4, "minStock": 32, "maxStock": 96 },
-		{ "item": "minecraft:target", "buy": 500, "sell": 250, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 }
+		{ "item": "minecraft:spectral_arrow", "buy": 40, "sell": 15, "buyQuantity": 8, "sellQuantity": 4, "minStock": 8, "maxStock": 32 },
+		{ "item": "minecraft:target", "buy": 400, "sell": 200, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 }
 	],
 	
 	"level4Pool": [
-		{ "item": "minecraft:infinity_enchanted_book", "buy": 1800, "sell": 900, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 2 },
-		{ "item": "minecraft:power_enchanted_book", "buy": 1500, "sell": 750, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 2 },
-		{ "item": "minecraft:flame_enchanted_book", "buy": 1200, "sell": 600, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 2 }
+		{ "item": "minecraft:tripwire_hook", "buy": 100, "sell": 50, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 8 }
 	],
 	
 	"level5Pool": [
-		{ "item": "minecraft:trident", "buy": 8000, "sell": 4000, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:elytra", "buy": 15000, "sell": 7500, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
+		{ "item": "minecraft:bow", "buy": 300, "sell": 100, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
+		{ "item": "minecraft:crossbow", "buy": 600, "sell": 300, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
 	]
 }
