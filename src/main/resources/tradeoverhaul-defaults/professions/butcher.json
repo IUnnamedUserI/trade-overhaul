@@ -1,26 +1,18 @@
 {
 	"profession": "minecraft:butcher",
 	"offersCount": 10,
-	"staticPool": [],
-	"weaponPool": [],
-	"toolPool": [],
-	"generalPool": [],
 	"buyPool": [
 		{
 			"tag": "c:raw_meefs",
 			"buyPrice": 50,
-			"buyQuantity": 12,
 			"discountFactor": 70
 		},
 		{
 			"tag": "c:leathers",
 			"buyPrice": 80,
-			"buyQuantity": 8,
 			"discountFactor": 65
 		}
 	],
-	"itemPriceMultipliers": {},
-	
 	"levelMoneySettings": {
 		"level1StartMoney": 300,
 		"level2StartMoney": 500,
@@ -33,34 +25,134 @@
 		"level4RestockMoney": 1600,
 		"level5RestockMoney": 2500
 	},
-	
 	"level1Pool": [
-		{ "item": "minecraft:chicken", "buy": 45, "sell": 20, "buyQuantity": 1, "sellQuantity": 1, "minStock": 3, "maxStock": 14 },
-		{ "item": "minecraft:porkchop", "buy": 60, "sell": 25, "buyQuantity": 1, "sellQuantity": 1, "minStock": 3, "maxStock": 14 },
-		{ "item": "minecraft:beef", "buy": 65, "sell": 30, "buyQuantity": 1, "sellQuantity": 1, "minStock": 3, "maxStock": 14 }
+		{
+			"item": "minecraft:chicken",
+			"buy": 45,
+			"sell": 20,
+			"minStock": 3,
+			"maxStock": 14,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:porkchop",
+			"buy": 60,
+			"sell": 25,
+			"minStock": 3,
+			"maxStock": 14,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:beef",
+			"buy": 65,
+			"sell": 30,
+			"minStock": 3,
+			"maxStock": 14,
+			"xpMultiplier": 0.05
+		}
 	],
-	
 	"level2Pool": [
-		{ "item": "minecraft:cooked_chicken", "buy": 65, "sell": 30, "buyQuantity": 1, "sellQuantity": 1, "minStock": 3, "maxStock": 14 },
-		{ "item": "minecraft:cooked_porkchop", "buy": 85, "sell": 40, "buyQuantity": 1, "sellQuantity": 1, "minStock": 3, "maxStock": 14 },
-		{ "item": "minecraft:cooked_beef", "buy": 90, "sell": 55, "buyQuantity": 1, "sellQuantity": 1, "minStock": 3, "maxStock": 14 }
+		{
+			"item": "minecraft:cooked_chicken",
+			"buy": 65,
+			"sell": 30,
+			"minStock": 3,
+			"maxStock": 14,
+			"xpMultiplier": 0.2
+		},
+		{
+			"item": "minecraft:cooked_porkchop",
+			"buy": 85,
+			"sell": 40,
+			"minStock": 3,
+			"maxStock": 14,
+			"xpMultiplier": 0.2
+		},
+		{
+			"item": "minecraft:cooked_beef",
+			"buy": 90,
+			"sell": 55,
+			"minStock": 3,
+			"maxStock": 14,
+			"xpMultiplier": 0.2
+		}
 	],
-	
 	"level3Pool": [
-		{ "item": "minecraft:rabbit", "buy": 150, "sell": 80, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
-		{ "item": "minecraft:cooked_rabbit", "buy": 170, "sell": 100, "buyQuantity": 1, "sellQuantity": 3, "minStock": 2, "maxStock": 6 },
-		{ "item": "minecraft:mutton", "buy": 45, "sell": 20, "buyQuantity": 1, "sellQuantity": 1, "minStock": 3, "maxStock": 14 },
-		{ "item": "minecraft:cooked_mutton", "buy": 65, "sell": 30, "buyQuantity": 1, "sellQuantity": 1, "minStock": 3, "maxStock": 14 }
+		{
+			"item": "minecraft:rabbit",
+			"buy": 150,
+			"sell": 80,
+			"minStock": 2,
+			"maxStock": 6,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:cooked_rabbit",
+			"buy": 170,
+			"sell": 100,
+			"minStock": 2,
+			"maxStock": 6,
+			"xpMultiplier": 0.2
+		},
+		{
+			"item": "minecraft:mutton",
+			"buy": 45,
+			"sell": 20,
+			"minStock": 3,
+			"maxStock": 14,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:cooked_mutton",
+			"buy": 65,
+			"sell": 30,
+			"minStock": 3,
+			"maxStock": 14,
+			"xpMultiplier": 0.2
+		}
 	],
-	
 	"level4Pool": [
-		{ "item": "minecraft:rabbit_stew", "buy": 270, "sell": 130, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 4 },
-		{ "item": "minecraft:cake", "buy": 320, "sell": 140, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 2 },
-		{ "item": "minecraft:pumpkin_pie", "buy": 220, "sell": 60, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3},
-		{ "item": "minecraft:mushroom_stew", "buy": 100, "sell": 30, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3}
+		{
+			"item": "minecraft:rabbit_stew",
+			"buy": 270,
+			"sell": 130,
+			"minStock": 1,
+			"maxStock": 4,
+			"xpMultiplier": 0.5
+		},
+		{
+			"item": "minecraft:cake",
+			"buy": 320,
+			"sell": 140,
+			"minStock": 1,
+			"maxStock": 2,
+			"xpMultiplier": 2.0
+		},
+		{
+			"item": "minecraft:pumpkin_pie",
+			"buy": 220,
+			"sell": 60,
+			"minStock": 1,
+			"maxStock": 3,
+			"xpMultiplier": 0.5
+		},
+		{
+			"item": "minecraft:mushroom_stew",
+			"buy": 100,
+			"sell": 30,
+			"minStock": 1,
+			"maxStock": 3,
+			"xpMultiplier": 0.5
+		}
 	],
-	
 	"level5Pool": [
-		{ "item": "minecraft:suspicious_stew", "buy": 230, "sell": 100, "buyQuantity": 2, "sellQuantity": 1, "minStock": 1, "maxStock": 3 }
+		{
+			"item": "minecraft:suspicious_stew",
+			"buy": 230,
+			"sell": 100,
+			"minStock": 1,
+			"maxStock": 3,
+			"xpMultiplier": 0.5
+		}
 	]
 }

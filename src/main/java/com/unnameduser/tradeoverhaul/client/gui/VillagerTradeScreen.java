@@ -258,13 +258,10 @@ public class VillagerTradeScreen extends HandledScreen<VillagerTradeScreenHandle
 			// Добавляем цену только для слотов инвентаря жителя и игрока (не для брони)
 			if (slotIndex >= VillagerTradeScreenHandler.FIRST_VILLAGER_SLOT_INDEX) {
 				// Покупка у жителя
-				int buyQty = handler.getClientBuyQuantityForSlot(slotIndex);
 				int price = handler.getClientBuyPrice(slotIndex);
 
-				if (buyQty > 0 && price > 0) {
-					// Цена за 1 предмет
-					int pricePerItem = price / buyQty;
-					if (pricePerItem <= 0) pricePerItem = 1;
+				if (price > 0) {
+					int pricePerItem = price;
 
 					int wantToBuy = 1;
 					if (shift) {
@@ -279,21 +276,50 @@ public class VillagerTradeScreen extends HandledScreen<VillagerTradeScreenHandle
 					int quantity = Math.min(wantToBuy, maxCanBuy);
 
 					// Проверяем место в инвентаре
-					int maxSpace = handler.clientHasInventorySpaceForStack(stack, wantToBuy) ? wantToBuy : 0;
+					boolean hasInventorySpace = handler.clientHasInventorySpaceForStack(stack, quantity);
+					int maxSpace = hasInventorySpace ? wantToBuy : 0;
 					if (maxSpace < quantity) quantity = maxSpace;
 
-					// Если у игрока нет денег, показываем цену за 1 предмет
-					if (quantity <= 0) {
-						quantity = 1;
+					// Проверяем, есть ли вообще место для хотя бы 1 предмета
+					boolean canFitAtLeastOne = handler.clientHasInventorySpaceForStack(stack, 1);
+
+					// Определяем, может ли игрок купить хотя бы 1 предмет
+					boolean canAffordOne = playerMoney >= pricePerItem;
+
+					int displayQuantity;
+					int totalCost;
+					boolean canAfford;
+					String quantityText;
+
+					// Если нет места даже для 1 предмета, показываем предупреждение
+					if (!canFitAtLeastOne) {
+						tooltip.add(Text.translatable("gui.tradeoverhaul.no_inventory_space").formatted(net.minecraft.util.Formatting.RED, net.minecraft.util.Formatting.ITALIC));
+						displayQuantity = 1;
+						quantityText = " (1)";
+						totalCost = pricePerItem;
+						canAfford = false;
+					} else if (quantity <= 0) {
+						// Игрок не может купить ни 1 предмета - показываем цену за 1
+						displayQuantity = 1;
+						quantityText = " (1)";
+						totalCost = pricePerItem;
+						canAfford = false;
+					} else {
+						displayQuantity = quantity;
+						quantityText = " (" + displayQuantity + ")";
+						totalCost = quantity * pricePerItem;
+						canAfford = canAffordOne;
 					}
 
-					String quantityText = " (" + quantity + ")";
+					net.minecraft.util.Formatting textColor = canAfford ? net.minecraft.util.Formatting.GREEN : net.minecraft.util.Formatting.RED;
 
-					int totalCost = quantity * pricePerItem;
-					boolean canAfford = playerMoney >= pricePerItem;
-					boolean hasInventorySpace = handler.clientHasInventorySpaceForStack(stack, quantity);
-
-					String colorCode = canAfford ? "§a" : "§c";
+					// Для повреждённых предметов показываем информацию о снижении цены
+					if (stack.isDamageable() && stack.getDamage() > 0) {
+						int maxDamage = stack.getMaxDamage();
+						int currentDamage = stack.getDamage();
+						int durabilityPercent = (int) Math.round(((double) (maxDamage - currentDamage) / maxDamage) * 100.0);
+						tooltip.add(Text.translatable("gui.tradeoverhaul.durability", durabilityPercent).formatted(net.minecraft.util.Formatting.GRAY));
+					}
 
 					// Для зачарованных книг добавляем информацию о зачаровании
 					if (stack.getItem() == net.minecraft.item.Items.ENCHANTED_BOOK) {
@@ -316,45 +342,58 @@ public class VillagerTradeScreen extends HandledScreen<VillagerTradeScreenHandle
 						}
 					}
 
-					tooltip.add(Text.literal(colorCode + "Купить" + quantityText + ": " + NumismaticHelper.formatMoney(totalCost)));
-
-					if (!hasInventorySpace && quantity > 0) {
-						tooltip.add(Text.literal("§c§oНет места в инвентаре"));
-					}
+					tooltip.add(Text.translatable("gui.tradeoverhaul.buy", quantityText, NumismaticHelper.formatMoney(totalCost)).formatted(textColor));
 				}
 			} else if (slotIndex >= VillagerTradeScreenHandler.FIRST_MAIN_GRID_SLOT_INDEX && slotIndex < VillagerTradeScreenHandler.FIRST_VILLAGER_SLOT_INDEX) {
 				// Продажа жителю (инвентарь игрока, не броня)
-				int sellQty = handler.getClientSellQuantity(stack);
 				int price = handler.getClientSellPrice(stack);
-				
-				if (sellQty > 0 && price > 0) {
-					// Цена за 1 предмет
-					int pricePerItem = price / sellQty;
-					if (pricePerItem <= 0) pricePerItem = 1;
-					
+
+				if (price > 0) {
+					int pricePerItem = price;
+
 					int wantToSell = 1;
 					if (shift) {
 						wantToSell = stack.getCount();
 					} else if (ctrl) {
 						wantToSell = Math.min(10, stack.getCount());
 					}
-					
+
 					// Проверяем, сколько может купить житель
 					int villagerMoney = handler.getSyncedWallet();
 					int maxCanBuy = villagerMoney / pricePerItem;
 					int quantity = Math.min(wantToSell, maxCanBuy);
-					
-					// Если у жителя нет денег, показываем цену за 1 предмет
+
+					// Определяем, может ли житель купить хотя бы 1 предмет
+					boolean canAffordOne = villagerMoney >= pricePerItem;
+
+					int displayQuantity;
+					int totalEarned;
+					boolean canAfford;
+					String quantityText;
+
 					if (quantity <= 0) {
-						quantity = 1;
+						// Житель не может купить ни 1 предмета - показываем цену за 1
+						displayQuantity = 1;
+						quantityText = " (1)";
+						totalEarned = pricePerItem;
+						canAfford = false;
+					} else {
+						displayQuantity = quantity;
+						quantityText = " (" + displayQuantity + ")";
+						totalEarned = quantity * pricePerItem;
+						canAfford = canAffordOne;
 					}
-					
-					String quantityText = " (" + quantity + ")";
-					
-					int totalEarned = quantity * pricePerItem;
-					boolean canAfford = villagerMoney >= pricePerItem;
-					String colorCode = canAfford ? "§a" : "§c";
-					
+
+					net.minecraft.util.Formatting textColor = canAfford ? net.minecraft.util.Formatting.GREEN : net.minecraft.util.Formatting.RED;
+
+					// Для повреждённых предметов показываем информацию о снижении цены
+					if (stack.isDamageable() && stack.getDamage() > 0) {
+						int maxDamage = stack.getMaxDamage();
+						int currentDamage = stack.getDamage();
+						int durabilityPercent = (int) Math.round(((double) (maxDamage - currentDamage) / maxDamage) * 100.0);
+						tooltip.add(Text.translatable("gui.tradeoverhaul.durability", durabilityPercent).formatted(net.minecraft.util.Formatting.GRAY));
+					}
+
 					// Для зачарованных книг добавляем информацию о зачаровании
 					if (stack.getItem() == net.minecraft.item.Items.ENCHANTED_BOOK) {
 						net.minecraft.nbt.NbtCompound nbt = stack.getNbt();
@@ -376,42 +415,59 @@ public class VillagerTradeScreen extends HandledScreen<VillagerTradeScreenHandle
 						}
 					}
 
-					tooltip.add(Text.literal(colorCode + "Продать" + quantityText + ": " + NumismaticHelper.formatMoney(totalEarned)));
+					tooltip.add(Text.translatable("gui.tradeoverhaul.sell", quantityText, NumismaticHelper.formatMoney(totalEarned)).formatted(textColor));
 				}
 			} else if (slotIndex >= VillagerTradeScreenHandler.FIRST_ARMOR_SLOT_INDEX && slotIndex < VillagerTradeScreenHandler.FIRST_MAIN_GRID_SLOT_INDEX) {
 				// Броня и вторая рука - тоже показываем цену продажи
-				int sellQty = handler.getClientSellQuantity(stack);
 				int price = handler.getClientSellPrice(stack);
-				
-				if (sellQty > 0 && price > 0) {
-					// Цена за 1 предмет
-					int pricePerItem = price / sellQty;
-					if (pricePerItem <= 0) pricePerItem = 1;
-					
+
+				if (price > 0) {
+					int pricePerItem = price;
+
 					int wantToSell = 1;
 					if (shift) {
 						wantToSell = stack.getCount();
 					} else if (ctrl) {
 						wantToSell = Math.min(10, stack.getCount());
 					}
-					
+
 					// Проверяем, сколько может купить житель
 					int villagerMoney = handler.getSyncedWallet();
 					int maxCanBuy = villagerMoney / pricePerItem;
 					int quantity = Math.min(wantToSell, maxCanBuy);
-					
-					// Если у жителя нет денег, показываем цену за 1 предмет
-					if (quantity <= 0) {
-						quantity = 1;
-					}
-					
-					String quantityText = " (" + quantity + ")";
-					
-					int totalEarned = quantity * pricePerItem;
-					boolean canAfford = villagerMoney >= pricePerItem;
-					String colorCode = canAfford ? "§a" : "§c";
 
-					tooltip.add(Text.literal(colorCode + "Продать" + quantityText + ": " + NumismaticHelper.formatMoney(totalEarned)));
+					// Определяем, может ли житель купить хотя бы 1 предмет
+					boolean canAffordOne = villagerMoney >= pricePerItem;
+
+					int displayQuantity;
+					int totalEarned;
+					boolean canAfford;
+					String quantityText;
+
+					if (quantity <= 0) {
+						// Житель не может купить ни 1 предмета - показываем цену за 1
+						displayQuantity = 1;
+						quantityText = " (1)";
+						totalEarned = pricePerItem;
+						canAfford = false;
+					} else {
+						displayQuantity = quantity;
+						quantityText = " (" + displayQuantity + ")";
+						totalEarned = quantity * pricePerItem;
+						canAfford = canAffordOne;
+					}
+
+					net.minecraft.util.Formatting textColor = canAfford ? net.minecraft.util.Formatting.GREEN : net.minecraft.util.Formatting.RED;
+
+					// Для повреждённых предметов показываем информацию о снижении цены
+					if (stack.isDamageable() && stack.getDamage() > 0) {
+						int maxDamage = stack.getMaxDamage();
+						int currentDamage = stack.getDamage();
+						int durabilityPercent = (int) Math.round(((double) (maxDamage - currentDamage) / maxDamage) * 100.0);
+						tooltip.add(Text.translatable("gui.tradeoverhaul.durability", durabilityPercent).formatted(net.minecraft.util.Formatting.GRAY));
+					}
+
+					tooltip.add(Text.translatable("gui.tradeoverhaul.sell", quantityText, NumismaticHelper.formatMoney(totalEarned)).formatted(textColor));
 				}
 			}
 
@@ -513,6 +569,15 @@ public class VillagerTradeScreen extends HandledScreen<VillagerTradeScreenHandle
 					return super.mouseClicked(mouseX, mouseY, button);
 				}
 
+				// Проверяем место в инвентаре при покупке
+				if (buying) {
+					ItemStack stack = slot.getStack();
+					if (!stack.isEmpty() && !handler.clientHasInventorySpaceForStack(stack, 1)) {
+						// Нет места даже для 1 предмета - блокируем покупку
+						return true;
+					}
+				}
+
 				// ПКМ = 1 предмет, Ctrl+ПКМ = 10 предметов, Shift+ПКМ = весь стак
 				boolean shiftPressed = net.minecraft.client.gui.screen.Screen.hasShiftDown();
 				boolean ctrlPressed = net.minecraft.client.gui.screen.Screen.hasControlDown();
@@ -563,13 +628,22 @@ public class VillagerTradeScreen extends HandledScreen<VillagerTradeScreenHandle
 				if (slot != null && slot.hasStack()) {
 					ItemStack stack = slot.getStack();
 					// Проверяем, может ли житель купить этот предмет
-					if (handler.canVillagerBuyItem(stack)) {
+					boolean canBuy = handler.canVillagerBuyItem(stack);
+					
+					// Отладка: логируем предметы из buyPool
+					if (stack.getItem() == net.minecraft.item.Items.WOODEN_SWORD || 
+						stack.getItem() == net.minecraft.item.Items.STONE_SWORD ||
+						stack.getItem() == net.minecraft.item.Items.GOLDEN_SWORD) {
+						TradeOverhaulMod.LOGGER.info("drawBuyableItemHighlights: item={}, canVillagerBuy={}", 
+							net.minecraft.registry.Registries.ITEM.getId(stack.getItem()), canBuy);
+					}
+					
+					if (canBuy) {
 						// Получаем цену продажи (сколько житель заплатит за 1 предмет)
-						int sellQty = handler.getClientSellQuantity(stack);
 						int sellPrice = handler.getClientSellPrice(stack);
-						
+
 						// Цена за 1 предмет
-						int pricePerItem = sellQty > 0 ? sellPrice / sellQty : 0;
+						int pricePerItem = sellPrice;
 						if (pricePerItem <= 0) pricePerItem = 1;
 						
 						// Определяем цвет рамки: хватает ли денег хотя бы на 1 предмет
@@ -596,11 +670,10 @@ public class VillagerTradeScreen extends HandledScreen<VillagerTradeScreenHandle
 				ItemStack stack = slot.getStack();
 				if (handler.canVillagerBuyItem(stack)) {
 					// Получаем цену продажи (сколько житель заплатит за 1 предмет)
-					int sellQty = handler.getClientSellQuantity(stack);
 					int sellPrice = handler.getClientSellPrice(stack);
 
 					// Цена за 1 предмет
-					int pricePerItem = sellQty > 0 ? sellPrice / sellQty : 0;
+					int pricePerItem = sellPrice;
 					if (pricePerItem <= 0) pricePerItem = 1;
 
 					// Определяем цвет рамки: хватает ли денег хотя бы на 1 предмет
@@ -623,53 +696,74 @@ public class VillagerTradeScreen extends HandledScreen<VillagerTradeScreenHandle
 	 * Получает ожидаемый XP для текущего наведения (используется в drawForeground)
 	 */
 	private float getExpectedXpForCurrentHover() {
-		// Проверяем, наведены ли на слот инвентаря жителя
+		// Проверяем, наведены ли на слот
 		if (this.focusedSlot == null || !this.focusedSlot.hasStack()) {
 			return 0f;
 		}
-		
+
 		int slotIndex = this.focusedSlot.id;
-		if (slotIndex < VillagerTradeScreenHandler.FIRST_VILLAGER_SLOT_INDEX) {
-			return 0f;
-		}
-		
 		ItemStack stack = this.focusedSlot.getStack();
 		boolean shift = net.minecraft.client.gui.screen.Screen.hasShiftDown();
 		boolean ctrl = net.minecraft.client.gui.screen.Screen.hasControlDown();
-		
-		// Получаем цену
-		int buyQty = handler.getClientBuyQuantityForSlot(slotIndex);
-		int price = handler.getClientBuyPrice(slotIndex);
-		if (buyQty <= 0 || price <= 0) {
-			return 0f;
+
+		// Покупка у жителя (инвентарь жителя)
+		if (slotIndex >= VillagerTradeScreenHandler.FIRST_VILLAGER_SLOT_INDEX) {
+			// Получаем цену
+			int price = handler.getClientBuyPrice(slotIndex);
+			if (price <= 0) {
+				return 0f;
+			}
+
+			int pricePerItem = price;
+
+			// Определяем количество
+			int wantToBuy = 1;
+			if (shift) {
+				wantToBuy = stack.getCount();
+			} else if (ctrl) {
+				wantToBuy = Math.min(10, stack.getCount());
+			}
+
+			// Проверяем деньги
+			int playerMoney = com.unnameduser.tradeoverhaul.common.numismatic.NumismaticHelper.getTotalMoney(this.client.player);
+			int maxCanBuy = playerMoney / pricePerItem;
+			int quantity = Math.min(wantToBuy, maxCanBuy);
+
+			// Проверяем место
+			int maxSpace = handler.clientHasInventorySpaceForStack(stack, wantToBuy) ? wantToBuy : 0;
+			if (maxSpace < quantity) quantity = maxSpace;
+
+			if (quantity <= 0) {
+				return 0f;
+			}
+
+			// Рассчитываем XP
+			float xp = handler.getExpectedXpForBuy(slotIndex, quantity);
+			return xp;
 		}
-		
-		int pricePerItem = price / buyQty;
-		if (pricePerItem <= 0) pricePerItem = 1;
-		
-		// Определяем количество
-		int wantToBuy = 1;
-		if (shift) {
-			wantToBuy = stack.getCount();
-		} else if (ctrl) {
-			wantToBuy = Math.min(10, stack.getCount());
+		// Продажа жителю (инвентарь игрока, включая броню)
+		else if (slotIndex >= VillagerTradeScreenHandler.FIRST_ARMOR_SLOT_INDEX && slotIndex < VillagerTradeScreenHandler.FIRST_VILLAGER_SLOT_INDEX) {
+			// Определяем количество
+			int wantToSell = 1;
+			if (shift) {
+				wantToSell = stack.getCount();
+			} else if (ctrl) {
+				wantToSell = Math.min(10, stack.getCount());
+			}
+
+			// Проверяем деньги жителя
+			int villagerMoney = handler.getSyncedWallet();
+			int price = handler.getClientSellPrice(stack);
+			if (price <= 0) return 0f;
+
+			int maxCanBuy = villagerMoney / price;
+			int quantity = Math.min(wantToSell, maxCanBuy);
+			if (quantity <= 0) quantity = 1;
+
+			float xp = handler.getExpectedXpForSell(stack, quantity);
+			return xp;
 		}
-		
-		// Проверяем деньги
-		int playerMoney = com.unnameduser.tradeoverhaul.common.numismatic.NumismaticHelper.getTotalMoney(this.client.player);
-		int maxCanBuy = playerMoney / pricePerItem;
-		int quantity = Math.min(wantToBuy, maxCanBuy);
-		
-		// Проверяем место
-		int maxSpace = handler.clientHasInventorySpaceForStack(stack, wantToBuy) ? wantToBuy : 0;
-		if (maxSpace < quantity) quantity = maxSpace;
-		
-		if (quantity <= 0) {
-			return 0f;
-		}
-		
-		// Рассчитываем XP
-		float xp = handler.getExpectedXpForBuy(slotIndex, quantity);
-		return xp;
+
+		return 0f;
 	}
 }

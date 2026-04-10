@@ -1,26 +1,29 @@
 {
 	"profession": "minecraft:fletcher",
 	"offersCount": 10,
-	"staticPool": [],
-	"weaponPool": [],
-	"toolPool": [],
-	"generalPool": [],
 	"buyPool": [
 		{
 			"tag": "c:feathers",
 			"buyPrice": 50,
-			"buyQuantity": 10,
 			"discountFactor": 60
 		},
 		{
 			"tag": "c:sticks",
 			"buyPrice": 20,
-			"buyQuantity": 24,
 			"discountFactor": 75
 		}
 	],
-	"itemPriceMultipliers": {},
-	
+	"bowEnchantments": [
+		{ "id": "minecraft:power", "max_level": 2 },
+		{ "id": "minecraft:punch", "max_level": 1 },
+		{ "id": "minecraft:unbreaking", "max_level": 2 }
+	],
+	"crossbowEnchantments": [
+		{ "id": "minecraft:multishot" },
+		{ "id": "minecraft:quick_charge", "max_level": 2 },
+		{ "id": "minecraft:piercing", "max_level": 2 },
+		{ "id": "minecraft:unbreaking", "max_level": 2 }
+	],
 	"levelMoneySettings": {
 		"level1StartMoney": 300,
 		"level2StartMoney": 500,
@@ -33,31 +36,130 @@
 		"level4RestockMoney": 1600,
 		"level5RestockMoney": 2500
 	},
-	
 	"level1Pool": [
-		{ "item": "minecraft:stick", "buy": 10, "sell": 5, "buyQuantity": 32, "sellQuantity": 16, "minStock": 16, "maxStock": 48 },
-		{ "item": "minecraft:flint", "buy": 30, "sell": 10, "buyQuantity": 16, "sellQuantity": 8, "minStock": 8, "maxStock": 24 },
-		{ "item": "minecraft:feather", "buy": 20, "sell": 10, "buyQuantity": 12, "sellQuantity": 6, "minStock": 8, "maxStock": 24 },
-		{ "item": "minecraft:string", "buy": 35, "sell": 25, "buyQuantity": 12, "sellQuantity": 6, "minStock": 8, "maxStock": 24 }
+		{
+			"item": "minecraft:stick",
+			"buy": 10,
+			"sell": 5,
+			"minStock": 16,
+			"maxStock": 48,
+			"xpMultiplier": 0.01
+		},
+		{
+			"item": "minecraft:flint",
+			"buy": 30,
+			"sell": 10,
+			"minStock": 8,
+			"maxStock": 24,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:feather",
+			"buy": 20,
+			"sell": 10,
+			"minStock": 8,
+			"maxStock": 24,
+			"xpMultiplier": 0.01
+		},
+		{
+			"item": "minecraft:string",
+			"buy": 35,
+			"sell": 25,
+			"minStock": 8,
+			"maxStock": 24,
+			"xpMultiplier": 0.05
+		}
 	],
-	
 	"level2Pool": [
-		{ "item": "minecraft:arrow", "buy": 20, "sell": 7, "buyQuantity": 16, "sellQuantity": 8, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:bow", "buy": 300, "sell": 100, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:crossbow", "buy": 600, "sell": 300, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
+		{
+			"item": "minecraft:arrow",
+			"buy": 20,
+			"sell": 7,
+			"minStock":48,
+			"maxStock": 192,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:bow",
+			"buy": 300,
+			"sell": 100,
+			"minStock": 1,
+			"maxStock": 1,
+			"enchant": true,
+			"enchantChance": 70,
+			"enchantMaxCount": 2,
+			"enchantMinLevel": 1,
+			"enchantMaxLevel": 2,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:crossbow",
+			"buy": 600,
+			"sell": 300,
+			"minStock": 1,
+			"maxStock": 1,
+			"enchant": true,
+			"enchantChance": 70,
+			"enchantMaxCount": 2,
+			"enchantMinLevel": 1,
+			"enchantMaxLevel": 2,
+			"xpMultiplier": 1.0
+		}
 	],
-	
 	"level3Pool": [
-		{ "item": "minecraft:spectral_arrow", "buy": 40, "sell": 15, "buyQuantity": 8, "sellQuantity": 4, "minStock": 8, "maxStock": 32 },
-		{ "item": "minecraft:target", "buy": 400, "sell": 200, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 }
+		{
+			"item": "minecraft:spectral_arrow",
+			"buy": 40,
+			"sell": 15,
+			"minStock": 8,
+			"maxStock": 32,
+			"xpMultiplier": 0.2
+		},
+		{
+			"item": "minecraft:target",
+			"buy": 400,
+			"sell": 200,
+			"minStock": 2,
+			"maxStock": 6,
+			"xpMultiplier": 0.5
+		}
 	],
-	
 	"level4Pool": [
-		{ "item": "minecraft:tripwire_hook", "buy": 100, "sell": 50, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 8 }
+		{
+			"item": "minecraft:tripwire_hook",
+			"buy": 100,
+			"sell": 50,
+			"minStock": 2,
+			"maxStock": 8,
+			"xpMultiplier": 0.2
+		}
 	],
-	
 	"level5Pool": [
-		{ "item": "minecraft:bow", "buy": 300, "sell": 100, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:crossbow", "buy": 600, "sell": 300, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
+		{
+			"item": "minecraft:bow",
+			"buy": 300,
+			"sell": 100,
+			"minStock": 1,
+			"maxStock": 1,
+			"enchant": true,
+			"enchantChance": 70,
+			"enchantMaxCount": 2,
+			"enchantMinLevel": 1,
+			"enchantMaxLevel": 2,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:crossbow",
+			"buy": 600,
+			"sell": 300,
+			"minStock": 1,
+			"maxStock": 1,
+			"enchant": true,
+			"enchantChance": 70,
+			"enchantMaxCount": 2,
+			"enchantMinLevel": 1,
+			"enchantMaxLevel": 2,
+			"xpMultiplier": 1.0
+		}
 	]
 }

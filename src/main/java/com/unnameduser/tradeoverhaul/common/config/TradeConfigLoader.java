@@ -37,6 +37,13 @@ public final class TradeConfigLoader {
 			copyDefaultIfMissing(root.resolve("professions/weaponsmith.json"), "tradeoverhaul-defaults/professions/weaponsmith.json");
 			copyDefaultIfMissing(root.resolve("professions/fletcher.json"), "tradeoverhaul-defaults/professions/fletcher.json");
 			copyDefaultIfMissing(root.resolve("professions/librarian.json"), "tradeoverhaul-defaults/professions/librarian.json");
+			copyDefaultIfMissing(root.resolve("professions/butcher.json"), "tradeoverhaul-defaults/professions/butcher.json");
+			copyDefaultIfMissing(root.resolve("professions/cartographer.json"), "tradeoverhaul-defaults/professions/cartographer.json");
+			copyDefaultIfMissing(root.resolve("professions/cleric.json"), "tradeoverhaul-defaults/professions/cleric.json");
+			copyDefaultIfMissing(root.resolve("professions/fisherman.json"), "tradeoverhaul-defaults/professions/fisherman.json");
+			copyDefaultIfMissing(root.resolve("professions/mason.json"), "tradeoverhaul-defaults/professions/mason.json");
+			copyDefaultIfMissing(root.resolve("professions/shepherd.json"), "tradeoverhaul-defaults/professions/shepherd.json");
+			copyDefaultIfMissing(root.resolve("professions/toolsmith.json"), "tradeoverhaul-defaults/professions/toolsmith.json");
 
 			settings = readSettings(root.resolve("settings.json"));
 
@@ -50,25 +57,29 @@ public final class TradeConfigLoader {
 							if (file != null && file.profession != null) {
 								Identifier id = Identifier.tryParse(file.profession);
 								if (id != null) {
-									log.info("Loaded profession {}: staticPool={}, level1Pool={}, level2Pool={}, level3Pool={}, level4Pool={}, level5Pool={}", 
+									log.info("Loaded profession {}: level1Pool={}, level2Pool={}, level3Pool={}, level4Pool={}, level5Pool={}, buyPool={}, playerSellPool={}", 
 										id, 
-										file.staticPool != null ? file.staticPool.size() : "null",
 										file.level1Pool != null ? file.level1Pool.size() : "null",
 										file.level2Pool != null ? file.level2Pool.size() : "null",
 										file.level3Pool != null ? file.level3Pool.size() : "null",
 										file.level4Pool != null ? file.level4Pool.size() : "null",
-										file.level5Pool != null ? file.level5Pool.size() : "null");
-									if (file.staticPool == null) file.staticPool = new ArrayList<>();
-									if (file.weaponPool == null) file.weaponPool = new ArrayList<>();
-									if (file.toolPool == null) file.toolPool = new ArrayList<>();
-									if (file.generalPool == null) file.generalPool = new ArrayList<>();
+										file.level5Pool != null ? file.level5Pool.size() : "null",
+										file.buyPool != null ? file.buyPool.size() : "null",
+										file.playerSellPool != null ? file.playerSellPool.size() : "null");
 									if (file.buyPool == null) file.buyPool = new ArrayList<>();
+									if (file.playerSellPool == null) file.playerSellPool = new ArrayList<>();
 									if (file.enchantments == null) file.enchantments = new ArrayList<>();
 									if (file.level1Pool == null) file.level1Pool = new ArrayList<>();
 									if (file.level2Pool == null) file.level2Pool = new ArrayList<>();
 									if (file.level3Pool == null) file.level3Pool = new ArrayList<>();
 									if (file.level4Pool == null) file.level4Pool = new ArrayList<>();
 									if (file.level5Pool == null) file.level5Pool = new ArrayList<>();
+									if (file.helmetEnchantments == null) file.helmetEnchantments = new ArrayList<>();
+									if (file.chestplateEnchantments == null) file.chestplateEnchantments = new ArrayList<>();
+									if (file.leggingsEnchantments == null) file.leggingsEnchantments = new ArrayList<>();
+									if (file.bootsEnchantments == null) file.bootsEnchantments = new ArrayList<>();
+									if (file.bowEnchantments == null) file.bowEnchantments = new ArrayList<>();
+									if (file.crossbowEnchantments == null) file.crossbowEnchantments = new ArrayList<>();
 									if (file.levelMoneySettings == null) file.levelMoneySettings = new ProfessionTradeFile.LevelMoneySettings();
 									sanitizeProfession(file, id, log);
 									map.put(id, file);
@@ -88,57 +99,6 @@ public final class TradeConfigLoader {
 	}
 
 	private static void sanitizeProfession(ProfessionTradeFile file, Identifier professionId, Logger log) {
-		Identifier emeraldId = new Identifier("minecraft", "emerald");
-		
-		// Sanitize static pool
-		file.staticPool.removeIf(e -> {
-			if (e.item == null) {
-				log.warn("Removing static entry without item in {}", professionId);
-				return true;
-			}
-			Identifier itemId = Identifier.tryParse(e.item);
-			if (itemId == null || !Registries.ITEM.containsId(itemId)) {
-				log.warn("Removing unknown item {} in {}", e.item, professionId);
-				return true;
-			}
-			if (itemId.equals(emeraldId)) {
-				log.warn("Removing emerald from villager sell list in {}", professionId);
-				return true;
-			}
-			if (e.sell >= e.buy) {
-				log.warn("Removing {} in {}: sell ({}) must be < buy ({})", e.item, professionId, e.sell, e.buy);
-				return true;
-			}
-			return false;
-		});
-		
-		// Sanitize weapon pool
-		file.weaponPool.removeIf(w -> {
-			if (w.tag == null) {
-				log.warn("Removing weapon entry without tag in {}", professionId);
-				return true;
-			}
-			return false;
-		});
-		
-		// Sanitize tool pool
-		file.toolPool.removeIf(t -> {
-			if (t.tag == null) {
-				log.warn("Removing tool entry without tag in {}", professionId);
-				return true;
-			}
-			return false;
-		});
-		
-		// Sanitize general pool
-		file.generalPool.removeIf(g -> {
-			if (g.tag == null) {
-				log.warn("Removing general entry without tag in {}", professionId);
-				return true;
-			}
-			return false;
-		});
-		
 		// Sanitize buy pool
 		file.buyPool.removeIf(b -> {
 			if (b.tag == null) {

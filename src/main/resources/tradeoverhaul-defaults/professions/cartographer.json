@@ -1,26 +1,18 @@
 {
 	"profession": "minecraft:cartographer",
 	"offersCount": 10,
-	"staticPool": [],
-	"weaponPool": [],
-	"toolPool": [],
-	"generalPool": [],
 	"buyPool": [
 		{
 			"tag": "c:dyes",
 			"buyPrice": 50,
-			"buyQuantity": 12,
 			"discountFactor": 60
 		},
 		{
 			"tag": "c:paper",
 			"buyPrice": 30,
-			"buyQuantity": 16,
 			"discountFactor": 70
 		}
 	],
-	"itemPriceMultipliers": {},
-	
 	"levelMoneySettings": {
 		"level1StartMoney": 300,
 		"level2StartMoney": 500,
@@ -33,32 +25,118 @@
 		"level4RestockMoney": 1600,
 		"level5RestockMoney": 2500
 	},
-	
 	"level1Pool": [
-		{ "item": "minecraft:paper", "buy": 20, "sell": 10, "buyQuantity": 16, "sellQuantity": 8, "minStock": 12, "maxStock": 36 },
-		{ "item": "minecraft:map", "buy": 800, "sell": 200, "buyQuantity": 4, "sellQuantity": 2, "minStock": 2, "maxStock": 8 },
-		{ "item": "minecraft:compass", "buy": 600, "sell": 300, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 }
+		{
+			"item": "minecraft:paper",
+			"buy": 20,
+			"sell": 10,
+			"minStock": 12,
+			"maxStock": 36,
+			"xpMultiplier": 0.1
+		},
+		{
+			"item": "minecraft:map",
+			"buy": 800,
+			"sell": 200,
+			"minStock": 2,
+			"maxStock": 8,
+			"xpMultiplier": 0.2
+		},
+		{
+			"item": "minecraft:compass",
+			"buy": 600,
+			"sell": 300,
+			"minStock": 1,
+			"maxStock": 3,
+			"xpMultiplier": 0.5
+		}
 	],
-	
 	"level2Pool": [
-		{ "item": "minecraft:filled_map", "buy": 200, "sell": 100, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
-		{ "item": "minecraft:glass_pane", "buy": 10, "sell": 5, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 16},
-		{ "item": "minecraft:item_frame", "buy": 150, "sell": 75, "buyQuantity": 2, "sellQuantity": 1, "minStock": 2, "maxStock": 8 },
-		{ "item": "minecraft:painting", "buy": 100, "sell": 50, "buyQuantity": 4, "sellQuantity": 2, "minStock": 2, "maxStock": 12 }
+		{
+			"item": "minecraft:filled_map",
+			"buy": 200,
+			"sell": 100,
+			"minStock": 4,
+			"maxStock": 12,
+			"xpMultiplier": 0.2
+		},
+		{
+			"item": "minecraft:glass_pane",
+			"buy": 10,
+			"sell": 5,
+			"minStock": 2,
+			"maxStock": 16,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:item_frame",
+			"buy": 150,
+			"sell": 75,
+			"minStock": 2,
+			"maxStock": 8,
+			"xpMultiplier": 0.2
+		},
+		{
+			"item": "minecraft:painting",
+			"buy": 100,
+			"sell": 50,
+			"minStock": 2,
+			"maxStock": 12,
+			"xpMultiplier": 0.2
+		}
 	],
-	
 	"level3Pool": [
-		{ "item": "minecraft:white_banner", "buy": 150, "sell": 70, "buyQuantity": 1, "sellQuantity": 1, "minStock": 3, "maxStock": 8 },
-		{ "item": "minecraft:book", "buy": 120, "sell": 60, "buyQuantity": 6, "sellQuantity": 3, "minStock": 4, "maxStock": 16 },
-		{ "item": "minecraft:writable_book", "buy": 200, "sell": 100, "buyQuantity": 2, "sellQuantity": 1, "minStock": 1, "maxStock": 3 }
+		{
+			"item": "minecraft:white_banner",
+			"buy": 150,
+			"sell": 70,
+			"minStock": 3,
+			"maxStock": 8,
+			"xpMultiplier": 0.2
+		},
+		{
+			"item": "minecraft:book",
+			"buy": 120,
+			"sell": 60,
+			"minStock": 4,
+			"maxStock": 16,
+			"xpMultiplier": 0.5
+		},
+		{
+			"item": "minecraft:writable_book",
+			"buy": 200,
+			"sell": 100,
+			"minStock": 1,
+			"maxStock": 3,
+			"xpMultiplier": 0.5
+		}
 	],
-	
 	"level4Pool": [
-		{ "item": "minecraft:clock", "buy": 800, "sell": 400, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 2 },
-		{ "item": "minecraft:spyglass", "buy": 1200, "sell": 600, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 2 }
+		{
+			"item": "minecraft:clock",
+			"buy": 800,
+			"sell": 400,
+			"minStock": 1,
+			"maxStock": 2,
+			"xpMultiplier": 0.5
+		},
+		{
+			"item": "minecraft:spyglass",
+			"buy": 1200,
+			"sell": 600,
+			"minStock": 1,
+			"maxStock": 2,
+			"xpMultiplier": 0.5
+		}
 	],
-	
 	"level5Pool": [
-		{ "item": "minecraft:globe_banner_pattern", "buy": 600, "sell": 200, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 4 }
+		{
+			"item": "minecraft:globe_banner_pattern",
+			"buy": 600,
+			"sell": 200,
+			"minStock": 1,
+			"maxStock": 4,
+			"xpMultiplier": 0.5
+		}
 	]
 }

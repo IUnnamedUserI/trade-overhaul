@@ -51,8 +51,6 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 	private final ProfessionTradeFile professionFile;
 	private final ClientTradeView clientView;
 	private final int[] clientWalletHolder = new int[1];
-	private final int[] clientBuyQuantities;
-	private final int[] clientSellQuantities;
 	
 	// Данные о профессии для клиента
 	private int clientProfessionLevel = 1;
@@ -60,6 +58,7 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 	private int clientProfessionTradesCompleted = 0;
 	private float clientFractionalXp = 0f;
 	private java.util.Map<String, Integer> clientSoldItemsTracker = new java.util.HashMap<>();
+	private java.util.Map<String, Float> clientDamageReputation = new java.util.HashMap<>();
 	
 	/**
 	 * Получает накопленный дробный XP (для GUI)
@@ -76,13 +75,21 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 		this.clientProfessionExperience = experience;
 		this.clientProfessionTradesCompleted = tradesCompleted;
 		this.clientFractionalXp = fractionalXp;
-		
+
 		if (soldItemsTracker != null) {
 			this.clientSoldItemsTracker.clear();
 			for (String key : soldItemsTracker.getKeys()) {
 				this.clientSoldItemsTracker.put(key, soldItemsTracker.getInt(key));
 			}
 		}
+	}
+
+	/**
+	 * Обновляет репутацию урона (вызывается при получении сетевого пакета)
+	 */
+	public void updateDamageReputation(java.util.Map<String, Float> damageReputation) {
+		this.clientDamageReputation.clear();
+		this.clientDamageReputation.putAll(damageReputation);
 	}
 
 	public VillagerTradeScreenHandler(int syncId, PlayerInventory playerInventory, PacketByteBuf buf) {
@@ -110,13 +117,20 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 				this.clientSoldItemsTracker.put(key, soldItemsTrackerNbt.getInt(key));
 			}
 		}
-		
+
+		// Читаем репутацию урона
+		net.minecraft.nbt.NbtCompound damageRepNbt = buf.readNbt();
+		if (damageRepNbt != null) {
+			this.clientDamageReputation.clear();
+			for (String key : damageRepNbt.getKeys()) {
+				this.clientDamageReputation.put(key, damageRepNbt.getFloat(key));
+			}
+		}
+
 		// Читаем кошелёк и инвентарь из TradeScreenSync
 		this.clientWalletHolder[0] = buf.readVarInt();
 		TradeScreenSync.SyncedInventory synced = TradeScreenSync.readInventory(buf);
 		this.villagerInventory = synced.inventory;
-		this.clientBuyQuantities = synced.buyQuantities;
-		this.clientSellQuantities = synced.sellQuantities;
 		this.clientView = ClientTradeView.read(buf);
 		buildSlots();
 		initPropertyDelegate();
@@ -155,9 +169,6 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 			this.villagerInventory = new VillagerInventoryComponent();
 			this.clientWalletHolder[0] = 0;
 		}
-		this.clientBuyQuantities = new int[36];
-		this.clientSellQuantities = new int[36];
-		updateClientQuantities();
 		buildSlots();
 		initPropertyDelegate();
 	}
@@ -300,41 +311,31 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 		if (sl == null || sl.inventory != villagerInventory || sl.getStack().isEmpty()) {
 			return 0f;
 		}
-		
+
 		String itemId = net.minecraft.registry.Registries.ITEM.getId(sl.getStack().getItem()).toString();
-		
+
 		// Проверяем, не были ли предметы проданы игроком ранее
 		if (com.unnameduser.tradeoverhaul.common.util.ItemTagHelper.isPlayerSold(sl.getStack())) {
 			return 0f;  // XP не даётся за предметы, проданные игроком
 		}
-		
+
 		// Рассчитываем XP: multiplier × amount
-		// multiplier уже содержит XP за 1 предмет (семена: 0.01, пшеница: 0.05, книги: 1.0)
-		float multiplier = com.unnameduser.tradeoverhaul.common.config.VillagerXpConfig.getXpMultiplier(itemId);
+		// Сначала проверяем множитель из пула предметов в конфигурации профессии
+		float multiplier = 1.0f;
+		if (professionFile != null) {
+			Float poolMultiplier = professionFile.findXpMultiplierForItem(itemId);
+			if (poolMultiplier != null) {
+				multiplier = poolMultiplier;
+			} else {
+				// Fallback на глобальный конфиг
+				multiplier = com.unnameduser.tradeoverhaul.common.config.VillagerXpConfig.getXpMultiplier(itemId);
+			}
+		} else {
+			multiplier = com.unnameduser.tradeoverhaul.common.config.VillagerXpConfig.getXpMultiplier(itemId);
+		}
 		float totalXp = multiplier * amount;
-		
+
 		return totalXp;
-	}
-
-	public int getClientBuyQuantityForSlot(int screenSlot) {
-		Slot sl = getSlot(screenSlot);
-		if (sl == null || sl.inventory != villagerInventory || sl.getStack().isEmpty()) return 1;
-		int slotIndex = sl.getIndex();
-		if (clientBuyQuantities != null && slotIndex >= 0 && slotIndex < clientBuyQuantities.length) {
-			return clientBuyQuantities[slotIndex];
-		}
-		if (professionFile != null) {
-			return TradePricing.getBuyQuantity(sl.getStack(), villager, professionFile);
-		}
-		return 1;
-	}
-
-	public int getClientSellQuantity(ItemStack stack) {
-		if (stack.isEmpty()) return 1;
-		if (professionFile != null) {
-			return TradePricing.getSellQuantity(stack, professionFile);
-		}
-		return 1;
 	}
 
 	public int getClientBuyPrice(int screenSlot) {
@@ -346,20 +347,73 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 		}
 		ItemStack stack = sl.getStack();
 		int price = TradePricing.getBuyPrice(stack, professionFile);
-		
+
+		// Применяем модификатор репутации урона (используем клиентские данные)
+		if (playerInventory.player != null) {
+			String playerId = playerInventory.player.getUuidAsString();
+			float totalDamage = clientDamageReputation.getOrDefault(playerId, 0f);
+			if (totalDamage > 0) {
+				com.unnameduser.tradeoverhaul.common.config.TradeOverhaulSettings s = TradeConfigLoader.getSettings();
+				double repPercent = Math.min(totalDamage * s.damageReputationPercentPerHP, s.damageReputationMaxPercent);
+				if (repPercent > 0) {
+					double multiplier = 1.0 + (repPercent / 100.0);
+					price = (int) Math.ceil(price * multiplier);
+				}
+			}
+		}
+
 		// Логирование для зачарованных книг (отладка)
 		if (stack.getItem() == net.minecraft.item.Items.ENCHANTED_BOOK && price > 0) {
-			TradeOverhaulMod.LOGGER.debug("Enchanted book price: {} copper, enchantments count: {}", price, 
+			TradeOverhaulMod.LOGGER.debug("Enchanted book price: {} copper, enchantments count: {}", price,
 				professionFile.enchantments != null ? professionFile.enchantments.size() : 0);
 		}
-		
+
 		return price;
 	}
 
 	public int getClientSellPrice(ItemStack stack) {
 		if (stack.isEmpty()) return 0;
 		if (professionFile == null) return 0;
-		return TradePricing.getSellPrice(stack, professionFile);
+		int price = TradePricing.getSellPrice(stack, professionFile);
+
+		// Применяем модификатор прочности (для повреждённых предметов)
+		price = TradePricing.applyDurabilityPriceModifier(price, stack, TradeConfigLoader.getSettings());
+
+		// При продаже репутация урона НЕ применяется (игрок не должен получать выгоду от избиения жителя)
+		return price;
+	}
+
+	/**
+	 * Рассчитывает ожидаемый XP при продаже предмета жителю.
+	 * @param stack Предмет для продажи
+	 * @param amount Количество
+	 * @return Ожидаемый XP или 0, если предмет не даёт XP
+	 */
+	public float getExpectedXpForSell(ItemStack stack, int amount) {
+		if (stack.isEmpty() || professionFile == null) return 0f;
+
+		// Предметы, купленные у жителя, XP НЕ дают
+		if (com.unnameduser.tradeoverhaul.common.util.ItemTagHelper.isVillagerSold(stack)) {
+			return 0f;
+		}
+
+		String itemId = net.minecraft.registry.Registries.ITEM.getId(stack.getItem()).toString();
+
+		// Предмет должен быть в пулах продажи жителя
+		if (!professionFile.isItemSoldByVillager(itemId)) {
+			return 0f;
+		}
+
+		// Рассчитываем XP
+		float multiplier = 1.0f;
+		Float poolMultiplier = professionFile.findXpMultiplierForItem(itemId);
+		if (poolMultiplier != null) {
+			multiplier = poolMultiplier;
+		} else {
+			multiplier = com.unnameduser.tradeoverhaul.common.config.VillagerXpConfig.getXpMultiplier(itemId);
+		}
+
+		return multiplier * amount;
 	}
 
 	public boolean clientCanAffordBuy(int price) {
@@ -410,14 +464,16 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 		ItemStack villagerStack = villagerInventory.getStack(vIdx);
 		if (villagerStack.isEmpty()) return;
 
-		int buyQty = TradePricing.getBuyQuantity(villagerStack, villager, professionFile);
 		int price = TradePricing.getBuyPrice(villagerStack, professionFile);
-		if (buyQty <= 0) buyQty = 1;
-		if (price <= 0) price = 1;
 
-		// Цена за 1 предмет
-		int pricePerItem = price / buyQty;
-		if (pricePerItem <= 0) pricePerItem = 1;
+		// Применяем модификатор репутации урона
+		if (villager instanceof VillagerTradeData data) {
+			price = TradePricing.applyDamageReputation(price, player.getUuidAsString(),
+				data.tradeOverhaul$getProfession(), TradeConfigLoader.getSettings());
+		}
+
+		if (price <= 0) price = 1;
+		int pricePerItem = price;
 
 		// Определяем количество для покупки
 		int wantToBuy;
@@ -431,7 +487,7 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 
 		// Проверяем, сколько денег у игрока
 		int playerMoney = NumismaticHelper.getTotalMoney(player);
-		
+
 		// Рассчитываем, сколько предметов может купить игрок
 		int maxCanBuy = playerMoney / pricePerItem;
 		int toBuy = Math.min(wantToBuy, maxCanBuy);
@@ -442,6 +498,7 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 
 		// Проверяем место в инвентаре игрока
 		int maxFit = maxInventorySpaceForStack(player, villagerStack, toBuy);
+		if (maxFit <= 0) return; // Нет места в инвентаре
 		if (maxFit < toBuy) {
 			toBuy = maxFit;
 			totalCost = toBuy * pricePerItem;
@@ -451,6 +508,8 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 
 		ItemStack copy = villagerStack.copy();
 		copy.setCount(toBuy);
+		// Помечаем предмет как купленный у жителя (защита от дюпа XP)
+		com.unnameduser.tradeoverhaul.common.util.ItemTagHelper.markAsVillagerSold(copy);
 		if (!player.getInventory().insertStack(copy)) return;
 
 		NumismaticHelper.removeMoney(player, totalCost);
@@ -467,10 +526,15 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 		if (villager instanceof VillagerTradeData data) {
 			data.tradeOverhaul$getCurrency().addMoney(totalCost);
 
+			// Отмечаем, что с жителем была совершена сделка
+			data.tradeOverhaul$getProfession().markAsTraded();
+
 			// Добавляем опыт жителю за ПОКУПКУ у жителя (игрок покупает, житель продаёт)
 			// XP НЕ даётся, если предмет был продан игроком ранее
 			if (!wasPlayerSold) {
-				data.tradeOverhaul$getProfession().applyXpFromSale(itemId, toBuy);
+				TradeOverhaulMod.LOGGER.info("XP DEBUG: Applying XP for item={}, amount={}, profession={}", 
+					itemId, toBuy, professionFile != null ? professionFile.profession : "null");
+				data.tradeOverhaul$getProfession().applyXpFromSale(itemId, toBuy, professionFile);
 				
 				// Синхронизируем ванильный уровень с нашим компонентом
 				int modLevel = data.tradeOverhaul$getProfession().getLevel();
@@ -497,7 +561,6 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 			}
 		}
 
-		updateClientQuantities();
 		sendContentUpdates();
 		if (player instanceof net.minecraft.server.network.ServerPlayerEntity serverPlayer) {
 			ModNetworking.sendInventorySync(serverPlayer, this.syncId, villagerInventory);
@@ -511,16 +574,19 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 		ItemStack item = sl.getStack();
 		if (item.isEmpty()) return;
 
-		if (!TradePricing.canVillagerBuyItem(item, villager, professionFile)) return;
+		TradeOverhaulMod.LOGGER.debug("handleSellOnServer: item={}, profession={}", Registries.ITEM.getId(item.getItem()), professionFile.profession);
+		boolean canBuy = TradePricing.canVillagerBuyItem(item, villager, professionFile);
+		TradeOverhaulMod.LOGGER.debug("handleSellOnServer: canVillagerBuyItem={}", canBuy);
+		if (!canBuy) return;
 
-		int sellQty = TradePricing.getSellQuantity(item, professionFile);
 		int sellPrice = TradePricing.getSellPrice(item, professionFile);
-		if (sellQty <= 0) sellQty = 1;
-		if (sellPrice <= 0) sellPrice = 1;
 
-		// Цена за 1 предмет
-		int pricePerItem = sellPrice / sellQty;
-		if (pricePerItem <= 0) pricePerItem = 1;
+		// Применяем модификатор прочности (для повреждённых предметов)
+		sellPrice = TradePricing.applyDurabilityPriceModifier(sellPrice, item, TradeConfigLoader.getSettings());
+
+		// При продаже репутация урона НЕ применяется
+		if (sellPrice <= 0) sellPrice = 1;
+		int pricePerItem = sellPrice;
 
 		// Определяем количество для продажи
 		int wantToSell;
@@ -563,10 +629,47 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 			if (!currencyData2.tradeOverhaul$getCurrency().removeMoney(totalEarned)) {
 				return; // Недостаточно монет
 			}
+			// Отмечаем, что с жителем была совершена сделка
+			currencyData2.tradeOverhaul$getProfession().markAsTraded();
+
+			// Даём XP жителю за покупку предмета у игрока
+			// Проверки для защиты от дюпа XP:
+			String itemId = net.minecraft.registry.Registries.ITEM.getId(item.getItem()).toString();
+
+			// 1. Предметы, купленные у жителя (тег VillagerSold), XP НЕ дают
+			boolean wasVillagerSold = com.unnameduser.tradeoverhaul.common.util.ItemTagHelper.isVillagerSold(item);
+
+			// 2. Предмет должен быть в пулах продажи жителя (иначе XP не даётся)
+			boolean isSoldByVillager = professionFile.isItemSoldByVillager(itemId);
+
+			if (!wasVillagerSold && isSoldByVillager) {
+				TradeOverhaulMod.LOGGER.info("XP DEBUG (sell): Giving XP for item={}, amount={}, profession={}",
+					itemId, toSell, professionFile.profession);
+				currencyData2.tradeOverhaul$getProfession().applyXpFromSale(itemId, toSell, professionFile);
+				
+				// Синхронизируем уровень профессии клиенту после начисления XP
+				if (player instanceof net.minecraft.server.network.ServerPlayerEntity serverPlayer) {
+					net.minecraft.nbt.NbtCompound soldItemsTracker = new net.minecraft.nbt.NbtCompound();
+					for (java.util.Map.Entry<String, Integer> entry : currencyData2.tradeOverhaul$getProfession().soldItemsTracker.entrySet()) {
+						soldItemsTracker.putInt(entry.getKey(), entry.getValue());
+					}
+					com.unnameduser.tradeoverhaul.common.network.ModNetworking.sendProfessionLevelSync(
+						serverPlayer, this.syncId,
+						currencyData2.tradeOverhaul$getProfession().getLevel(),
+						currencyData2.tradeOverhaul$getProfession().getExperience(),
+						currencyData2.tradeOverhaul$getProfession().getTradesCompleted(),
+						currencyData2.tradeOverhaul$getProfession().getFractionalXpAccumulator(),
+						soldItemsTracker
+					);
+				}
+			} else if (wasVillagerSold) {
+				TradeOverhaulMod.LOGGER.debug("XP DEBUG (sell): Item {} was bought from villager, no XP given", itemId);
+			} else if (!isSoldByVillager) {
+				TradeOverhaulMod.LOGGER.debug("XP DEBUG (sell): Item {} is not in villager's sell pools, no XP given", itemId);
+			}
 		}
 		NumismaticHelper.addMoney(player, totalEarned);
 
-		updateClientQuantities();
 		sendContentUpdates();
 		if (player instanceof net.minecraft.server.network.ServerPlayerEntity serverPlayer) {
 			ModNetworking.sendInventorySync(serverPlayer, this.syncId, villagerInventory);
@@ -691,22 +794,21 @@ public class VillagerTradeScreenHandler extends ScreenHandler {
 		return true;
 	}
 
-	private void updateClientQuantities() {
-		if (clientBuyQuantities == null || clientSellQuantities == null || professionFile == null) return;
-		for (int i = 0; i < villagerInventory.size(); i++) {
-			ItemStack stack = villagerInventory.getStack(i);
-			if (stack.isEmpty()) {
-				clientBuyQuantities[i] = 1;
-				clientSellQuantities[i] = 1;
-			} else {
-				clientBuyQuantities[i] = TradePricing.getBuyQuantity(stack, villager, professionFile);
-				clientSellQuantities[i] = TradePricing.getSellQuantity(stack, professionFile);
-			}
-		}
+	@Override
+	public ItemStack quickMove(PlayerEntity player, int slot) { return ItemStack.EMPTY; }
+
+	@Override
+	public void onClosed(PlayerEntity player) {
+		// Очищаем ссылку на жителя при закрытии, чтобы другие игроки могли открыть его
+		villager = null;
+		super.onClosed(player);
 	}
 
 	@Override
-	public ItemStack quickMove(PlayerEntity player, int slot) { return ItemStack.EMPTY; }
-	@Override
-	public boolean canUse(PlayerEntity player) { return true; }
+	public boolean canUse(PlayerEntity player) {
+		if (villager != null && villager.isAlive() && !villager.isRemoved()) {
+			return player.squaredDistanceTo(villager) <= 64.0; // 8 блоков
+		}
+		return false;
+	}
 }

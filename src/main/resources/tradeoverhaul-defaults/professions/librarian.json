@@ -1,77 +1,268 @@
 {
 	"profession": "minecraft:librarian",
 	"offersCount": 12,
-	"staticPool": [],
 	"enchantments": [
-		{ "enchantment": "sharpness", "min_level": 1, "max_level": 5, "base_price": 500, "price_per_level": 500 },
-		{ "enchantment": "protection", "min_level": 1, "max_level": 4, "base_price": 400, "price_per_level": 400 },
-		{ "enchantment": "efficiency", "min_level": 1, "max_level": 5, "base_price": 450, "price_per_level": 450 },
-		{ "enchantment": "unbreaking", "min_level": 1, "max_level": 3, "base_price": 400, "price_per_level": 300 },
-		{ "enchantment": "mending", "min_level": 1, "max_level": 1, "base_price": 2500, "price_per_level": 0 },
-		{ "enchantment": "silk_touch", "min_level": 1, "max_level": 1, "base_price": 2000, "price_per_level": 0 },
-		{ "enchantment": "fortune", "min_level": 1, "max_level": 3, "base_price": 800, "price_per_level": 400 },
-		{ "enchantment": "power", "min_level": 1, "max_level": 5, "base_price": 500, "price_per_level": 500 },
-		{ "enchantment": "infinity", "min_level": 1, "max_level": 1, "base_price": 1800, "price_per_level": 0 },
-		{ "enchantment": "looting", "min_level": 1, "max_level": 3, "base_price": 600, "price_per_level": 300 },
-		{ "enchantment": "feather_falling", "min_level": 1, "max_level": 4, "base_price": 400, "price_per_level": 350 },
-		{ "enchantment": "fire_aspect", "min_level": 1, "max_level": 2, "base_price": 700, "price_per_level": 500 },
-		{ "enchantment": "knockback", "min_level": 1, "max_level": 2, "base_price": 400, "price_per_level": 300 },
-		{ "enchantment": "respiration", "min_level": 1, "max_level": 3, "base_price": 400, "price_per_level": 300 },
-		{ "enchantment": "aqua_affinity", "min_level": 1, "max_level": 1, "base_price": 600, "price_per_level": 0 },
-		{ "enchantment": "thorns", "min_level": 1, "max_level": 3, "base_price": 500, "price_per_level": 250 },
-		{ "enchantment": "smite", "min_level": 1, "max_level": 5, "base_price": 400, "price_per_level": 400 },
-		{ "enchantment": "bane_of_arthropods", "min_level": 1, "max_level": 5, "base_price": 400, "price_per_level": 400 },
-		{ "enchantment": "flame", "min_level": 1, "max_level": 1, "base_price": 900, "price_per_level": 0 },
-		{ "enchantment": "luck_of_the_sea", "min_level": 1, "max_level": 3, "base_price": 500, "price_per_level": 250 },
-		{ "enchantment": "lure", "min_level": 1, "max_level": 3, "base_price": 400, "price_per_level": 200 },
-		{ "enchantment": "depth_strider", "min_level": 1, "max_level": 3, "base_price": 600, "price_per_level": 300 },
-		{ "enchantment": "frost_walker", "min_level": 1, "max_level": 2, "base_price": 500, "price_per_level": 250 },
-		{ "enchantment": "binding_curse", "min_level": 1, "max_level": 1, "base_price": 400, "price_per_level": 0 },
-		{ "enchantment": "vanishing_curse", "min_level": 1, "max_level": 1, "base_price": 400, "price_per_level": 0 },
-		{ "enchantment": "loyalty", "min_level": 1, "max_level": 3, "base_price": 450, "price_per_level": 225 },
-		{ "enchantment": "impaling", "min_level": 1, "max_level": 5, "base_price": 500, "price_per_level": 400 },
-		{ "enchantment": "riptide", "min_level": 1, "max_level": 3, "base_price": 500, "price_per_level": 250 },
-		{ "enchantment": "channeling", "min_level": 1, "max_level": 1, "base_price": 800, "price_per_level": 0 },
-		{ "enchantment": "multishot", "min_level": 1, "max_level": 1, "base_price": 700, "price_per_level": 0 },
-		{ "enchantment": "quick_charge", "min_level": 1, "max_level": 3, "base_price": 400, "price_per_level": 175 },
-		{ "enchantment": "piercing", "min_level": 1, "max_level": 4, "base_price": 400, "price_per_level": 200 },
-		{ "enchantment": "swift_sneak", "min_level": 1, "max_level": 3, "base_price": 700, "price_per_level": 350 },
-		{ "enchantment": "cleaving", "min_level": 1, "max_level": 3, "base_price": 500, "price_per_level": 250 }
+		{
+			"enchantment": "sharpness",
+			"min_level": 1,
+			"max_level": 5,
+			"base_price": 500,
+			"price_per_level": 500
+		},
+		{
+			"enchantment": "protection",
+			"min_level": 1,
+			"max_level": 4,
+			"base_price": 400,
+			"price_per_level": 400
+		},
+		{
+			"enchantment": "efficiency",
+			"min_level": 1,
+			"max_level": 5,
+			"base_price": 450,
+			"price_per_level": 450
+		},
+		{
+			"enchantment": "unbreaking",
+			"min_level": 1,
+			"max_level": 3,
+			"base_price": 400,
+			"price_per_level": 300
+		},
+		{
+			"enchantment": "mending",
+			"min_level": 1,
+			"max_level": 1,
+			"base_price": 2500,
+			"price_per_level": 0
+		},
+		{
+			"enchantment": "silk_touch",
+			"min_level": 1,
+			"max_level": 1,
+			"base_price": 2000,
+			"price_per_level": 0
+		},
+		{
+			"enchantment": "fortune",
+			"min_level": 1,
+			"max_level": 3,
+			"base_price": 800,
+			"price_per_level": 400
+		},
+		{
+			"enchantment": "power",
+			"min_level": 1,
+			"max_level": 5,
+			"base_price": 500,
+			"price_per_level": 500
+		},
+		{
+			"enchantment": "infinity",
+			"min_level": 1,
+			"max_level": 1,
+			"base_price": 1800,
+			"price_per_level": 0
+		},
+		{
+			"enchantment": "looting",
+			"min_level": 1,
+			"max_level": 3,
+			"base_price": 600,
+			"price_per_level": 300
+		},
+		{
+			"enchantment": "feather_falling",
+			"min_level": 1,
+			"max_level": 4,
+			"base_price": 400,
+			"price_per_level": 350
+		},
+		{
+			"enchantment": "fire_aspect",
+			"min_level": 1,
+			"max_level": 2,
+			"base_price": 700,
+			"price_per_level": 500
+		},
+		{
+			"enchantment": "knockback",
+			"min_level": 1,
+			"max_level": 2,
+			"base_price": 400,
+			"price_per_level": 300
+		},
+		{
+			"enchantment": "respiration",
+			"min_level": 1,
+			"max_level": 3,
+			"base_price": 400,
+			"price_per_level": 300
+		},
+		{
+			"enchantment": "aqua_affinity",
+			"min_level": 1,
+			"max_level": 1,
+			"base_price": 600,
+			"price_per_level": 0
+		},
+		{
+			"enchantment": "thorns",
+			"min_level": 1,
+			"max_level": 3,
+			"base_price": 500,
+			"price_per_level": 250
+		},
+		{
+			"enchantment": "smite",
+			"min_level": 1,
+			"max_level": 5,
+			"base_price": 400,
+			"price_per_level": 400
+		},
+		{
+			"enchantment": "bane_of_arthropods",
+			"min_level": 1,
+			"max_level": 5,
+			"base_price": 400,
+			"price_per_level": 400
+		},
+		{
+			"enchantment": "flame",
+			"min_level": 1,
+			"max_level": 1,
+			"base_price": 900,
+			"price_per_level": 0
+		},
+		{
+			"enchantment": "luck_of_the_sea",
+			"min_level": 1,
+			"max_level": 3,
+			"base_price": 500,
+			"price_per_level": 250
+		},
+		{
+			"enchantment": "lure",
+			"min_level": 1,
+			"max_level": 3,
+			"base_price": 400,
+			"price_per_level": 200
+		},
+		{
+			"enchantment": "depth_strider",
+			"min_level": 1,
+			"max_level": 3,
+			"base_price": 600,
+			"price_per_level": 300
+		},
+		{
+			"enchantment": "frost_walker",
+			"min_level": 1,
+			"max_level": 2,
+			"base_price": 500,
+			"price_per_level": 250
+		},
+		{
+			"enchantment": "binding_curse",
+			"min_level": 1,
+			"max_level": 1,
+			"base_price": 400,
+			"price_per_level": 0
+		},
+		{
+			"enchantment": "vanishing_curse",
+			"min_level": 1,
+			"max_level": 1,
+			"base_price": 400,
+			"price_per_level": 0
+		},
+		{
+			"enchantment": "loyalty",
+			"min_level": 1,
+			"max_level": 3,
+			"base_price": 450,
+			"price_per_level": 225
+		},
+		{
+			"enchantment": "impaling",
+			"min_level": 1,
+			"max_level": 5,
+			"base_price": 500,
+			"price_per_level": 400
+		},
+		{
+			"enchantment": "riptide",
+			"min_level": 1,
+			"max_level": 3,
+			"base_price": 500,
+			"price_per_level": 250
+		},
+		{
+			"enchantment": "channeling",
+			"min_level": 1,
+			"max_level": 1,
+			"base_price": 800,
+			"price_per_level": 0
+		},
+		{
+			"enchantment": "multishot",
+			"min_level": 1,
+			"max_level": 1,
+			"base_price": 700,
+			"price_per_level": 0
+		},
+		{
+			"enchantment": "quick_charge",
+			"min_level": 1,
+			"max_level": 3,
+			"base_price": 400,
+			"price_per_level": 175
+		},
+		{
+			"enchantment": "piercing",
+			"min_level": 1,
+			"max_level": 4,
+			"base_price": 400,
+			"price_per_level": 200
+		},
+		{
+			"enchantment": "swift_sneak",
+			"min_level": 1,
+			"max_level": 3,
+			"base_price": 700,
+			"price_per_level": 350
+		},
+		{
+			"enchantment": "cleaving",
+			"min_level": 1,
+			"max_level": 3,
+			"base_price": 500,
+			"price_per_level": 250
+		}
 	],
-	"weaponPool": [],
-	"toolPool": [],
-	"generalPool": [],
 	"buyPool": [
 		{
 			"tag": "c:paper",
 			"buyPrice": 80,
-			"buyQuantity": 20,
 			"discountFactor": 50
 		},
 		{
 			"tag": "c:books",
 			"buyPrice": 120,
-			"buyQuantity": 8,
 			"discountFactor": 55
 		},
 		{
 			"tag": "c:dyes",
 			"buyPrice": 100,
-			"buyQuantity": 12,
 			"discountFactor": 60
 		},
 		{
 			"tag": "c:feathers",
 			"buyPrice": 200,
-			"buyQuantity": 8,
 			"discountFactor": 65
 		}
 	],
-	"itemPriceMultipliers": {
-		"minecraft:enchanted_book": 1.0,
-		"minecraft:writable_book": 0.8
-	},
-	
 	"levelMoneySettings": {
 		"level1StartMoney": 300,
 		"level2StartMoney": 500,
@@ -84,33 +275,126 @@
 		"level4RestockMoney": 1600,
 		"level5RestockMoney": 2500
 	},
-	
 	"level1Pool": [
-		{ "item": "minecraft:book", "buy": 120, "sell": 60, "buyQuantity": 12, "sellQuantity": 6, "minStock": 6, "maxStock": 32 },
-		{ "item": "minecraft:paper", "buy": 30, "sell": 15, "buyQuantity": 24, "sellQuantity": 12, "minStock": 12, "maxStock": 48 },
-		{ "item": "minecraft:ink_sac", "buy": 60, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 4, "maxStock": 12 }
+		{
+			"item": "minecraft:book",
+			"buy": 120,
+			"sell": 60,
+			"minStock": 6,
+			"maxStock": 32,
+			"xpMultiplier": 0.5
+		},
+		{
+			"item": "minecraft:paper",
+			"buy": 30,
+			"sell": 15,
+			"minStock": 12,
+			"maxStock": 48,
+			"xpMultiplier": 0.1
+		},
+		{
+			"item": "minecraft:ink_sac",
+			"buy": 60,
+			"sell": 40,
+			"minStock": 4,
+			"maxStock": 12,
+			"xpMultiplier": 0.05
+		}
 	],
-	
 	"level2Pool": [
-		{ "item": "minecraft:bookshelf", "buy": 400, "sell": 180, "buyQuantity": 2, "sellQuantity": 1, "minStock": 4, "maxStock": 8 },
-		{ "item": "minecraft:lantern", "buy": 600, "sell": 280, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
-		{ "item": "minecraft:glass", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 8, "maxStock": 24 }
+		{
+			"item": "minecraft:bookshelf",
+			"buy": 400,
+			"sell": 180,
+			"minStock": 4,
+			"maxStock": 8,
+			"xpMultiplier": 0.5
+		},
+		{
+			"item": "minecraft:lantern",
+			"buy": 600,
+			"sell": 280,
+			"minStock": 4,
+			"maxStock": 12,
+			"xpMultiplier": 0.2
+		},
+		{
+			"item": "minecraft:glass",
+			"buy": 100,
+			"sell": 50,
+			"minStock": 8,
+			"maxStock": 24,
+			"xpMultiplier": 0.05
+		}
 	],
-	
 	"level3Pool": [
-		{ "item": "minecraft:lectern", "buy": 600, "sell": 300, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:clock", "buy": 800, "sell": 350, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 },
-		{ "item": "minecraft:chiseled_bookshelf", "buy": 300, "sell": 150, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 8 },
-		{ "item": "minecraft:compass", "buy": 500, "sell": 250, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 }
+		{
+			"item": "minecraft:lectern",
+			"buy": 600,
+			"sell": 300,
+			"minStock": 1,
+			"maxStock": 1,
+			"xpMultiplier": 0.5
+		},
+		{
+			"item": "minecraft:clock",
+			"buy": 800,
+			"sell": 350,
+			"minStock": 1,
+			"maxStock": 3,
+			"xpMultiplier": 0.5
+		},
+		{
+			"item": "minecraft:chiseled_bookshelf",
+			"buy": 300,
+			"sell": 150,
+			"minStock": 4,
+			"maxStock": 8,
+			"xpMultiplier": 0.5
+		},
+		{
+			"item": "minecraft:compass",
+			"buy": 500,
+			"sell": 250,
+			"minStock": 1,
+			"maxStock": 3,
+			"xpMultiplier": 0.5
+		}
 	],
-	
 	"level4Pool": [
-		{ "item": "minecraft:spyglass", "buy": 1200, "sell": 500, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 },
-		{ "item": "minecraft:name_tag", "buy": 300, "sell": 150, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 6 },
-		{ "item": "minecraft:writable_book", "buy": 500, "sell": 300, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 }
+		{
+			"item": "minecraft:spyglass",
+			"buy": 1200,
+			"sell": 500,
+			"minStock": 1,
+			"maxStock": 3,
+			"xpMultiplier": 0.5
+		},
+		{
+			"item": "minecraft:name_tag",
+			"buy": 300,
+			"sell": 150,
+			"minStock": 1,
+			"maxStock": 6,
+			"xpMultiplier": 0.5
+		},
+		{
+			"item": "minecraft:writable_book",
+			"buy": 500,
+			"sell": 300,
+			"minStock": 1,
+			"maxStock": 3,
+			"xpMultiplier": 0.5
+		}
 	],
-	
 	"level5Pool": [
-		{ "item": "minecraft:enchanting_table", "buy": 20000, "sell": 1200, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
+		{
+			"item": "minecraft:enchanting_table",
+			"buy": 20000,
+			"sell": 1200,
+			"minStock": 1,
+			"maxStock": 1,
+			"xpMultiplier": 1.5
+		}
 	]
 }

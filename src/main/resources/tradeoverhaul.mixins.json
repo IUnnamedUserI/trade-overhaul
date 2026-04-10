@@ -4,9 +4,13 @@
 	"package": "com.unnameduser.tradeoverhaul.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
+		"LivingEntityDamageMixin",
+		"VillagerEntityMixin",
+		"VillagerWorkstationMixin"
+	],
+	"client": [
 		"VillagerEntityMixin"
 	],
-	"client": [],
 	"injectors": {
 		"defaultRequire": 1
 	}

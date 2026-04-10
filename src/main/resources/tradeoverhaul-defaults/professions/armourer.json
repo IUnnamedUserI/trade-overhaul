@@ -1,26 +1,40 @@
 {
 	"profession": "minecraft:armorer",
 	"offersCount": 10,
-	"staticPool": [],
-	"weaponPool": [],
-	"toolPool": [],
-	"generalPool": [],
 	"buyPool": [
 		{
 			"tag": "c:ingots/iron",
 			"buyPrice": 100,
-			"buyQuantity": 8,
 			"discountFactor": 60
 		},
 		{
 			"tag": "c:ores/coal",
 			"buyPrice": 50,
-			"buyQuantity": 12,
 			"discountFactor": 70
 		}
 	],
-	"itemPriceMultipliers": {},
-	
+	"armorEnchantments": [
+		{ "id": "minecraft:protection", "max_level": 2 },
+		{ "id": "minecraft:fire_protection", "max_level": 2 },
+		{ "id": "minecraft:blast_protection", "max_level": 2 },
+		{ "id": "minecraft:projectile_protection", "max_level": 2 },
+		{ "id": "minecraft:unbreaking", "max_level": 2 },
+		{ "id": "minecraft:thorns", "max_level": 1 }
+	],
+	"helmetEnchantments": [
+		{ "id": "minecraft:respiration", "max_level": 2 },
+		{ "id": "minecraft:aqua_affinity" }
+	],
+	"chestplateEnchantments": [],
+	"leggingsEnchantments": [
+		{ "id": "minecraft:swift_sneak", "max_level": 2 }
+	],
+	"bootsEnchantments": [
+		{ "id": "minecraft:feather_falling", "max_level": 2 },
+		{ "id": "minecraft:depth_strider", "max_level": 2 },
+		{ "id": "minecraft:frost_walker", "max_level": 1 },
+		{ "id": "minecraft:soul_speed", "max_level": 2 }
+	],
 	"levelMoneySettings": {
 		"level1StartMoney": 300,
 		"level2StartMoney": 500,
@@ -33,38 +47,186 @@
 		"level4RestockMoney": 1600,
 		"level5RestockMoney": 2500
 	},
-	
 	"level1Pool": [
-		{ "item": "minecraft:coal", "buy": 12, "sell": 6, "buyQuantity": 12, "sellQuantity": 6, "minStock": 12, "maxStock": 36 },
-		{ "item": "minecraft:iron_ingot", "buy": 200, "sell": 100, "buyQuantity": 8, "sellQuantity": 4, "minStock": 4, "maxStock": 12 },
-		{ "item": "minecraft:chainmail_boots", "buy": 600, "sell": 300, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:chainmail_leggings", "buy": 800, "sell": 400, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1}
+		{
+			"item": "minecraft:coal",
+			"buy": 12,
+			"sell": 6,
+			"minStock": 12,
+			"maxStock": 36,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:iron_ingot",
+			"buy": 200,
+			"sell": 100,
+			"minStock": 4,
+			"maxStock": 12,
+			"xpMultiplier": 0.1
+		},
+		{
+			"item": "minecraft:chainmail_boots",
+			"buy": 600,
+			"sell": 300,
+			"minStock": 1,
+			"maxStock": 1,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:chainmail_leggings",
+			"buy": 800,
+			"sell": 400,
+			"minStock": 1,
+			"maxStock": 1,
+			"xpMultiplier": 1.0
+		}
 	],
-	
 	"level2Pool": [
-		{ "item": "minecraft:iron_leggings", "buy": 1600, "sell": 800, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:iron_boots", "buy": 1000, "sell": 500, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:shield", "buy": 400, "sell": 150, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:chainmail_chestplate", "buy": 1050, "sell": 500, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1},
-		{ "item": "minecraft:chainmail_helmet", "buy": 700, "sell": 350, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1}
+		{
+			"item": "minecraft:iron_leggings",
+			"buy": 1600,
+			"sell": 800,
+			"minStock": 1,
+			"maxStock": 1,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:iron_boots",
+			"buy": 1000,
+			"sell": 500,
+			"minStock": 1,
+			"maxStock": 1,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:shield",
+			"buy": 400,
+			"sell": 150,
+			"minStock": 1,
+			"maxStock": 1,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:chainmail_chestplate",
+			"buy": 1050,
+			"sell": 500,
+			"minStock": 1,
+			"maxStock": 1,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:chainmail_helmet",
+			"buy": 700,
+			"sell": 350,
+			"minStock": 1,
+			"maxStock": 1,
+			"xpMultiplier": 1.0
+		}
 	],
-	
 	"level3Pool": [
-		{ "item": "minecraft:iron_chestplate", "buy": 1800, "sell": 900, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:iron_helmet", "buy": 1200, "sell": 600, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:bell", "buy": 2000, "sell": 800, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 },
-		{ "item": "minecraft:lava_bucket", "buy": 1200, "sell": 400, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1},
-		{ "item": "minecraft:diamond", "buy": 800, "sell": 600, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3}
+		{
+			"item": "minecraft:iron_chestplate",
+			"buy": 1800,
+			"sell": 900,
+			"minStock": 1,
+			"maxStock": 1,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:iron_helmet",
+			"buy": 1200,
+			"sell": 600,
+			"minStock": 1,
+			"maxStock": 1,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:bell",
+			"buy": 2000,
+			"sell": 800,
+			"minStock": 1,
+			"maxStock": 3,
+			"xpMultiplier": 0.5
+		},
+		{
+			"item": "minecraft:lava_bucket",
+			"buy": 1200,
+			"sell": 400,
+			"minStock": 1,
+			"maxStock": 1,
+			"xpMultiplier": 0.5
+		},
+		{
+			"item": "minecraft:diamond",
+			"buy": 800,
+			"sell": 600,
+			"minStock": 1,
+			"maxStock": 3,
+			"xpMultiplier": 0.5
+		}
 	],
-	
 	"level4Pool": [
-		{ "item": "minecraft:diamond_boots", "buy": 3500, "sell": 1750, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:diamond_leggings", "buy": 5600, "sell": 2800, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:anvil", "buy": 6500, "sell": 3000, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 2 }
+		{
+			"item": "minecraft:diamond_boots",
+			"buy": 3500,
+			"sell": 1750,
+			"minStock": 1,
+			"maxStock": 1,
+			"enchant": true,
+			"enchantChance": 70,
+			"enchantMaxCount": 3,
+			"enchantMinLevel": 1,
+			"enchantMaxLevel": 2,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:diamond_leggings",
+			"buy": 5600,
+			"sell": 2800,
+			"minStock": 1,
+			"maxStock": 1,
+			"enchant": true,
+			"enchantChance": 70,
+			"enchantMaxCount": 3,
+			"enchantMinLevel": 1,
+			"enchantMaxLevel": 2,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:anvil",
+			"buy": 6500,
+			"sell": 3000,
+			"minStock": 1,
+			"maxStock": 2,
+			"xpMultiplier": 1.0
+		}
 	],
-	
 	"level5Pool": [
-		{ "item": "minecraft:diamond_chestplate", "buy": 6300, "sell": 3150, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:diamond_helmet", "buy": 4200, "sell": 2100, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
+		{
+			"item": "minecraft:diamond_chestplate",
+			"buy": 6300,
+			"sell": 3150,
+			"minStock": 1,
+			"maxStock": 1,
+			"enchant": true,
+			"enchantChance": 70,
+			"enchantMaxCount": 3,
+			"enchantMinLevel": 1,
+			"enchantMaxLevel": 2,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:diamond_helmet",
+			"buy": 4200,
+			"sell": 2100,
+			"minStock": 1,
+			"maxStock": 1,
+			"enchant": true,
+			"enchantChance": 70,
+			"enchantMaxCount": 3,
+			"enchantMinLevel": 1,
+			"enchantMaxLevel": 2,
+			"xpMultiplier": 1.0
+		}
 	]
 }

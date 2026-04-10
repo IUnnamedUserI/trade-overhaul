@@ -1,12 +1,16 @@
 package com.unnameduser.tradeoverhaul;
 
 import com.unnameduser.tradeoverhaul.client.gui.VillagerTradeScreenHandler;
+import com.unnameduser.tradeoverhaul.common.VillagerTradeData;
 import com.unnameduser.tradeoverhaul.common.command.TradeOverhaulCommand;
 import com.unnameduser.tradeoverhaul.common.config.TradeConfigLoader;
 import com.unnameduser.tradeoverhaul.common.network.ModNetworking;
+import com.unnameduser.tradeoverhaul.common.trade.GlobalRestockTimer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
+import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
@@ -40,6 +44,8 @@ public class TradeOverhaulMod implements ModInitializer {
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
 			TradeOverhaulCommand.register(dispatcher)
 		);
+		LOGGER.info("Registering global restock timer...");
+		GlobalRestockTimer.register();
 		LOGGER.info("Trade Overhaul initialization complete!");
 	}
 }

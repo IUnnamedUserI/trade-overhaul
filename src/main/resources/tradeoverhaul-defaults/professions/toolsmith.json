@@ -1,26 +1,35 @@
 {
 	"profession": "minecraft:toolsmith",
 	"offersCount": 10,
-	"staticPool": [],
-	"weaponPool": [],
-	"toolPool": [],
-	"generalPool": [],
 	"buyPool": [
 		{
 			"tag": "c:ingots/iron",
 			"buyPrice": 100,
-			"buyQuantity": 8,
 			"discountFactor": 60
 		},
 		{
 			"tag": "c:dusts/redstone",
 			"buyPrice": 80,
-			"buyQuantity": 10,
 			"discountFactor": 65
 		}
 	],
-	"itemPriceMultipliers": {},
-	
+	"toolEnchantments": [
+		{
+			"id": "minecraft:efficiency",
+			"max_level": 2
+		},
+		{
+			"id": "minecraft:fortune",
+			"max_level": 1
+		},
+		{
+			"id": "minecraft:silk_touch"
+		},
+		{
+			"id": "minecraft:unbreaking",
+			"max_level": 2
+		}
+	],
 	"levelMoneySettings": {
 		"level1StartMoney": 300,
 		"level2StartMoney": 500,
@@ -33,35 +42,172 @@
 		"level4RestockMoney": 1600,
 		"level5RestockMoney": 2500
 	},
-	
 	"level1Pool": [
-		{ "item": "minecraft:coal", "buy": 12, "sell": 6, "buyQuantity": 12, "sellQuantity": 6, "minStock": 12, "maxStock": 36 },
-		{ "item": "minecraft:stone_axe", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 1, "maxStock": 3 },
-		{ "item": "minecraft:stone_shovel", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 1, "maxStock": 3 },
-		{ "item": "minecraft:stone_pickaxe", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 1, "maxStock": 3 },
-		{ "item": "minecraft:stone_hoe", "buy": 90, "sell": 45, "buyQuantity": 8, "sellQuantity": 4, "minStock": 1, "maxStock": 3 }
+		{
+			"item": "minecraft:coal",
+			"buy": 12,
+			"sell": 6,
+			"minStock": 12,
+			"maxStock": 36,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:stone_axe",
+			"buy": 100,
+			"sell": 50,
+			"minStock": 1,
+			"maxStock": 3,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:stone_shovel",
+			"buy": 80,
+			"sell": 40,
+			"minStock": 1,
+			"maxStock": 3,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:stone_pickaxe",
+			"buy": 100,
+			"sell": 50,
+			"minStock": 1,
+			"maxStock": 3,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:stone_hoe",
+			"buy": 90,
+			"sell": 45,
+			"minStock": 1,
+			"maxStock": 3,
+			"xpMultiplier": 1.0
+		}
 	],
-	
 	"level2Pool": [
-		{ "item": "minecraft:iron_ingot", "buy": 200, "sell": 100, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
-		{ "item": "minecraft:bell", "buy": 1800, "sell": 800, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
+		{
+			"item": "minecraft:iron_ingot",
+			"buy": 200,
+			"sell": 100,
+			"minStock": 4,
+			"maxStock": 12,
+			"xpMultiplier": 0.1
+		},
+		{
+			"item": "minecraft:bell",
+			"buy": 1800,
+			"sell": 800,
+			"minStock": 1,
+			"maxStock": 1,
+			"xpMultiplier": 0.5
+		}
 	],
-	
 	"level3Pool": [
-		{ "item": "minecraft:flint", "buy": 25, "sell": 10, "buyQuantity": 1, "sellQuantity": 1, "minStock": 8, "maxStock": 32 },
-		{ "item": "minecraft:iron_axe", "buy": 1200, "sell": 600, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:iron_shovel", "buy": 800, "sell": 450, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:iron_pickaxe", "buy": 1200, "sell": 600, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:diamond_hoe", "buy": 1800, "sell": 900, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
+		{
+			"item": "minecraft:flint",
+			"buy": 25,
+			"sell": 10,
+			"minStock": 8,
+			"maxStock": 32,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:iron_axe",
+			"buy": 1200,
+			"sell": 600,
+			"minStock": 1,
+			"maxStock": 1,
+			"enchant": true,
+			"enchantChance": 70,
+			"enchantMaxCount": 3,
+			"enchantMinLevel": 1,
+			"enchantMaxLevel": 2,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:iron_shovel",
+			"buy": 800,
+			"sell": 450,
+			"minStock": 1,
+			"maxStock": 1,
+			"enchant": true,
+			"enchantChance": 70,
+			"enchantMaxCount": 3,
+			"enchantMinLevel": 1,
+			"enchantMaxLevel": 2,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:iron_pickaxe",
+			"buy": 1200,
+			"sell": 600,
+			"minStock": 1,
+			"maxStock": 1,
+			"enchant": true,
+			"enchantChance": 70,
+			"enchantMaxCount": 3,
+			"enchantMinLevel": 1,
+			"enchantMaxLevel": 2,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:diamond_hoe",
+			"buy": 1800,
+			"sell": 900,
+			"minStock": 1,
+			"maxStock": 1,
+			"xpMultiplier": 1.0
+		}
 	],
-	
 	"level4Pool": [
-		{ "item": "minecraft:diamond_shovel", "buy": 3800, "sell": 1900, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:diamond_axe", "buy": 4200, "sell": 2100, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:diamond", "buy": 1200, "sell": 600, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3 }
+		{
+			"item": "minecraft:diamond_shovel",
+			"buy": 3800,
+			"sell": 1900,
+			"minStock": 1,
+			"maxStock": 1,
+			"enchant": true,
+			"enchantChance": 70,
+			"enchantMaxCount": 3,
+			"enchantMinLevel": 1,
+			"enchantMaxLevel": 2,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:diamond_axe",
+			"buy": 4200,
+			"sell": 2100,
+			"minStock": 1,
+			"maxStock": 1,
+			"enchant": true,
+			"enchantChance": 70,
+			"enchantMaxCount": 3,
+			"enchantMinLevel": 1,
+			"enchantMaxLevel": 2,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:diamond",
+			"buy": 1200,
+			"sell": 600,
+			"minStock": 1,
+			"maxStock": 3,
+			"xpMultiplier": 0.5
+		}
 	],
-	
 	"level5Pool": [
-		{ "item": "minecraft:diamond_pickaxe", "buy": 4500, "sell": 2250, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
+		{
+			"item": "minecraft:diamond_pickaxe",
+			"buy": 4500,
+			"sell": 2250,
+			"minStock": 1,
+			"maxStock": 1,
+			"enchant": true,
+			"enchantChance": 70,
+			"enchantMaxCount": 3,
+			"enchantMinLevel": 1,
+			"enchantMaxLevel": 2,
+			"xpMultiplier": 1.0
+		}
 	]
 }

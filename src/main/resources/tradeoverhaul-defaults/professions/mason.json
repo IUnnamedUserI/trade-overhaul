@@ -1,26 +1,18 @@
 {
 	"profession": "minecraft:mason",
 	"offersCount": 10,
-	"staticPool": [],
-	"weaponPool": [],
-	"toolPool": [],
-	"generalPool": [],
 	"buyPool": [
 		{
 			"tag": "c:stones",
 			"buyPrice": 20,
-			"buyQuantity": 24,
 			"discountFactor": 75
 		},
 		{
 			"tag": "c:clay_balls",
 			"buyPrice": 25,
-			"buyQuantity": 16,
 			"discountFactor": 70
 		}
 	],
-	"itemPriceMultipliers": {},
-	
 	"levelMoneySettings": {
 		"level1StartMoney": 300,
 		"level2StartMoney": 500,
@@ -33,69 +25,406 @@
 		"level4RestockMoney": 1600,
 		"level5RestockMoney": 2500
 	},
-	
 	"level1Pool": [
-		{ "item": "minecraft:clay", "buy": 15, "sell": 5, "buyQuantity": 12, "sellQuantity": 6, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:brick", "buy": 25, "sell": 10, "buyQuantity": 10, "sellQuantity": 5, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:stone", "buy": 30, "sell": 10, "buyQuantity": 20, "sellQuantity": 10, "minStock": 8, "maxStock": 32 }
+		{
+			"item": "minecraft:clay_ball",
+			"buy": 15,
+			"sell": 5,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:brick",
+			"buy": 25,
+			"sell": 10,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.1
+		},
+		{
+			"item": "minecraft:stone",
+			"buy": 30,
+			"sell": 10,
+			"minStock": 8,
+			"maxStock": 32,
+			"xpMultiplier": 0.05
+		}
 	],
-	
 	"level2Pool": [
-		{ "item": "minecraft:bricks", "buy": 80, "sell": 40, "buyQuantity": 4, "sellQuantity": 2, "minStock": 16, "maxStock": 48 },
-		{ "item": "minecraft:stone_bricks", "buy": 40, "sell": 12, "buyQuantity": 6, "sellQuantity": 3, "minStock": 16, "maxStock": 48 },
-		{ "item": "minecraft:chiseled_stone_bricks", "buy": 40, "sell": 12, "buyQuantity": 6, "sellQuantity": 3, "minStock": 16, "maxStock": 48 }
+		{
+			"item": "minecraft:bricks",
+			"buy": 80,
+			"sell": 40,
+			"minStock": 16,
+			"maxStock": 48,
+			"xpMultiplier": 0.1
+		},
+		{
+			"item": "minecraft:stone_bricks",
+			"buy": 40,
+			"sell": 12,
+			"minStock": 16,
+			"maxStock": 48,
+			"xpMultiplier": 0.1
+		},
+		{
+			"item": "minecraft:chiseled_stone_bricks",
+			"buy": 40,
+			"sell": 12,
+			"minStock": 16,
+			"maxStock": 48,
+			"xpMultiplier": 0.1
+		}
 	],
-	
 	"level3Pool": [
-		{ "item": "minecraft:granite", "buy": 35, "sell": 12, "buyQuantity": 4, "sellQuantity": 2, "minStock": 16, "maxStock": 48 },
-		{ "item": "minecraft:andesite", "buy": 35, "sell": 12, "buyQuantity": 4, "sellQuantity": 2, "minStock": 16, "maxStock": 48 },
-		{ "item": "minecraft:diorite", "buy": 35, "sell": 12, "buyQuantity": 4, "sellQuantity": 2, "minStock": 16, "maxStock": 48 },
-		{ "item": "minecraft:polished_andesite", "buy": 40, "sell": 12, "buyQuantity": 4, "sellQuantity": 2, "minStock": 16, "maxStock": 48 },
-		{ "item": "minecraft:polished_granite", "buy": 40, "sell": 12, "buyQuantity": 4, "sellQuantity": 2, "minStock": 16, "maxStock": 48 },
-		{ "item": "minecraft:polished_diorite", "buy": 40, "sell": 12, "buyQuantity": 4, "sellQuantity": 2, "minStock": 16, "maxStock": 48 },
-		{ "item": "minecraft:dripstone_block", "buy": 40, "sell": 12, "buyQuantity": 4, "sellQuantity": 2, "minStock": 8, "maxStock": 32 }
+		{
+			"item": "minecraft:granite",
+			"buy": 35,
+			"sell": 12,
+			"minStock": 16,
+			"maxStock": 48,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:andesite",
+			"buy": 35,
+			"sell": 12,
+			"minStock": 16,
+			"maxStock": 48,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:diorite",
+			"buy": 35,
+			"sell": 12,
+			"minStock": 16,
+			"maxStock": 48,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:polished_andesite",
+			"buy": 40,
+			"sell": 12,
+			"minStock": 16,
+			"maxStock": 48,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:polished_granite",
+			"buy": 40,
+			"sell": 12,
+			"minStock": 16,
+			"maxStock": 48,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:polished_diorite",
+			"buy": 40,
+			"sell": 12,
+			"minStock": 16,
+			"maxStock": 48,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:dripstone_block",
+			"buy": 40,
+			"sell": 12,
+			"minStock": 8,
+			"maxStock": 32,
+			"xpMultiplier": 0.05
+		}
 	],
-	
 	"level4Pool": [
-		{ "item": "minecraft:quartz", "buy": 70, "sell": 30, "buyQuantity": 2, "sellQuantity": 1, "minStock": 8, "maxStock": 24 },
-		{ "item": "minecraft:terracotta", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:white_terracotta", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:light_gray_terracotta", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:gray_terracotta", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:black_terracotta", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:brown_terracotta", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:red_terracotta", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:orange_terracotta", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:yellow_terracotta", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:lime_terracotta", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:green_terracotta", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:cyan_terracotta", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:light_blue_terracotta", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:blue_terracotta", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:purple_terracotta", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:magenta_terracotta", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:pink_terracotta", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-
-		{ "item": "minecraft:white_glazed_terracotta", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:light_gray_glazed_terracotta", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:gray_glazed_terracotta", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:black_glazed_terracotta", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:brown_glazed_terracotta", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:red_glazed_terracotta", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:orange_glazed_terracotta", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:yellow_glazed_terracotta", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:lime_glazed_terracotta", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:green_glazed_terracotta", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:cyan_glazed_terracotta", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:light_blue_glazed_terracotta", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:blue_glazed_terracotta", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:purple_glazed_terracotta", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:magenta_glazed_terracotta", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 },
-		{ "item": "minecraft:pink_glazed_terracotta", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 64 }
+		{
+			"item": "minecraft:quartz",
+			"buy": 70,
+			"sell": 30,
+			"minStock": 8,
+			"maxStock": 24,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:terracotta",
+			"buy": 80,
+			"sell": 40,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:white_terracotta",
+			"buy": 80,
+			"sell": 40,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:light_gray_terracotta",
+			"buy": 80,
+			"sell": 40,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:gray_terracotta",
+			"buy": 80,
+			"sell": 40,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:black_terracotta",
+			"buy": 80,
+			"sell": 40,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:brown_terracotta",
+			"buy": 80,
+			"sell": 40,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:red_terracotta",
+			"buy": 80,
+			"sell": 40,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:orange_terracotta",
+			"buy": 80,
+			"sell": 40,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:yellow_terracotta",
+			"buy": 80,
+			"sell": 40,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:lime_terracotta",
+			"buy": 80,
+			"sell": 40,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:green_terracotta",
+			"buy": 80,
+			"sell": 40,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:cyan_terracotta",
+			"buy": 80,
+			"sell": 40,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:light_blue_terracotta",
+			"buy": 80,
+			"sell": 40,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:blue_terracotta",
+			"buy": 80,
+			"sell": 40,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:purple_terracotta",
+			"buy": 80,
+			"sell": 40,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:magenta_terracotta",
+			"buy": 80,
+			"sell": 40,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:pink_terracotta",
+			"buy": 80,
+			"sell": 40,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:white_glazed_terracotta",
+			"buy": 100,
+			"sell": 50,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:light_gray_glazed_terracotta",
+			"buy": 100,
+			"sell": 50,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:gray_glazed_terracotta",
+			"buy": 100,
+			"sell": 50,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:black_glazed_terracotta",
+			"buy": 100,
+			"sell": 50,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:brown_glazed_terracotta",
+			"buy": 100,
+			"sell": 50,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:red_glazed_terracotta",
+			"buy": 100,
+			"sell": 50,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:orange_glazed_terracotta",
+			"buy": 100,
+			"sell": 50,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:yellow_glazed_terracotta",
+			"buy": 100,
+			"sell": 50,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:lime_glazed_terracotta",
+			"buy": 100,
+			"sell": 50,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:green_glazed_terracotta",
+			"buy": 100,
+			"sell": 50,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:cyan_glazed_terracotta",
+			"buy": 100,
+			"sell": 50,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:light_blue_glazed_terracotta",
+			"buy": 100,
+			"sell": 50,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:blue_glazed_terracotta",
+			"buy": 100,
+			"sell": 50,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:purple_glazed_terracotta",
+			"buy": 100,
+			"sell": 50,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:magenta_glazed_terracotta",
+			"buy": 100,
+			"sell": 50,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:pink_glazed_terracotta",
+			"buy": 100,
+			"sell": 50,
+			"minStock": 16,
+			"maxStock": 64,
+			"xpMultiplier": 0.05
+		}
 	],
-	
 	"level5Pool": [
-		{ "item": "minecraft:quartz_block", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 8, "maxStock": 32 },
-		{ "item": "minecraft:quartz_pillar", "buy": 100, "sell": 50, "buyQuantity": 8, "sellQuantity": 4, "minStock": 8, "maxStock": 32 }
+		{
+			"item": "minecraft:quartz_block",
+			"buy": 100,
+			"sell": 50,
+			"minStock": 8,
+			"maxStock": 32,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:quartz_pillar",
+			"buy": 100,
+			"sell": 50,
+			"minStock": 8,
+			"maxStock": 32,
+			"xpMultiplier": 0.05
+		}
 	]
 }

@@ -37,45 +37,45 @@ public class BulletinBoardDiscountMixin {
             require = 1
     )
     private static void applyBulletinBoardDiscount(
-            ItemStack stack, 
+            ItemStack stack,
             VillagerEntity villager,
             ProfessionTradeFile profession,
             CallbackInfoReturnable<Integer> cir
     ) {
-        LOGGER.warn("buyPriceForStack mixin called! villager={}, stack={}", 
-            villager != null ? villager.getName().getString() : "null", 
+        LOGGER.debug("buyPriceForStack mixin called! villager={}, stack={}",
+            villager != null ? villager.getName().getString() : "null",
             stack != null ? stack.getTranslationKey() : "null");
-            
+
         if (villager == null || stack.isEmpty()) {
-            LOGGER.warn("Early return: villager={}, stack empty={}", 
+            LOGGER.debug("Early return: villager={}, stack empty={}",
                 villager != null, stack != null && stack.isEmpty());
             return;
         }
-        
+
         // Проверяем наличие скидки от Bulletin Board
         NbtCompound nbt = villager.writeNbt(new NbtCompound());
-        
-        LOGGER.warn("NBT contains BulletinBoardDiscountEndTime: {}", nbt.contains("BulletinBoardDiscountEndTime"));
-        LOGGER.warn("NBT contains BulletinBoardDiscountPercent: {}", nbt.contains("BulletinBoardDiscountPercent"));
-        
+
+        LOGGER.debug("NBT contains BulletinBoardDiscountEndTime: {}", nbt.contains("BulletinBoardDiscountEndTime"));
+        LOGGER.debug("NBT contains BulletinBoardDiscountPercent: {}", nbt.contains("BulletinBoardDiscountPercent"));
+
         if (nbt.contains("BulletinBoardDiscountEndTime") && nbt.contains("BulletinBoardDiscountPercent")) {
             long endTime = nbt.getLong("BulletinBoardDiscountEndTime");
             int discountPercent = nbt.getInt("BulletinBoardDiscountPercent");
             long currentTime = System.currentTimeMillis();
-            
-            LOGGER.warn("Discount found: {}%, ends at {}, current time: {}", discountPercent, endTime, currentTime);
-            
+
+            LOGGER.debug("Discount found: {}%, ends at {}, current time: {}", discountPercent, endTime, currentTime);
+
             if (currentTime < endTime) {
                 // Скидка активна - применяем
                 int originalPrice = cir.getReturnValue();
                 int discountedPrice = Math.max(1, originalPrice * (100 - discountPercent) / 100);
-                LOGGER.warn("Applied {}% discount: {} -> {}", discountPercent, originalPrice, discountedPrice);
+                LOGGER.debug("Applied {}% discount: {} -> {}", discountPercent, originalPrice, discountedPrice);
                 cir.setReturnValue(discountedPrice);
             } else {
-                LOGGER.warn("Discount expired ({} < {})", currentTime, endTime);
+                LOGGER.debug("Discount expired ({} < {})", currentTime, endTime);
             }
         } else {
-            LOGGER.warn("No discount NBT found in villager");
+            LOGGER.debug("No discount NBT found in villager");
         }
     }
     
@@ -95,39 +95,39 @@ public class BulletinBoardDiscountMixin {
             ProfessionTradeFile profession,
             CallbackInfoReturnable<Integer> cir
     ) {
-        LOGGER.warn("sellPriceForStack mixin called! villager={}, stack={}", 
+        LOGGER.debug("sellPriceForStack mixin called! villager={}, stack={}",
             villager != null ? villager.getName().getString() : "null",
             stack != null ? stack.getTranslationKey() : "null");
-            
+
         if (villager == null || stack.isEmpty()) {
-            LOGGER.warn("Early return: villager={}, stack empty={}", 
+            LOGGER.debug("Early return: villager={}, stack empty={}",
                 villager != null, stack != null && stack.isEmpty());
             return;
         }
-        
+
         NbtCompound nbt = villager.writeNbt(new NbtCompound());
-        
-        LOGGER.warn("NBT contains BulletinBoardDiscountEndTime: {}", nbt.contains("BulletinBoardDiscountEndTime"));
-        LOGGER.warn("NBT contains BulletinBoardDiscountPercent: {}", nbt.contains("BulletinBoardDiscountPercent"));
-        
+
+        LOGGER.debug("NBT contains BulletinBoardDiscountEndTime: {}", nbt.contains("BulletinBoardDiscountEndTime"));
+        LOGGER.debug("NBT contains BulletinBoardDiscountPercent: {}", nbt.contains("BulletinBoardDiscountPercent"));
+
         if (nbt.contains("BulletinBoardDiscountEndTime") && nbt.contains("BulletinBoardDiscountPercent")) {
             long endTime = nbt.getLong("BulletinBoardDiscountEndTime");
             int discountPercent = nbt.getInt("BulletinBoardDiscountPercent");
             long currentTime = System.currentTimeMillis();
-            
-            LOGGER.warn("Discount found: {}%, ends at {}, current time: {}", discountPercent, endTime, currentTime);
-            
+
+            LOGGER.debug("Discount found: {}%, ends at {}, current time: {}", discountPercent, endTime, currentTime);
+
             if (currentTime < endTime) {
                 // Скидка активна - игрок получает больше изумрудов
                 int originalPrice = cir.getReturnValue();
                 int increasedPrice = Math.max(1, originalPrice * (100 + discountPercent) / 100);
-                LOGGER.warn("Applied {}% sell bonus: {} -> {}", discountPercent, originalPrice, increasedPrice);
+                LOGGER.debug("Applied {}% sell bonus: {} -> {}", discountPercent, originalPrice, increasedPrice);
                 cir.setReturnValue(increasedPrice);
             } else {
-                LOGGER.warn("Discount expired ({} < {})", currentTime, endTime);
+                LOGGER.debug("Discount expired ({} < {})", currentTime, endTime);
             }
         } else {
-            LOGGER.warn("No discount NBT found in villager");
+            LOGGER.debug("No discount NBT found in villager");
         }
     }
 }

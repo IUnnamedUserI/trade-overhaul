@@ -3,6 +3,7 @@ package com.unnameduser.tradeoverhaul.client;
 import com.unnameduser.tradeoverhaul.TradeOverhaulMod;
 import com.unnameduser.tradeoverhaul.client.gui.VillagerTradeScreen;
 import com.unnameduser.tradeoverhaul.client.gui.VillagerTradeScreenHandler;
+import com.unnameduser.tradeoverhaul.common.network.DamageReputationSyncPayload;
 import com.unnameduser.tradeoverhaul.common.network.ProfessionLevelSyncPayload;
 import com.unnameduser.tradeoverhaul.common.network.VillagerInventorySyncPayload;
 import net.fabricmc.api.ClientModInitializer;
@@ -55,8 +56,20 @@ public class TradeOverhaulClient implements ClientModInitializer {
 						&& tradeHandler.syncId == payload.syncId()) {
 					// Обновляем данные о профессии (с трекингом предметов)
 					tradeHandler.updateProfessionLevel(payload.level(), payload.experience(), payload.tradesCompleted(), payload.fractionalXp(), payload.soldItemsTracker());
-					TradeOverhaulMod.LOGGER.debug("Received profession level sync: level={}, exp={}, fractionalXp={}", 
+					TradeOverhaulMod.LOGGER.debug("Received profession level sync: level={}, exp={}, fractionalXp={}",
 						payload.level(), payload.experience(), payload.fractionalXp());
+				}
+			});
+		});
+
+		// Регистрируем обработчик синхронизации репутации урона
+		ClientPlayNetworking.registerGlobalReceiver(DamageReputationSyncPayload.ID, (client, handler, buf, responseSender) -> {
+			DamageReputationSyncPayload payload = DamageReputationSyncPayload.read(buf);
+			client.execute(() -> {
+				if (client.player != null && client.player.currentScreenHandler instanceof VillagerTradeScreenHandler tradeHandler
+						&& tradeHandler.syncId == payload.syncId()) {
+					tradeHandler.updateDamageReputation(payload.damageReputation());
+					TradeOverhaulMod.LOGGER.debug("Received damage reputation sync: {} entries", payload.damageReputation().size());
 				}
 			});
 		});

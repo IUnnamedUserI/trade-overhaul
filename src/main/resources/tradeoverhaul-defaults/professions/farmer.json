@@ -1,35 +1,23 @@
 {
 	"profession": "minecraft:farmer",
 	"offersCount": 10,
-	"staticPool": [],
-	"weaponPool": [],
-	"toolPool": [],
-	"generalPool": [],
 	"buyPool": [
 		{
 			"tag": "c:seeds",
 			"buyPrice": 20,
-			"buyQuantity": 20,
 			"discountFactor": 70
 		},
 		{
 			"tag": "c:bones",
 			"buyPrice": 30,
-			"buyQuantity": 8,
 			"discountFactor": 80
 		},
 		{
 			"tag": "c:clay_balls",
 			"buyPrice": 25,
-			"buyQuantity": 12,
 			"discountFactor": 75
 		}
 	],
-	"itemPriceMultipliers": {
-		"minecraft:golden_carrot": 2.0,
-		"minecraft:glistering_melon_slice": 1.5
-	},
-	
 	"levelMoneySettings": {
 		"level1StartMoney": 300,
 		"level2StartMoney": 500,
@@ -42,45 +30,222 @@
 		"level4RestockMoney": 1600,
 		"level5RestockMoney": 2500
 	},
-	
 	"level1Pool": [
-		{ "item": "minecraft:wheat_seeds", "buy": 10, "sell": 5, "buyQuantity": 24, "sellQuantity": 12, "minStock": 24, "maxStock": 96 },
-		{ "item": "minecraft:beetroot_seeds", "buy": 15, "sell": 5, "buyQuantity": 24, "sellQuantity": 12, "minStock": 24, "maxStock": 96 },
-		{ "item": "minecraft:bread", "buy": 65, "sell": 30, "buyQuantity": 6, "sellQuantity": 3, "minStock": 6, "maxStock": 16 },
-		{ "item": "minecraft:wheat", "buy": 20, "sell": 10, "buyQuantity": 20, "sellQuantity": 10, "minStock": 12, "maxStock": 48 },
-		{ "item": "minecraft:carrot", "buy": 25, "sell": 15, "buyQuantity": 15, "sellQuantity": 8, "minStock": 12, "maxStock": 48 },
-		{ "item": "minecraft:potato", "buy": 20, "sell": 10, "buyQuantity": 15, "sellQuantity": 8, "minStock": 12, "maxStock": 48 },
-		{ "item": "minecraft:beetroot", "buy": 35, "sell": 20, "buyQuantity": 12, "sellQuantity": 6, "minStock": 12, "maxStock": 48 }
+		{
+			"item": "minecraft:wheat_seeds",
+			"buy": 10,
+			"sell": 5,
+			"minStock": 24,
+			"maxStock": 96,
+			"xpMultiplier": 0.01
+		},
+		{
+			"item": "minecraft:beetroot_seeds",
+			"buy": 15,
+			"sell": 5,
+			"minStock": 24,
+			"maxStock": 96,
+			"xpMultiplier": 0.01
+		},
+		{
+			"item": "minecraft:bread",
+			"buy": 65,
+			"sell": 35,
+			"minStock": 6,
+			"maxStock": 16,
+			"xpMultiplier": 0.1
+		},
+		{
+			"item": "minecraft:wheat",
+			"buy": 20,
+			"sell": 10,
+			"minStock": 12,
+			"maxStock": 48,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:carrot",
+			"buy": 25,
+			"sell": 15,
+			"minStock": 12,
+			"maxStock": 48,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:potato",
+			"buy": 20,
+			"sell": 10,
+			"minStock": 12,
+			"maxStock": 48,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:beetroot",
+			"buy": 35,
+			"sell": 20,
+			"minStock": 12,
+			"maxStock": 48,
+			"xpMultiplier": 0.05
+		}
 	],
-	
 	"level2Pool": [
-		{ "item": "minecraft:melon_seeds", "buy": 20, "sell": 5, "buyQuantity": 18, "sellQuantity": 10, "minStock": 6, "maxStock": 12 },
-		{ "item": "minecraft:pumpkin_seeds", "buy": 20, "sell": 5, "buyQuantity": 18, "sellQuantity": 10, "minStock": 6, "maxStock": 12 },
-		{ "item": "minecraft:pumpkin", "buy": 130, "sell": 40, "buyQuantity": 18, "sellQuantity": 10, "minStock": 2, "maxStock": 6 },
-		{ "item": "minecraft:apple", "buy": 40, "sell": 15, "buyQuantity": 4, "sellQuantity": 2, "minStock": 8, "maxStock": 24 },
-		{ "item": "minecraft:sweet_berries", "buy": 20, "sell": 4, "buyQuantity": 1, "sellQuantity": 1, "minStock": 8, "maxStock": 24},
-		{ "item": "minecraft:melon_slice", "buy": 20, "sell": 4, "buyQuantity": 1, "sellQuantity": 1, "minStock": 8, "maxStock": 24}
+		{
+			"item": "minecraft:melon_seeds",
+			"buy": 20,
+			"sell": 5,
+			"minStock": 6,
+			"maxStock": 12,
+			"xpMultiplier": 0.01
+		},
+		{
+			"item": "minecraft:pumpkin_seeds",
+			"buy": 20,
+			"sell": 5,
+			"minStock": 6,
+			"maxStock": 12,
+			"xpMultiplier": 0.01
+		},
+		{
+			"item": "minecraft:pumpkin",
+			"buy": 130,
+			"sell": 40,
+			"minStock": 2,
+			"maxStock": 6,
+			"xpMultiplier": 0.1
+		},
+		{
+			"item": "minecraft:apple",
+			"buy": 40,
+			"sell": 15,
+			"minStock": 8,
+			"maxStock": 24,
+			"xpMultiplier": 0.1
+		},
+		{
+			"item": "minecraft:sweet_berries",
+			"buy": 20,
+			"sell": 4,
+			"minStock": 8,
+			"maxStock": 24,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:melon_slice",
+			"buy": 20,
+			"sell": 4,
+			"minStock": 8,
+			"maxStock": 24,
+			"xpMultiplier": 0.05
+		}
 	],
-	
 	"level3Pool": [
-		{ "item": "minecraft:sugar_cane", "buy": 15, "sell": 5, "buyQuantity": 12, "sellQuantity": 6, "minStock": 8, "maxStock": 24 },
-		{ "item": "minecraft:egg", "buy": 50, "sell": 25, "buyQuantity": 4, "sellQuantity": 2, "minStock": 4, "maxStock": 16 },
-		{ "item": "minecraft:pumpkin_pie", "buy": 160, "sell": 60, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6},
-		{ "item": "minecraft:cookie", "buy": 20, "sell": 5, "buyQuantity": 1, "sellQuantity": 1, "minStock": 8, "maxStock": 32},
-		{ "item": "minecraft:beetroot_soup", "buy": 160, "sell": 90, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6},
-		{ "item": "minecraft:mushroom_stew", "buy": 160, "sell": 60, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6}
+		{
+			"item": "minecraft:sugar_cane",
+			"buy": 15,
+			"sell": 5,
+			"minStock": 8,
+			"maxStock": 24,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:egg",
+			"buy": 50,
+			"sell": 25,
+			"minStock": 4,
+			"maxStock": 16,
+			"xpMultiplier": 0.2
+		},
+		{
+			"item": "minecraft:pumpkin_pie",
+			"buy": 160,
+			"sell": 60,
+			"minStock": 2,
+			"maxStock": 6,
+			"xpMultiplier": 0.5
+		},
+		{
+			"item": "minecraft:cookie",
+			"buy": 20,
+			"sell": 5,
+			"minStock": 8,
+			"maxStock": 32,
+			"xpMultiplier": 0.1
+		},
+		{
+			"item": "minecraft:beetroot_soup",
+			"buy": 160,
+			"sell": 90,
+			"minStock": 2,
+			"maxStock": 6,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:mushroom_stew",
+			"buy": 160,
+			"sell": 60,
+			"minStock": 2,
+			"maxStock": 6,
+			"xpMultiplier": 1.0
+		}
 	],
-	
 	"level4Pool": [
-		{ "item": "minecraft:hay_block", "buy": 200, "sell": 50, "buyQuantity": 2, "sellQuantity": 1, "minStock": 2, "maxStock": 8 },
-		{ "item": "minecraft:dried_kelp", "buy": 10, "sell": 4, "buyQuantity": 8, "sellQuantity": 4, "minStock": 16, "maxStock": 48 },
-		{ "item": "minecraft:cake", "buy": 240, "sell": 120, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 4 },
-		{ "item": "minecraft:cocoa_beans", "buy": 30, "sell": 5, "buyQuantity": 1, "sellQuantity": 1, "minStock": 4, "maxStock": 8}
+		{
+			"item": "minecraft:hay_block",
+			"buy": 200,
+			"sell": 90,
+			"minStock": 2,
+			"maxStock": 8,
+			"xpMultiplier": 0.5
+		},
+		{
+			"item": "minecraft:dried_kelp",
+			"buy": 10,
+			"sell": 4,
+			"minStock": 16,
+			"maxStock": 48,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:cake",
+			"buy": 240,
+			"sell": 120,
+			"minStock": 1,
+			"maxStock": 4,
+			"xpMultiplier": 2.0
+		},
+		{
+			"item": "minecraft:cocoa_beans",
+			"buy": 30,
+			"sell": 5,
+			"minStock": 4,
+			"maxStock": 8,
+			"xpMultiplier": 0.1
+		}
 	],
-	
 	"level5Pool": [
-		{ "item": "minecraft:golden_carrot", "buy": 300, "sell": 100, "buyQuantity": 2, "sellQuantity": 1, "minStock": 4, "maxStock": 12 },
-		{ "item": "minecraft:honey_bottle", "buy": 100, "sell": 50, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6},
-		{ "item": "minecraft:glistering_melon_slice", "buy": 600, "sell": 300, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 3}
+		{
+			"item": "minecraft:golden_carrot",
+			"buy": 300,
+			"sell": 100,
+			"minStock": 4,
+			"maxStock": 12,
+			"xpMultiplier": 3.0
+		},
+		{
+			"item": "minecraft:honey_bottle",
+			"buy": 100,
+			"sell": 50,
+			"minStock": 2,
+			"maxStock": 6,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:glistering_melon_slice",
+			"buy": 600,
+			"sell": 300,
+			"minStock": 1,
+			"maxStock": 3,
+			"xpMultiplier": 2.0
+		}
 	]
 }

@@ -1,26 +1,95 @@
 {
 	"profession": "minecraft:weaponsmith",
 	"offersCount": 10,
-	"staticPool": [],
-	"weaponPool": [],
-	"toolPool": [],
-	"generalPool": [],
 	"buyPool": [
 		{
 			"tag": "c:ingots/iron",
 			"buyPrice": 100,
-			"buyQuantity": 8,
 			"discountFactor": 60
 		},
 		{
 			"tag": "c:obsidian",
 			"buyPrice": 200,
-			"buyQuantity": 4,
 			"discountFactor": 50
 		}
 	],
-	"itemPriceMultipliers": {},
-	
+	"playerSellPool": [
+		{
+			"item": "minecraft:wooden_sword",
+			"buyPrice": 150
+		},
+		{
+			"item": "minecraft:stone_sword",
+			"buyPrice": 250
+		},
+		{
+			"item": "minecraft:golden_sword",
+			"buyPrice": 300
+		},
+		{
+			"item": "minecraft:wooden_axe",
+			"buyPrice": 120
+		},
+		{
+			"item": "minecraft:stone_axe",
+			"buyPrice": 220
+		},
+		{
+			"item": "minecraft:golden_axe",
+			"buyPrice": 280
+		}
+	],
+	"weaponEnchantments": [
+		{
+			"id": "minecraft:sharpness",
+			"max_level": 3
+		},
+		{
+			"id": "minecraft:smite",
+			"max_level": 3
+		},
+		{
+			"id": "minecraft:bane_of_arthropods",
+			"max_level": 3
+		},
+		{
+			"id": "minecraft:fire_aspect",
+			"max_level": 1
+		},
+		{
+			"id": "minecraft:looting",
+			"max_level": 2
+		},
+		{
+			"id": "minecraft:sweeping",
+			"max_level": 2
+		},
+		{
+			"id": "minecraft:knockback",
+			"max_level": 1
+		},
+		{
+			"id": "minecraft:unbreaking",
+			"max_level": 2
+		}
+	],
+	"toolEnchantments": [
+		{
+			"id": "minecraft:efficiency",
+			"max_level": 3
+		},
+		{
+			"id": "minecraft:fortune",
+			"max_level": 2
+		},
+		{
+			"id": "minecraft:silk_touch"
+		},
+		{
+			"id": "minecraft:unbreaking",
+			"max_level": 2
+		}
+	],
 	"levelMoneySettings": {
 		"level1StartMoney": 300,
 		"level2StartMoney": 500,
@@ -33,28 +102,101 @@
 		"level4RestockMoney": 1600,
 		"level5RestockMoney": 2500
 	},
-	
 	"level1Pool": [
-		{ "item": "minecraft:coal", "buy": 12, "sell": 6, "buyQuantity": 12, "sellQuantity": 6, "minStock": 12, "maxStock": 36 },
-		{ "item": "minecraft:iron_sword", "buy": 800, "sell": 400, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:iron_axe", "buy": 1000, "sell": 500, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
+		{
+			"item": "minecraft:coal",
+			"buy": 12,
+			"sell": 6,
+			"minStock": 12,
+			"maxStock": 36,
+			"xpMultiplier": 0.05
+		},
+		{
+			"item": "minecraft:iron_sword",
+			"buy": 800,
+			"sell": 400,
+			"minStock": 1,
+			"maxStock": 1,
+			"enchant": true,
+			"enchantChance": 70,
+			"enchantMaxCount": 2,
+			"enchantMinLevel": 1,
+			"enchantMaxLevel": 2,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:iron_axe",
+			"buy": 1000,
+			"sell": 500,
+			"minStock": 1,
+			"maxStock": 1,
+			"xpMultiplier": 1.0
+		}
 	],
-	
 	"level2Pool": [
-		{ "item": "minecraft:iron_ingot", "buy": 200, "sell": 110, "buyQuantity": 8, "sellQuantity": 4, "minStock": 4, "maxStock": 12 },
-		{ "item": "minecraft:bell", "buy": 1800, "sell": 800, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
+		{
+			"item": "minecraft:iron_ingot",
+			"buy": 200,
+			"sell": 110,
+			"minStock": 4,
+			"maxStock": 12,
+			"xpMultiplier": 0.1
+		},
+		{
+			"item": "minecraft:bell",
+			"buy": 1800,
+			"sell": 800,
+			"minStock": 1,
+			"maxStock": 1,
+			"xpMultiplier": 0.5
+		}
 	],
-	
 	"level3Pool": [
-		{ "item": "minecraft:flint", "buy": 25, "sell": 10, "buyQuantity": 1, "sellQuantity": 1, "minStock": 8, "maxStock": 32 }
+		{
+			"item": "minecraft:flint",
+			"buy": 25,
+			"sell": 10,
+			"minStock": 8,
+			"maxStock": 32,
+			"xpMultiplier": 0.05
+		}
 	],
-	
 	"level4Pool": [
-		{ "item": "minecraft:diamond_axe", "buy": 4000, "sell": 1800, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:diamond", "buy": 1200, "sell": 600, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
+		{
+			"item": "minecraft:diamond_axe",
+			"buy": 4000,
+			"sell": 1800,
+			"minStock": 1,
+			"maxStock": 1,
+			"enchant": true,
+			"enchantChance": 70,
+			"enchantMaxCount": 3,
+			"enchantMinLevel": 1,
+			"enchantMaxLevel": 2,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:diamond",
+			"buy": 1200,
+			"sell": 600,
+			"minStock": 1,
+			"maxStock": 1,
+			"xpMultiplier": 0.5
+		}
 	],
-	
 	"level5Pool": [
-		{ "item": "minecraft:diamond_sword", "buy": 3600, "sell": 750, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
+		{
+			"item": "minecraft:diamond_sword",
+			"buy": 3600,
+			"sell": 750,
+			"minStock": 1,
+			"maxStock": 1,
+			"enchant": true,
+			"enchantChance": 70,
+			"enchantMaxCount": 3,
+			"enchantMinLevel": 1,
+			"enchantMaxLevel": 2,
+			"xpMultiplier": 1.0
+		}
 	]
 }

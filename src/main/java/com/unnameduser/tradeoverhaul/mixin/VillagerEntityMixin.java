@@ -1,5 +1,6 @@
 package com.unnameduser.tradeoverhaul.mixin;
 
+import com.unnameduser.tradeoverhaul.TradeOverhaulMod;
 import com.unnameduser.tradeoverhaul.client.gui.VillagerTradeScreenHandlerFactory;
 import com.unnameduser.tradeoverhaul.common.VillagerTradeData;
 import com.unnameduser.tradeoverhaul.common.component.BulletinBoardComponent;
@@ -10,6 +11,8 @@ import com.unnameduser.tradeoverhaul.common.trade.TradeRestock;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import org.jetbrains.annotations.Nullable;
@@ -49,6 +52,9 @@ public class VillagerEntityMixin implements VillagerTradeData {
 
 	@Unique
 	private BulletinBoardComponent tradeOverhaul_bulletinBoardDiscount;
+
+	@Unique
+	private net.minecraft.village.VillagerProfession tradeOverhaul_lastProfession;
 
 	@Override
 	public int tradeOverhaul$getWalletEmeralds() {
@@ -121,24 +127,64 @@ public class VillagerEntityMixin implements VillagerTradeData {
 	@Inject(method = "tick", at = @At("TAIL"))
 	private void tradeOverhaul$onTick(CallbackInfo ci) {
 		VillagerEntity villager = (VillagerEntity) (Object) this;
-		
+
+		// Отслеживаем смену профессии: если житель получил профессию после NONE — сбрасываем компонент и делаем ресток
+		net.minecraft.village.VillagerProfession currentProf = villager.getVillagerData().getProfession();
+		if (tradeOverhaul_lastProfession == null) {
+			tradeOverhaul_lastProfession = currentProf; // Первая инициализация
+		}
+		if (tradeOverhaul_lastProfession == net.minecraft.village.VillagerProfession.NONE
+				&& currentProf != net.minecraft.village.VillagerProfession.NONE
+				&& currentProf != net.minecraft.village.VillagerProfession.NITWIT) {
+			// Житель получил новую профессию — сбрасываем компонент
+			tradeOverhaul$getProfession().resetProfession();
+
+			// Сразу делаем ресток, чтобы у жителя были товары на продажу
+			Identifier profId = Registries.VILLAGER_PROFESSION.getId(currentProf);
+			com.unnameduser.tradeoverhaul.common.config.ProfessionTradeFile file =
+				com.unnameduser.tradeoverhaul.common.config.TradeConfigLoader.getProfession(profId);
+			if (file != null) {
+				TradeOverhaulMod.LOGGER.info("Villager {} got new profession {} — performing initial restock",
+					villager.getUuid(), profId);
+				TradeRestock.forceRestock(villager, file,
+					com.unnameduser.tradeoverhaul.common.config.TradeConfigLoader.getSettings());
+			}
+		}
+		tradeOverhaul_lastProfession = currentProf;
+
 		// Синхронизируем уровень профессии с ванильным уровнем жителя ПЕРЕД рестокoм
-		// Это критически важно для правильной фильтрации товаров по уровням
+		// ВАЖНО: используем МАКСИМУМ из ванильного и мод-уровней, чтобы не терять прогресс
 		VillagerProfessionComponent profession = this.tradeOverhaul$getProfession();
 		int vanillaLevel = villager.getVillagerData().getLevel();
 		int modLevel = profession.getLevel();
-		if (vanillaLevel != modLevel) {
-			// Используем ванильный уровень как приоритетный
+
+		// Если ванильный уровень выше (например, после загрузки мира), используем его
+		// Если мод-уровень выше (например, после торговли), НЕ сбрасываем его
+		if (vanillaLevel > modLevel) {
 			profession.setLevel(vanillaLevel);
 		}
-		
-		// Теперь вызываем ресток с правильным уровнем
-		TradeRestock.tick(villager);
+		// Если мод-уровень выше ванильного, обновляем ванильный
+		else if (modLevel > vanillaLevel && modLevel <= 5) {
+			villager.setVillagerData(villager.getVillagerData().withLevel(modLevel));
+		}
 
-		// Check if active trader is too far or disconnected
+		// Ресток теперь управляется глобальным таймером (GlobalRestockTimer)
+
+		// Проверяем, активен ли трейдер (не закрыл ли он GUI)
 		if (tradeOverhaul_activeTrader != null) {
-			if (!tradeOverhaul_activeTrader.isAlive() ||
-				villager.squaredDistanceTo(tradeOverhaul_activeTrader) > 100.0) { // 10 blocks squared
+			// Проверяем, открыт ли у трейдера экран торговли с этим жителем
+			boolean stillTrading = false;
+			if (tradeOverhaul_activeTrader.isAlive() && tradeOverhaul_activeTrader.currentScreenHandler != null) {
+				if (tradeOverhaul_activeTrader.currentScreenHandler instanceof com.unnameduser.tradeoverhaul.client.gui.VillagerTradeScreenHandler tradeHandler) {
+					// Проверяем, что это тот же житель
+					if (tradeHandler.getVillager() == villager) {
+						stillTrading = true;
+					}
+				}
+			}
+			
+			if (!stillTrading) {
+				// Игрок закрыл GUI или умер - очищаем трейдера
 				tradeOverhaul_activeTrader = null;
 			} else {
 				// Make villager look at active trader

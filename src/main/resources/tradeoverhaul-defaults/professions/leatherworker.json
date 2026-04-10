@@ -1,26 +1,18 @@
 {
 	"profession": "minecraft:leatherworker",
 	"offersCount": 10,
-	"staticPool": [],
-	"weaponPool": [],
-	"toolPool": [],
-	"generalPool": [],
 	"buyPool": [
 		{
 			"tag": "c:leathers",
 			"buyPrice": 80,
-			"buyQuantity": 8,
 			"discountFactor": 65
 		},
 		{
 			"tag": "c:dyes",
 			"buyPrice": 50,
-			"buyQuantity": 12,
 			"discountFactor": 60
 		}
 	],
-	"itemPriceMultipliers": {},
-	
 	"levelMoneySettings": {
 		"level1StartMoney": 300,
 		"level2StartMoney": 500,
@@ -33,32 +25,118 @@
 		"level4RestockMoney": 1600,
 		"level5RestockMoney": 2500
 	},
-	
 	"level1Pool": [
-		{ "item": "minecraft:leather", "buy": 80, "sell": 40, "buyQuantity": 8, "sellQuantity": 4, "minStock": 6, "maxStock": 24 },
-		{ "item": "minecraft:leather_leggings", "buy": 600, "sell": 300, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:leather_chestplate", "buy": 680, "sell": 340, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 }
+		{
+			"item": "minecraft:leather",
+			"buy": 80,
+			"sell": 40,
+			"minStock": 6,
+			"maxStock": 24,
+			"xpMultiplier": 0.1
+		},
+		{
+			"item": "minecraft:leather_leggings",
+			"buy": 600,
+			"sell": 300,
+			"minStock": 1,
+			"maxStock": 1,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:leather_chestplate",
+			"buy": 680,
+			"sell": 340,
+			"minStock": 1,
+			"maxStock": 1,
+			"xpMultiplier": 1.0
+		}
 	],
-	
 	"level2Pool": [
-		{ "item": "minecraft:leather_boots", "buy": 400, "sell": 200, "buyQuantity": 2, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:leather_helmet", "buy": 450, "sell": 225, "buyQuantity": 2, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:flint", "buy": 30, "sell": 12, "buyQuantity": 2, "sellQuantity": 1, "minStock": 4, "maxStock": 16 }
+		{
+			"item": "minecraft:leather_boots",
+			"buy": 400,
+			"sell": 200,
+			"minStock": 1,
+			"maxStock": 1,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:leather_helmet",
+			"buy": 450,
+			"sell": 225,
+			"minStock": 1,
+			"maxStock": 1,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:flint",
+			"buy": 30,
+			"sell": 12,
+			"minStock": 4,
+			"maxStock": 16,
+			"xpMultiplier": 0.05
+		}
 	],
-	
 	"level3Pool": [
-		{ "item": "minecraft:saddle", "buy": 700, "sell": 300, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:item_frame", "buy": 120, "sell": 60, "buyQuantity": 2, "sellQuantity": 1, "minStock": 3, "maxStock": 8 },
-		{ "item": "minecraft:rabbit_hide", "buy": 90, "sell": 50, "buyQuantity": 10, "sellQuantity": 5, "minStock": 4, "maxStock": 24 }
+		{
+			"item": "minecraft:saddle",
+			"buy": 700,
+			"sell": 300,
+			"minStock": 1,
+			"maxStock": 1,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:item_frame",
+			"buy": 120,
+			"sell": 60,
+			"minStock": 3,
+			"maxStock": 8,
+			"xpMultiplier": 0.2
+		},
+		{
+			"item": "minecraft:rabbit_hide",
+			"buy": 90,
+			"sell": 50,
+			"minStock": 4,
+			"maxStock": 24,
+			"xpMultiplier": 0.05
+		}
 	],
-	
 	"level4Pool": [
-		{ "item": "minecraft:horse_armor_leather", "buy": 630, "sell": 300, "buyQuantity": 1, "sellQuantity": 1, "minStock": 1, "maxStock": 1 },
-		{ "item": "minecraft:scute", "buy": 320, "sell": 200, "buyQuantity": 1, "sellQuantity": 1, "minStock": 3, "maxStock": 8 }
+		{
+			"item": "minecraft:horse_armor_leather",
+			"buy": 630,
+			"sell": 300,
+			"minStock": 1,
+			"maxStock": 1,
+			"xpMultiplier": 1.0
+		},
+		{
+			"item": "minecraft:scute",
+			"buy": 320,
+			"sell": 200,
+			"minStock": 3,
+			"maxStock": 8,
+			"xpMultiplier": 0.5
+		}
 	],
-	
 	"level5Pool": [
-		{ "item": "minecraft:name_tag", "buy": 300, "sell": 150, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 },
-		{ "item": "minecraft:lead", "buy": 200, "sell": 70, "buyQuantity": 1, "sellQuantity": 1, "minStock": 2, "maxStock": 6 }
+		{
+			"item": "minecraft:name_tag",
+			"buy": 300,
+			"sell": 150,
+			"minStock": 2,
+			"maxStock": 6,
+			"xpMultiplier": 0.5
+		},
+		{
+			"item": "minecraft:lead",
+			"buy": 200,
+			"sell": 70,
+			"minStock": 2,
+			"maxStock": 6,
+			"xpMultiplier": 0.5
+		}
 	]
 }

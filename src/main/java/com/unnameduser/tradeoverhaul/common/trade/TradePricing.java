@@ -11,187 +11,31 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 
+import java.util.List;
 import java.util.Map;
 
 public final class TradePricing {
 	private TradePricing() {}
 
 	/**
-	 * Возвращает количество предметов за 1 бронзовую монету при покупке у жителя.
+	 * Применяет модификатор цены на основе репутации урона игрока.
+	 * @param basePrice Базовая цена
+	 * @param playerId UUID игрока
+	 * @param profession Profession-компонент жителя
+	 * @param settings Настройки мода
+	 * @return Цена с учётом штрафа за урон
 	 */
-	public static int getBuyQuantity(ItemStack stack, VillagerEntity villager, ProfessionTradeFile profession) {
-		if (stack.isEmpty() || profession == null) return 1;
-		Identifier id = Registries.ITEM.getId(stack.getItem());
-
-		// Static pool
-		if (profession.staticPool != null && !profession.staticPool.isEmpty()) {
-			for (ProfessionTradeFile.StaticPoolEntry e : profession.staticPool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
-					return e.buyQuantity != null && e.buyQuantity > 0 ? e.buyQuantity : 1;
-				}
-			}
-		}
-
-		// Level pools (проверяем все уровни)
-		if (profession.level1Pool != null) {
-			for (ProfessionTradeFile.LevelPoolEntry e : profession.level1Pool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
-					return e.buyQuantity != null && e.buyQuantity > 0 ? e.buyQuantity : 1;
-				}
-			}
-		}
-		if (profession.level2Pool != null) {
-			for (ProfessionTradeFile.LevelPoolEntry e : profession.level2Pool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
-					return e.buyQuantity != null && e.buyQuantity > 0 ? e.buyQuantity : 1;
-				}
-			}
-		}
-		if (profession.level3Pool != null) {
-			for (ProfessionTradeFile.LevelPoolEntry e : profession.level3Pool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
-					return e.buyQuantity != null && e.buyQuantity > 0 ? e.buyQuantity : 1;
-				}
-			}
-		}
-		if (profession.level4Pool != null) {
-			for (ProfessionTradeFile.LevelPoolEntry e : profession.level4Pool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
-					return e.buyQuantity != null && e.buyQuantity > 0 ? e.buyQuantity : 1;
-				}
-			}
-		}
-		if (profession.level5Pool != null) {
-			for (ProfessionTradeFile.LevelPoolEntry e : profession.level5Pool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
-					return e.buyQuantity != null && e.buyQuantity > 0 ? e.buyQuantity : 1;
-				}
-			}
-		}
-
-		// Weapon pool
-		if (profession.weaponPool != null && !profession.weaponPool.isEmpty()) {
-			for (ProfessionTradeFile.WeaponPoolEntry w : profession.weaponPool) {
-				if (w.tag == null) continue;
-				TagKey<net.minecraft.item.Item> tag = getTag(w.tag);
-				if (tag != null && stack.isIn(tag)) {
-					return w.buyQuantity != null && w.buyQuantity > 0 ? w.buyQuantity : 1;
-				}
-			}
-		}
-
-		// Tool pool
-		if (profession.toolPool != null && !profession.toolPool.isEmpty()) {
-			for (ProfessionTradeFile.ToolPoolEntry t : profession.toolPool) {
-				if (t.tag == null) continue;
-				TagKey<net.minecraft.item.Item> tag = getTag(t.tag);
-				if (tag != null && stack.isIn(tag)) {
-					return t.buyQuantity != null && t.buyQuantity > 0 ? t.buyQuantity : 1;
-				}
-			}
-		}
-
-		// General pool
-		if (profession.generalPool != null && !profession.generalPool.isEmpty()) {
-			for (ProfessionTradeFile.GeneralPoolEntry g : profession.generalPool) {
-				if (g.tag == null) continue;
-				TagKey<net.minecraft.item.Item> tag = getTag(g.tag);
-				if (tag != null && stack.isIn(tag)) {
-					return g.buyQuantity != null && g.buyQuantity > 0 ? g.buyQuantity : 1;
-				}
-			}
-		}
-
-		return 1;
-	}
-
-	/**
-	 * Возвращает количество предметов за 1 бронзовую монету при продаже.
-	 */
-	public static int getSellQuantity(ItemStack stack, ProfessionTradeFile profession) {
-		if (stack.isEmpty() || profession == null) return 1;
-		Identifier id = Registries.ITEM.getId(stack.getItem());
-
-		// Static pool
-		if (profession.staticPool != null && !profession.staticPool.isEmpty()) {
-			for (ProfessionTradeFile.StaticPoolEntry e : profession.staticPool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
-					return e.sellQuantity != null && e.sellQuantity > 0 ? e.sellQuantity : 1;
-				}
-			}
-		}
-
-		// Level pools (проверяем все уровни)
-		if (profession.level1Pool != null) {
-			for (ProfessionTradeFile.LevelPoolEntry e : profession.level1Pool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
-					return e.sellQuantity != null && e.sellQuantity > 0 ? e.sellQuantity : 1;
-				}
-			}
-		}
-		if (profession.level2Pool != null) {
-			for (ProfessionTradeFile.LevelPoolEntry e : profession.level2Pool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
-					return e.sellQuantity != null && e.sellQuantity > 0 ? e.sellQuantity : 1;
-				}
-			}
-		}
-		if (profession.level3Pool != null) {
-			for (ProfessionTradeFile.LevelPoolEntry e : profession.level3Pool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
-					return e.sellQuantity != null && e.sellQuantity > 0 ? e.sellQuantity : 1;
-				}
-			}
-		}
-		if (profession.level4Pool != null) {
-			for (ProfessionTradeFile.LevelPoolEntry e : profession.level4Pool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
-					return e.sellQuantity != null && e.sellQuantity > 0 ? e.sellQuantity : 1;
-				}
-			}
-		}
-		if (profession.level5Pool != null) {
-			for (ProfessionTradeFile.LevelPoolEntry e : profession.level5Pool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
-					return e.sellQuantity != null && e.sellQuantity > 0 ? e.sellQuantity : 1;
-				}
-			}
-		}
-
-		// Weapon pool
-		if (profession.weaponPool != null && !profession.weaponPool.isEmpty()) {
-			for (ProfessionTradeFile.WeaponPoolEntry w : profession.weaponPool) {
-				if (w.tag == null) continue;
-				TagKey<net.minecraft.item.Item> tag = getTag(w.tag);
-				if (tag != null && stack.isIn(tag)) {
-					return w.sellQuantity != null && w.sellQuantity > 0 ? w.sellQuantity : 1;
-				}
-			}
-		}
-
-		// Tool pool
-		if (profession.toolPool != null && !profession.toolPool.isEmpty()) {
-			for (ProfessionTradeFile.ToolPoolEntry t : profession.toolPool) {
-				if (t.tag == null) continue;
-				TagKey<net.minecraft.item.Item> tag = getTag(t.tag);
-				if (tag != null && stack.isIn(tag)) {
-					return t.sellQuantity != null && t.sellQuantity > 0 ? t.sellQuantity : 1;
-				}
-			}
-		}
-
-		// General pool
-		if (profession.generalPool != null && !profession.generalPool.isEmpty()) {
-			for (ProfessionTradeFile.GeneralPoolEntry g : profession.generalPool) {
-				if (g.tag == null) continue;
-				TagKey<net.minecraft.item.Item> tag = getTag(g.tag);
-				if (tag != null && stack.isIn(tag)) {
-					return g.sellQuantity != null && g.sellQuantity > 0 ? g.sellQuantity : 1;
-				}
-			}
-		}
-
-		return 1;
+	public static int applyDamageReputation(int basePrice, String playerId,
+			com.unnameduser.tradeoverhaul.common.component.VillagerProfessionComponent profession,
+			TradeOverhaulSettings settings) {
+		double repPercent = profession.getDamageReputationPercent(playerId, settings);
+		TradeOverhaulMod.LOGGER.info("applyDamageReputation: basePrice={}, playerId={}, repPercent={}, totalDamage={}", 
+			basePrice, playerId, repPercent, profession.getDamageReputation(playerId));
+		if (repPercent <= 0.0) return basePrice;
+		double multiplier = 1.0 + (repPercent / 100.0);
+		int newPrice = (int) Math.ceil(basePrice * multiplier);
+		TradeOverhaulMod.LOGGER.info("applyDamageReputation: newPrice={}", newPrice);
+		return newPrice;
 	}
 
 	/**
@@ -207,13 +51,6 @@ public final class TradePricing {
 
 		Identifier id = Registries.ITEM.getId(stack.getItem());
 
-		// Static pool
-		if (profession.staticPool != null && !profession.staticPool.isEmpty()) {
-			for (ProfessionTradeFile.StaticPoolEntry e : profession.staticPool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) return true;
-			}
-		}
-
 		// Level pools (проверяем все уровни)
 		if (profession.level1Pool != null) {
 			for (ProfessionTradeFile.LevelPoolEntry e : profession.level1Pool) {
@@ -241,28 +78,28 @@ public final class TradePricing {
 			}
 		}
 
-		// Weapon pool
-		if (profession.weaponPool != null && !profession.weaponPool.isEmpty()) {
-			for (ProfessionTradeFile.WeaponPoolEntry w : profession.weaponPool) {
-				if (w.tag != null && stack.isIn(getTag(w.tag))) return true;
-			}
-		}
-		// Tool pool
-		if (profession.toolPool != null && !profession.toolPool.isEmpty()) {
-			for (ProfessionTradeFile.ToolPoolEntry t : profession.toolPool) {
-				if (t.tag != null && stack.isIn(getTag(t.tag))) return true;
-			}
-		}
-		// General pool
-		if (profession.generalPool != null && !profession.generalPool.isEmpty()) {
-			for (ProfessionTradeFile.GeneralPoolEntry g : profession.generalPool) {
-				if (g.tag != null && stack.isIn(getTag(g.tag))) return true;
-			}
-		}
 		// Buy pool
 		if (profession.buyPool != null && !profession.buyPool.isEmpty()) {
 			for (ProfessionTradeFile.BuyOnlyEntry b : profession.buyPool) {
-				if (b.tag != null && stack.isIn(getTag(b.tag))) return true;
+				if (b.tag != null) {
+					boolean isInTag = stack.isIn(getTag(b.tag));
+					TradeOverhaulMod.LOGGER.info("canVillagerBuyItem: buyPool tag={}, item={}, isInTag={}", b.tag, Registries.ITEM.getId(stack.getItem()), isInTag);
+					if (isInTag) return true;
+				}
+				// Проверяем конкретный предмет
+				if (b.item != null && id.equals(Identifier.tryParse(b.item))) {
+					TradeOverhaulMod.LOGGER.info("canVillagerBuyItem: buyPool item={} matched!", b.item);
+					return true;
+				}
+			}
+		}
+		// Player sell pool - предметы, которые игрок может продать жителю
+		if (profession.playerSellPool != null && !profession.playerSellPool.isEmpty()) {
+			for (ProfessionTradeFile.PlayerSellEntry e : profession.playerSellPool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
+					TradeOverhaulMod.LOGGER.info("canVillagerBuyItem: playerSellPool item={} matched!", e.item);
+					return true;
+				}
 			}
 		}
 		return false;
@@ -283,65 +120,212 @@ public final class TradePricing {
 			return getEnchantedBookPrice(stack, profession);
 		}
 
-		Identifier id = Registries.ITEM.getId(stack.getItem());
-
-		if (profession.staticPool != null && !profession.staticPool.isEmpty()) {
-			for (ProfessionTradeFile.StaticPoolEntry e : profession.staticPool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
-					return Math.max(1, e.buy);
-				}
+		// Если предмет был продан игроком (тег PlayerSold), цена выкупа = sellPrice * 2
+		if (com.unnameduser.tradeoverhaul.common.util.ItemTagHelper.isPlayerSold(stack)) {
+			int sellPrice = getSellPrice(stack, profession);
+			if (sellPrice > 0) {
+				int buyPrice = sellPrice * 2;
+				TradeOverhaulMod.LOGGER.info("getBuyPrice: PlayerSold item={}, sellPrice={}, buyPrice={}",
+					Registries.ITEM.getId(stack.getItem()), sellPrice, buyPrice);
+				return buyPrice;
 			}
 		}
 
+		Identifier id = Registries.ITEM.getId(stack.getItem());
+
 		// Level pools (проверяем все уровни)
+		// Сначала ищем запись, точно соответствующую предмету (с зачарованием или без)
 		if (profession.level1Pool != null) {
-			for (ProfessionTradeFile.LevelPoolEntry e : profession.level1Pool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
-					return Math.max(1, e.buy != null ? e.buy : e.buyPrice != null ? e.buyPrice : 0);
-				}
+			Integer price = findPriceInPool(profession.level1Pool, stack, id, true);
+			if (price != null) {
+				price = applyEnchantmentPriceModifier(price, stack, profession);
+				TradeOverhaulMod.LOGGER.debug("getBuyPrice level1Pool: item={}, price={}", id, price);
+				return price;
 			}
 		}
 		if (profession.level2Pool != null) {
-			for (ProfessionTradeFile.LevelPoolEntry e : profession.level2Pool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
-					return Math.max(1, e.buy != null ? e.buy : e.buyPrice != null ? e.buyPrice : 0);
-				}
+			Integer price = findPriceInPool(profession.level2Pool, stack, id, true);
+			if (price != null) {
+				price = applyEnchantmentPriceModifier(price, stack, profession);
+				TradeOverhaulMod.LOGGER.debug("getBuyPrice level2Pool: item={}, price={}", id, price);
+				return price;
 			}
 		}
 		if (profession.level3Pool != null) {
-			for (ProfessionTradeFile.LevelPoolEntry e : profession.level3Pool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
-					return Math.max(1, e.buy != null ? e.buy : e.buyPrice != null ? e.buyPrice : 0);
-				}
+			Integer price = findPriceInPool(profession.level3Pool, stack, id, true);
+			if (price != null) {
+				price = applyEnchantmentPriceModifier(price, stack, profession);
+				TradeOverhaulMod.LOGGER.debug("getBuyPrice level3Pool: item={}, price={}", id, price);
+				return price;
 			}
 		}
 		if (profession.level4Pool != null) {
-			for (ProfessionTradeFile.LevelPoolEntry e : profession.level4Pool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
-					return Math.max(1, e.buy != null ? e.buy : e.buyPrice != null ? e.buyPrice : 0);
-				}
+			Integer price = findPriceInPool(profession.level4Pool, stack, id, true);
+			if (price != null) {
+				price = applyEnchantmentPriceModifier(price, stack, profession);
+				TradeOverhaulMod.LOGGER.debug("getBuyPrice level4Pool: item={}, price={}", id, price);
+				return price;
 			}
 		}
 		if (profession.level5Pool != null) {
-			for (ProfessionTradeFile.LevelPoolEntry e : profession.level5Pool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
-					return Math.max(1, e.buy != null ? e.buy : e.buyPrice != null ? e.buyPrice : 0);
-				}
+			Integer price = findPriceInPool(profession.level5Pool, stack, id, true);
+			if (price != null) {
+				price = applyEnchantmentPriceModifier(price, stack, profession);
+				TradeOverhaulMod.LOGGER.debug("getBuyPrice level5Pool: item={}, price={}", id, price);
+				return price;
 			}
 		}
+		
+		TradeOverhaulMod.LOGGER.warn("getBuyPrice: no price found for item={} in profession={}", id, profession.profession);
 
-		// Проверяем toolPool для мотыг с фиксированной ценой
-		if (profession.toolPool != null && !profession.toolPool.isEmpty()) {
-			for (ProfessionTradeFile.ToolPoolEntry t : profession.toolPool) {
-				if (t.tag != null && stack.isIn(getTag(t.tag))) {
-					if (t.buyPrice != null && t.buyPrice > 0) {
-						return t.buyPrice;
+		// Проверяем buyPool - предметы, которые житель хочет купить у игрока
+		if (profession.buyPool != null && !profession.buyPool.isEmpty()) {
+			for (ProfessionTradeFile.BuyOnlyEntry b : profession.buyPool) {
+				if (b.tag != null) {
+					boolean isInTag = stack.isIn(getTag(b.tag));
+					TradeOverhaulMod.LOGGER.info("getSellPrice: buyPool tag={}, item={}, isInTag={}, buyPrice={}", b.tag, Registries.ITEM.getId(stack.getItem()), isInTag, b.buyPrice);
+					if (isInTag) {
+						int price = Math.max(1, b.buyPrice != null ? b.buyPrice : 0);
+						TradeOverhaulMod.LOGGER.info("getSellPrice: returning buyPrice={}", price);
+						return price;
 					}
+				}
+				// Проверяем конкретный предмет
+				if (b.item != null && id.equals(Identifier.tryParse(b.item))) {
+					int price = Math.max(1, b.buyPrice != null ? b.buyPrice : 0);
+					TradeOverhaulMod.LOGGER.info("getSellPrice: buyPool item={} matched, returning buyPrice={}", b.item, price);
+					return price;
 				}
 			}
 		}
 
 		return 0;
+	}
+
+	/**
+	 * Применяет модификатор цены на основе зачарований предмета.
+	 * Формула: basePrice × (1 + 0.25 × numEnchants + 0.15 × totalEnchantLevels)
+	 * - +25% за каждое зачарование
+	 * - +15% за каждый уровень зачарования
+	 */
+	private static int applyEnchantmentPriceModifier(int basePrice, ItemStack stack, ProfessionTradeFile profession) {
+		if (!stack.hasEnchantments()) return basePrice;
+
+		net.minecraft.nbt.NbtCompound nbt = stack.getNbt();
+		if (nbt == null) return basePrice;
+
+		net.minecraft.nbt.NbtList enchantList = nbt.getList("Enchantments", net.minecraft.nbt.NbtElement.COMPOUND_TYPE);
+		if (enchantList.isEmpty()) return basePrice;
+
+		int numEnchants = enchantList.size();
+		int totalLevels = 0;
+
+		for (int i = 0; i < enchantList.size(); i++) {
+			net.minecraft.nbt.NbtCompound enchantNbt = enchantList.getCompound(i);
+			totalLevels += enchantNbt.getShort("lvl");
+		}
+
+		// Формула: basePrice × (1 + 0.25 × numEnchants + 0.15 × totalEnchantLevels)
+		double modifier = 1.0 + (0.25 * numEnchants) + (0.15 * totalLevels);
+		int finalPrice = (int) Math.round(basePrice * modifier);
+
+		TradeOverhaulMod.LOGGER.debug("applyEnchantmentPriceModifier: base={}, numEnchants={}, totalLevels={}, modifier={}, final={}",
+			basePrice, numEnchants, totalLevels, modifier, finalPrice);
+
+		return Math.max(1, finalPrice);
+	}
+
+	/**
+	 * Ищет цену в пуле, учитывая зачарования предмета.
+	 * @param useBuyPrice если true - использует buy цену, если false - sell цену
+	 */
+	private static Integer findPriceInPool(List<ProfessionTradeFile.LevelPoolEntry> pool, ItemStack stack, Identifier itemId, boolean useBuyPrice) {
+		ProfessionTradeFile.LevelPoolEntry fallbackEntry = null;
+		
+		for (ProfessionTradeFile.LevelPoolEntry e : pool) {
+			if (e.item != null && itemId.equals(Identifier.tryParse(e.item))) {
+				// Если у записи нет зачарования - это fallback вариант
+				if (e.enchantment == null) {
+					fallbackEntry = e;
+					continue;
+				}
+				
+				// Если у записи есть зачарование, проверяем совпадение
+				if (stack.hasEnchantments()) {
+					// Получаем зачарование из предмета
+					net.minecraft.nbt.NbtCompound nbt = stack.getNbt();
+					if (nbt != null) {
+						net.minecraft.nbt.NbtList enchantList = nbt.getList("Enchantments", net.minecraft.nbt.NbtElement.COMPOUND_TYPE);
+						if (!enchantList.isEmpty()) {
+							net.minecraft.nbt.NbtCompound firstEnchant = enchantList.getCompound(0);
+							String itemEnchantId = firstEnchant.getString("id");
+							
+							// Проверяем совпадение зачарования
+							if (e.enchantment.equals(itemEnchantId)) {
+								// Точное совпадение - используем цену из entry
+								int price = useBuyPrice 
+									? (e.buy != null ? e.buy : e.buyPrice != null ? e.buyPrice : 0)
+									: (e.sell != null ? e.sell : e.sellPrice != null ? e.sellPrice : 0);
+								return Math.max(1, price);
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		// Не нашли точного совпадения - используем fallback (запись без зачарования)
+		if (fallbackEntry != null) {
+			int price = useBuyPrice 
+				? (fallbackEntry.buy != null ? fallbackEntry.buy : fallbackEntry.buyPrice != null ? fallbackEntry.buyPrice : 0)
+				: (fallbackEntry.sell != null ? fallbackEntry.sell : fallbackEntry.sellPrice != null ? fallbackEntry.sellPrice : 0);
+			return Math.max(1, price);
+		}
+		
+		return null;
+	}
+
+	/**
+	 * Рассчитывает цену зачарованного предмета (меч, инструмент и т.д.)
+	 * Формула: base_price + (enchantment_level * bonus_per_level)
+	 * Если в entry есть фиксированная цена, используется она + бонус за зачарование.
+	 */
+	private static int getEnchantedItemPrice(ItemStack stack, ProfessionTradeFile.LevelPoolEntry entry) {
+		int basePrice = entry.buy != null ? entry.buy : (entry.buyPrice != null ? entry.buyPrice : 0);
+		
+		// Получаем уровень зачарования из NBT предмета
+		int enchantLevel = getEnchantmentLevelFromItem(stack);
+		
+		// Бонус за зачарование: 20% от базовой цены за уровень
+		int enchantBonus = (int) (basePrice * 0.2 * enchantLevel);
+		
+		int finalPrice = basePrice + enchantBonus;
+		return Math.max(1, finalPrice);
+	}
+
+	/**
+	 * Получает уровень зачарования из NBT предмета
+	 */
+	private static int getEnchantmentLevelFromItem(ItemStack stack) {
+		net.minecraft.nbt.NbtCompound nbt = stack.getNbt();
+		if (nbt == null) return 1;
+		
+		net.minecraft.nbt.NbtList enchantList = nbt.getList("Enchantments", net.minecraft.nbt.NbtElement.COMPOUND_TYPE);
+		if (enchantList.isEmpty()) {
+			// Проверяем альтернативный формат
+			enchantList = nbt.getList("StoredEnchantments", net.minecraft.nbt.NbtElement.COMPOUND_TYPE);
+		}
+		
+		if (enchantList.isEmpty()) return 1;
+		
+		// Суммируем уровни всех зачарований для простоты
+		int totalLevel = 0;
+		for (int i = 0; i < enchantList.size(); i++) {
+			net.minecraft.nbt.NbtCompound enchantNbt = enchantList.getCompound(i);
+			totalLevel += enchantNbt.getShort("lvl");
+		}
+		
+		return Math.max(1, totalLevel);
 	}
 	
 	/**
@@ -418,87 +402,82 @@ public final class TradePricing {
 			return Math.max(200, buyPrice / 2); // Минимум 2 серебряных монеты
 		}
 
-		if (profession.staticPool != null && !profession.staticPool.isEmpty()) {
-			for (ProfessionTradeFile.StaticPoolEntry e : profession.staticPool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
-					// Возвращаем buy цену, т.к. житель покупает у игрока
-					return Math.max(1, e.buy);
-				}
-			}
-		}
-
 		// Level pools (проверяем все уровни)
 		if (profession.level1Pool != null) {
-			for (ProfessionTradeFile.LevelPoolEntry e : profession.level1Pool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
-					TradeOverhaulMod.LOGGER.info("getSellPrice found in level1Pool: {} -> buy={}", id, e.buy);
-					return Math.max(1, e.buy != null ? e.buy : e.buyPrice != null ? e.buyPrice : 0);
-				}
+			Integer price = findPriceInPool(profession.level1Pool, stack, id, false);
+			if (price != null) {
+				price = applyEnchantmentPriceModifier(price, stack, profession);
+				TradeOverhaulMod.LOGGER.debug("getSellPrice found in level1Pool: {} -> sell={}", id, price);
+				return price;
 			}
 		}
 		if (profession.level2Pool != null) {
-			for (ProfessionTradeFile.LevelPoolEntry e : profession.level2Pool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
-					return Math.max(1, e.buy != null ? e.buy : e.buyPrice != null ? e.buyPrice : 0);
-				}
+			Integer price = findPriceInPool(profession.level2Pool, stack, id, false);
+			if (price != null) {
+				price = applyEnchantmentPriceModifier(price, stack, profession);
+				return price;
 			}
 		}
 		if (profession.level3Pool != null) {
-			for (ProfessionTradeFile.LevelPoolEntry e : profession.level3Pool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
-					return Math.max(1, e.buy != null ? e.buy : e.buyPrice != null ? e.buyPrice : 0);
-				}
+			Integer price = findPriceInPool(profession.level3Pool, stack, id, false);
+			if (price != null) {
+				price = applyEnchantmentPriceModifier(price, stack, profession);
+				return price;
 			}
 		}
 		if (profession.level4Pool != null) {
-			for (ProfessionTradeFile.LevelPoolEntry e : profession.level4Pool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
-					return Math.max(1, e.buy != null ? e.buy : e.buyPrice != null ? e.buyPrice : 0);
-				}
+			Integer price = findPriceInPool(profession.level4Pool, stack, id, false);
+			if (price != null) {
+				price = applyEnchantmentPriceModifier(price, stack, profession);
+				return price;
 			}
 		}
 		if (profession.level5Pool != null) {
-			for (ProfessionTradeFile.LevelPoolEntry e : profession.level5Pool) {
-				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
-					return Math.max(1, e.buy != null ? e.buy : e.buyPrice != null ? e.buyPrice : 0);
-				}
+			Integer price = findPriceInPool(profession.level5Pool, stack, id, false);
+			if (price != null) {
+				price = applyEnchantmentPriceModifier(price, stack, profession);
+				return price;
 			}
 		}
 
-		// Проверяем toolPool для мотыг с фиксированной ценой
-		if (profession.toolPool != null && !profession.toolPool.isEmpty()) {
-			for (ProfessionTradeFile.ToolPoolEntry t : profession.toolPool) {
-				if (t.tag != null && stack.isIn(getTag(t.tag))) {
-					if (t.buyPrice != null && t.buyPrice > 0) {
-						return t.buyPrice;
-					}
-				}
-			}
-		}
-
-		// Проверяем generalPool
-		if (profession.generalPool != null && !profession.generalPool.isEmpty()) {
-			for (ProfessionTradeFile.GeneralPoolEntry g : profession.generalPool) {
-				if (g.tag != null && stack.isIn(getTag(g.tag))) {
-					if (g.buyPrice != null && g.buyPrice > 0) {
-						return g.buyPrice;
-					}
-				}
-			}
-		}
-
-		// Проверяем buyPool
+		// Проверяем buyPool - предметы, которые житель хочет купить у игрока
 		if (profession.buyPool != null && !profession.buyPool.isEmpty()) {
 			for (ProfessionTradeFile.BuyOnlyEntry b : profession.buyPool) {
 				if (b.tag != null && stack.isIn(getTag(b.tag))) {
-					if (b.buyPrice != null && b.buyPrice > 0) {
-						return b.buyPrice;
-					}
+					return Math.max(1, b.buyPrice != null ? b.buyPrice : 0);
+				}
+				// Проверяем конкретный предмет
+				if (b.item != null && id.equals(Identifier.tryParse(b.item))) {
+					return Math.max(1, b.buyPrice != null ? b.buyPrice : 0);
+				}
+			}
+		}
+
+		// Проверяем playerSellPool - предметы, которые игрок может продать жителю
+		if (profession.playerSellPool != null && !profession.playerSellPool.isEmpty()) {
+			for (ProfessionTradeFile.PlayerSellEntry e : profession.playerSellPool) {
+				if (e.item != null && id.equals(Identifier.tryParse(e.item))) {
+					return Math.max(1, e.buyPrice != null ? e.buyPrice : 0);
 				}
 			}
 		}
 
 		return 0;
+	}
+
+	/**
+	 * Применяет модификатор прочности к цене предмета.
+	 * Для неповреждённых предметов возвращает базовую цену.
+	 * Для повреждённых предметов снижает цену пропорционально потере прочности.
+	 * 
+	 * @param basePrice Базовая цена предмета
+	 * @param stack Предмет для проверки прочности
+	 * @param settings Настройки мода
+	 * @return Цена с учётом прочности
+	 */
+	public static int applyDurabilityPriceModifier(int basePrice, ItemStack stack, TradeOverhaulSettings settings) {
+		if (basePrice <= 0) return 0;
+		return ItemDurabilityPricing.applyDurabilityModifier(basePrice, stack, settings);
 	}
 
 	private static TagKey<net.minecraft.item.Item> getTag(String tagString) {

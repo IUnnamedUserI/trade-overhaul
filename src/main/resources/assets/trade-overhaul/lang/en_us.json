@@ -2,6 +2,11 @@
 	"gui.tradeoverhaul.player_inventory": "%s's Inventory",
 	"gui.tradeoverhaul.villager_inventory": "Trader's Inventory",
 	"gui.tradeoverhaul.wallet": "Wallet",
+	"gui.tradeoverhaul.buy": "Buy%s: %s",
+	"gui.tradeoverhaul.sell": "Sell%s: %s",
+	"gui.tradeoverhaul.no_inventory_space": "No inventory space",
+	"gui.tradeoverhaul.durability": "Durability: %d%%",
+	"gui.tradeoverhaul.expected_xp": "Expected XP: +%.2f",
 	"command.tradeoverhaul.refresh.all": "Refreshed %d villager(s)",
 	"command.tradeoverhaul.refresh.near": "Refreshed %d villager(s) within %d blocks of %s",
 	"tradeoverhaul.config.itemPriceMultipliers": "Item Price Multipliers"

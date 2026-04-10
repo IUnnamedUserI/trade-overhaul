@@ -6,13 +6,25 @@ import java.util.Map;
 public class ProfessionTradeFile {
 	public String profession;
 	public Integer offersCount;
-	public List<StaticPoolEntry> staticPool;
-	public List<WeaponPoolEntry> weaponPool;
-	public List<ToolPoolEntry> toolPool;
-	public List<GeneralPoolEntry> generalPool;
 	public List<BuyOnlyEntry> buyPool;
+	public List<PlayerSellEntry> playerSellPool; // Предметы, которые игрок может продать жителю (не продаются жителем)
 	public List<EnchantmentEntry> enchantments; // Зачарования для библиотекаря
-	public Map<String, Double> itemPriceMultipliers;
+
+	// Глобальные списки зачарований по типам (для случайных зачарований на предметах)
+	// Поддерживает два формата: строка ("minecraft:sharpness") или объект {"id": "minecraft:sharpness", "max_level": 3}
+	public List<EnchantmentSpec> weaponEnchantments;   // Зачарования для оружия
+	public List<EnchantmentSpec> toolEnchantments;     // Зачарования для инструментов
+	public List<EnchantmentSpec> armorEnchantments;    // Зачарования для брони (общие для всех слотов)
+	
+	// Специфичные зачарования для слотов брони (приоритетнее armorEnchantments)
+	public List<EnchantmentSpec> helmetEnchantments;   // Зачарования для шлемов
+	public List<EnchantmentSpec> chestplateEnchantments; // Зачарования для нагрудников
+	public List<EnchantmentSpec> leggingsEnchantments; // Зачарования для понож
+	public List<EnchantmentSpec> bootsEnchantments;    // Зачарования для ботинок
+	
+	// Зачарования для дистанционного оружия (луки и арбалеты)
+	public List<EnchantmentSpec> bowEnchantments;      // Зачарования для луков
+	public List<EnchantmentSpec> crossbowEnchantments; // Зачарования для арбалетов
 	
 	// Пулы торговли по уровням мастерства (1-5)
 	public List<LevelPoolEntry> level1Pool; // Новичок
@@ -34,8 +46,6 @@ public class ProfessionTradeFile {
 		public Integer maxStock;
 		public Integer buyPrice;         // Цена покупки жителем
 		public Integer sellPrice;        // Цена продажи жителем
-		public Integer buyQuantity;      // Количество за 1 монету при покупке
-		public Integer sellQuantity;     // Количество за 1 монету при продаже
 		public Integer buy;              // Альтернативное название цены покупки
 		public Integer sell;             // Альтернативное название цены продажи
 		public String enchantment;       // ID зачарования (для книг)
@@ -48,6 +58,12 @@ public class ProfessionTradeFile {
 		public Integer sellBase;
 		public Integer buyPerEfficiency;
 		public Integer sellPerEfficiency;
+		public Boolean enchant;          // Если true — предмет получает случайные зачарования из глобального списка
+		public Integer enchantMinLevel;  // Минимальный уровень зачарования (по умолчанию 1)
+		public Integer enchantMaxLevel;  // Максимальный уровень зачарования (по умолчанию = уровень жителя)
+		public Integer enchantChance;    // Шанс зачарования в процентах (по умолчанию 70)
+		public Integer enchantMaxCount;  // Максимальное кол-во зачарований (по умолчанию 3)
+		public Float xpMultiplier;       // Множитель XP за продажу этого предмета жителю
 	}
 	
 	/**
@@ -75,66 +91,94 @@ public class ProfessionTradeFile {
 		public Integer price_per_level; // Цена за уровень
 	}
 
-	public static class StaticPoolEntry {
-		public String item;
-		public int buy;  // Цена покупки (в изумрудах)
-		public int sell; // Цена продажи (в изумрудах)
-		public Integer buyQuantity;  // Количество предметов за 1 изумруд при покупке (по умолчанию 1)
-		public Integer sellQuantity; // Количество предметов за 1 изумруд при продаже (по умолчанию 1)
-		public Integer minStock;
-		public Integer maxStock;
-		public String enchantment;        // ID зачарования (для зачарованных книг)
-		public Integer enchantment_level; // Уровень зачарования
-	}
+	/**
+	 * Спецификация зачарования для оружия/инструментов/брони.
+	 * Поддерживает формат JSON как строку, так и объект:
+	 *   "minecraft:sharpness"                          — max_level берётся из реестра
+	 *   {"id": "minecraft:sharpness", "max_level": 3}  — явный max_level
+	 */
+	public static class EnchantmentSpec {
+		public String id;           // ID зачарования (обязательно)
+		public Integer max_level;   // Максимальный уровень (null = берётся из реестра)
 
-	public static class WeaponPoolEntry {
-		public String tag;
-		public Integer minStock;
-		public Integer maxStock;
-		public Integer buyPerDamage;
-		public Integer sellPerDamage;
-		public Integer buyBase;
-		public Integer sellBase;
-		public Boolean useDurability;
-		public Integer buyQuantity;  // Количество предметов за 1 изумруд при покупке (по умолчанию 1)
-		public Integer sellQuantity; // Количество предметов за 1 изумруд при продаже (по умолчанию 1)
-	}
-
-	public static class ToolPoolEntry {
-		public String tag;
-		public Integer minStock;
-		public Integer maxStock;
-		public Integer buyPerEfficiency;
-		public Integer sellPerEfficiency;
-		public Integer buyBase;
-		public Integer sellBase;
-		public Boolean useDurability;
-		public Integer buyQuantity;  // Количество предметов за 1 изумруд при покупке (по умолчанию 1)
-		public Integer sellQuantity; // Количество предметов за 1 изумруд при продаже (по умолчанию 1)
-		public Integer buyPrice;     // Фиксированная цена покупки (для мотыг)
-		public Integer sellPrice;    // Фиксированная цена продажи (для мотыг)
-	}
-
-	public static class GeneralPoolEntry {
-		public String tag;
-		public Integer minStock;
-		public Integer maxStock;
-		public Integer buyPrice;
-		public Integer sellPrice;
-		public Integer buyQuantity;  // Количество предметов за 1 изумруд при покупке
-		public Integer sellQuantity; // Количество предметов за 1 монету при продаже
-		public Boolean useDurability;
-		public String durabilityFactor;
+		/** Получить max_level, используя значение из реестра как fallback */
+		public int getEffectiveMaxLevel(net.minecraft.enchantment.Enchantment enchant) {
+			if (max_level != null && max_level > 0) {
+				return max_level;
+			}
+			return enchant.getMaxLevel();
+		}
 	}
 
 	public static class BuyOnlyEntry {
-		public String tag;
+		public String tag;           // ID тега (для групп предметов)
+		public String item;          // ID конкретного предмета
 		public Integer buyPrice;
-		public Integer buyQuantity;  // Количество предметов за 1 изумруд
+		public Integer minStock;
+		public Integer maxStock;
 		public Integer buyPricePerDamage;
 		public Integer buyPricePerEfficiency;
 		public Integer buyBase;
 		public Boolean useDurability;
 		public Integer discountFactor;
+	}
+
+	/**
+	 * Запись для пула предметов, которые игрок может продать жителю.
+	 * Эти предметы НЕ продаются жителем и НЕ добавляются в инвентарь при рестокe.
+	 * Используется только для определения цены продажи.
+	 */
+	public static class PlayerSellEntry {
+		public String item;          // ID конкретного предмета (обязательно)
+		public Integer buyPrice;     // Цена, которую житель заплатит игроку (в медных монетах)
+	}
+
+	/**
+	 * Проверяет, есть ли предмет в пулах продажи жителя (level1Pool-level5Pool).
+	 * @param itemId ID предмета
+	 * @return true, если предмет продаётся жителем
+	 */
+	public boolean isItemSoldByVillager(String itemId) {
+		List<List<LevelPoolEntry>> allPools = new java.util.ArrayList<>();
+		if (level1Pool != null) allPools.add(level1Pool);
+		if (level2Pool != null) allPools.add(level2Pool);
+		if (level3Pool != null) allPools.add(level3Pool);
+		if (level4Pool != null) allPools.add(level4Pool);
+		if (level5Pool != null) allPools.add(level5Pool);
+
+		for (List<LevelPoolEntry> pool : allPools) {
+			for (LevelPoolEntry entry : pool) {
+				if (entry.item != null && entry.item.equals(itemId)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Ищет множитель XP для предмета во всех пулах уровней.
+	 * @param itemId ID предмета
+	 * @return Множитель XP или null, если не найден
+	 */
+	public Float findXpMultiplierForItem(String itemId) {
+		// Проверяем все пулы уровней
+		List<List<LevelPoolEntry>> allPools = new java.util.ArrayList<>();
+		if (level1Pool != null) allPools.add(level1Pool);
+		if (level2Pool != null) allPools.add(level2Pool);
+		if (level3Pool != null) allPools.add(level3Pool);
+		if (level4Pool != null) allPools.add(level4Pool);
+		if (level5Pool != null) allPools.add(level5Pool);
+
+		for (List<LevelPoolEntry> pool : allPools) {
+			for (LevelPoolEntry entry : pool) {
+				if (entry.item != null && entry.item.equals(itemId)) {
+					if (entry.xpMultiplier != null) {
+						return entry.xpMultiplier;
+					}
+				}
+			}
+		}
+		return null;
 	}
 }

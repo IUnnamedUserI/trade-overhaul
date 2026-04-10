@@ -1,4 +1,6 @@
 {
+	"restockIntervalGameDays": 2,
+	"restockBatchSize": 5,
 	"maxStockDefault": 24,
 	"walletAfterRestockMin": 5,
 	"walletAfterRestockMax": 20,
@@ -16,5 +18,7 @@
 	"toolUseDurability": true,
 	"buyOnlyDiscountDefault": 50,
 	"batchTradingEnabled": true,
-	"enforceQuantityMultiples": true
+	"enforceQuantityMultiples": true,
+	"damageReputationPercentPerHP": 5.0,
+	"damageReputationMaxPercent": 200.0
 }

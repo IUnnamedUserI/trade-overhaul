@@ -57,6 +57,13 @@ public class VillagerTradeScreenHandlerFactory implements ExtendedScreenHandlerF
 		}
 		buf.writeNbt(soldItemsTracker);
 
+		// Записываем репутацию урона
+		net.minecraft.nbt.NbtCompound damageRepNbt = new net.minecraft.nbt.NbtCompound();
+		for (java.util.Map.Entry<String, Float> entry : data.tradeOverhaul$getProfession().damageReputation.entrySet()) {
+			damageRepNbt.putFloat(entry.getKey(), entry.getValue());
+		}
+		buf.writeNbt(damageRepNbt);
+
 		TradeScreenSync.write(buf, villager, TradeConfigLoader.getProfession(pid));
 	}
 }

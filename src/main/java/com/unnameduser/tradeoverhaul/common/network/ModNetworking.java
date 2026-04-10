@@ -38,7 +38,7 @@ public class ModNetworking {
 		payload.write(buf);
 		ServerPlayNetworking.send(player, VillagerInventorySyncPayload.ID, buf);
 	}
-	
+
 	/**
 	 * Отправляет клиенту синхронизацию уровня профессии жителя.
 	 */
@@ -47,5 +47,16 @@ public class ModNetworking {
 		var buf = net.fabricmc.fabric.api.networking.v1.PacketByteBufs.create();
 		payload.write(buf);
 		ServerPlayNetworking.send(player, ProfessionLevelSyncPayload.ID, buf);
+	}
+
+	/**
+	 * Отправляет клиенту синхронизацию репутации урона.
+	 */
+	public static void sendDamageReputationSync(net.minecraft.server.network.ServerPlayerEntity player, int syncId,
+			java.util.Map<String, Float> damageReputation) {
+		DamageReputationSyncPayload payload = new DamageReputationSyncPayload(syncId, damageReputation);
+		var buf = net.fabricmc.fabric.api.networking.v1.PacketByteBufs.create();
+		payload.write(buf);
+		ServerPlayNetworking.send(player, DamageReputationSyncPayload.ID, buf);
 	}
 }
