@@ -1,0 +1,200 @@
+{
+  "mappings": {
+    "forge/net/mca/mixin/MixinAbstractFurnaceBlockEntity": {
+      "dropExperienceForRecipesUsed": "Lnet/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity;m_155003_(Lnet/minecraft/server/level/ServerPlayer;)V"
+    },
+    "forge/net/mca/mixin/MixinActivity": {
+      "<init>": "<init>"
+    },
+    "forge/net/mca/mixin/MixinCriteria": {
+      "register": "m_10595_(Lnet/minecraft/advancements/CriterionTrigger;)Lnet/minecraft/advancements/CriterionTrigger;"
+    },
+    "forge/net/mca/mixin/MixinDefaultParticleType": {
+      "<init>": "<init>"
+    },
+    "forge/net/mca/mixin/MixinEntityType": {
+      "isIn": "Lnet/minecraft/world/entity/EntityType;m_204039_(Lnet/minecraft/tags/TagKey;)Z"
+    },
+    "forge/net/mca/mixin/MixinFlintAndSteelItem": {
+      "useOnBlock(Lnet/minecraft/item/ItemUsageContext;)Lnet/minecraft/util/ActionResult;": "Lnet/minecraft/world/item/FlintAndSteelItem;m_6225_(Lnet/minecraft/world/item/context/UseOnContext;)Lnet/minecraft/world/InteractionResult;"
+    },
+    "forge/net/mca/mixin/MixinGoatEntity": {
+      "getMilkingSound()Lnet/minecraft/sound/SoundEvent;": "Lnet/minecraft/world/entity/animal/goat/Goat;m_149403_()Lnet/minecraft/sounds/SoundEvent;"
+    },
+    "forge/net/mca/mixin/MixinHorseBaseEntity": {
+      "isImmobile()Z": "Lnet/minecraft/world/entity/animal/horse/AbstractHorse;m_6107_()Z"
+    },
+    "forge/net/mca/mixin/MixinMemoryModuleType": {
+      "<init>": "<init>"
+    },
+    "forge/net/mca/mixin/MixinMilkBucketItem": {
+      "finishUsing": "Lnet/minecraft/world/item/MilkBucketItem;m_5922_(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/LivingEntity;)Lnet/minecraft/world/item/ItemStack;"
+    },
+    "forge/net/mca/mixin/MixinPlayerEntity": {
+      "dropItem(Lnet/minecraft/item/ItemStack;ZZ)Lnet/minecraft/entity/ItemEntity;": "Lnet/minecraft/world/entity/player/Player;m_7197_(Lnet/minecraft/world/item/ItemStack;ZZ)Lnet/minecraft/world/entity/item/ItemEntity;"
+    },
+    "forge/net/mca/mixin/MixinPlayerInventory": {
+      "dropSelectedItem(Z)Lnet/minecraft/item/ItemStack;": "Lnet/minecraft/world/entity/player/Inventory;m_182403_(Z)Lnet/minecraft/world/item/ItemStack;"
+    },
+    "forge/net/mca/mixin/MixinProtoChunk": {
+      "addEntity(Lnet/minecraft/entity/Entity;)V": "Lnet/minecraft/world/level/chunk/ProtoChunk;m_6286_(Lnet/minecraft/world/entity/Entity;)V"
+    },
+    "forge/net/mca/mixin/MixinSensorType": {
+      "<init>": "<init>"
+    },
+    "forge/net/mca/mixin/MixinServerPlayNetworkHandler": {
+      "onChatMessage": "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;m_7388_(Lnet/minecraft/network/protocol/game/ServerboundChatPacket;)V"
+    },
+    "forge/net/mca/mixin/MixinServerWorld": {
+      "addEntity(Lnet/minecraft/entity/Entity;)Z": "Lnet/minecraft/server/level/ServerLevel;m_8872_(Lnet/minecraft/world/entity/Entity;)Z"
+    },
+    "forge/net/mca/mixin/MixinTranslatableText": {
+      "updateTranslations()V": "Lnet/minecraft/network/chat/contents/TranslatableContents;m_237524_()V"
+    },
+    "forge/net/mca/mixin/MixinVillagerEntity": {
+      "initialize": "Lnet/minecraft/world/entity/npc/Villager;m_6518_(Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/world/DifficultyInstance;Lnet/minecraft/world/entity/MobSpawnType;Lnet/minecraft/world/entity/SpawnGroupData;Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/entity/SpawnGroupData;"
+    },
+    "forge/net/mca/mixin/MixinVillagerEntityInvoker": {
+      "beginTradeWith": "m_35536_(Lnet/minecraft/world/entity/player/Player;)V"
+    },
+    "forge/net/mca/mixin/MixinVillagerProfession": {
+      "<init>": "<init>"
+    },
+    "forge/net/mca/mixin/MixinZombieEntity": {
+      "onKilledOther(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/LivingEntity;)Z": "Lnet/minecraft/world/entity/monster/Zombie;m_214076_(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;)Z"
+    },
+    "forge/net/mca/mixin/MixinZombieVillagerEntity": {
+      "initialize": "Lnet/minecraft/world/entity/monster/ZombieVillager;m_6518_(Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/world/DifficultyInstance;Lnet/minecraft/world/entity/MobSpawnType;Lnet/minecraft/world/entity/SpawnGroupData;Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/entity/SpawnGroupData;",
+      "setVillagerData": "Lnet/minecraft/world/entity/monster/ZombieVillager;m_34375_(Lnet/minecraft/world/entity/npc/VillagerData;)V"
+    },
+    "forge/net/mca/mixin/client/MixinArmorFeatureRenderer": {
+      "getModel": "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;m_117078_(Lnet/minecraft/world/entity/EquipmentSlot;)Lnet/minecraft/client/model/HumanoidModel;",
+      "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/entity/LivingEntity;FFFFFF)V": "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;m_6494_(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/LivingEntity;FFFFFF)V"
+    },
+    "forge/net/mca/mixin/client/MixinGameRenderer": {
+      "tick": "Lnet/minecraft/client/renderer/GameRenderer;m_109148_()V"
+    },
+    "forge/net/mca/mixin/client/MixinHeldItemFeatureRenderer": {
+      "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/entity/LivingEntity;FFFFFF)V": "Lnet/minecraft/client/renderer/entity/layers/ItemInHandLayer;m_6494_(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/LivingEntity;FFFFFF)V"
+    },
+    "forge/net/mca/mixin/client/MixinLivingEntityRenderer": {
+      "getRenderLayer(Lnet/minecraft/entity/LivingEntity;ZZZ)Lnet/minecraft/client/render/RenderLayer;": "Lnet/minecraft/client/renderer/entity/LivingEntityRenderer;m_7225_(Lnet/minecraft/world/entity/LivingEntity;ZZZ)Lnet/minecraft/client/renderer/RenderType;"
+    },
+    "forge/net/mca/mixin/client/MixinPlayerEntityClient": {
+      "getActiveEyeHeight(Lnet/minecraft/entity/EntityPose;Lnet/minecraft/entity/EntityDimensions;)F": "Lnet/minecraft/world/entity/player/Player;m_6431_(Lnet/minecraft/world/entity/Pose;Lnet/minecraft/world/entity/EntityDimensions;)F"
+    },
+    "forge/net/mca/mixin/client/MixinPlayerEntityRenderer": {
+      "<init>(Lnet/minecraft/client/render/entity/EntityRendererFactory$Context;Z)V": "Lnet/minecraft/client/renderer/entity/player/PlayerRenderer;<init>(Lnet/minecraft/client/renderer/entity/EntityRendererProvider$Context;Z)V",
+      "renderLeftArm(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/client/network/AbstractClientPlayerEntity;)V": "Lnet/minecraft/client/renderer/entity/player/PlayerRenderer;m_117813_(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/player/AbstractClientPlayer;)V",
+      "renderRightArm(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/client/network/AbstractClientPlayerEntity;)V": "Lnet/minecraft/client/renderer/entity/player/PlayerRenderer;m_117770_(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/player/AbstractClientPlayer;)V",
+      "scale(Lnet/minecraft/client/network/AbstractClientPlayerEntity;Lnet/minecraft/client/util/math/MatrixStack;F)V": "Lnet/minecraft/client/renderer/entity/player/PlayerRenderer;m_7546_(Lnet/minecraft/client/player/AbstractClientPlayer;Lcom/mojang/blaze3d/vertex/PoseStack;F)V"
+    },
+    "forge/net/mca/mixin/client/MixinSoundLoader": {
+      "loadStreamed(Lnet/minecraft/util/Identifier;Z)Ljava/util/concurrent/CompletableFuture;": "Lnet/minecraft/client/sounds/SoundBufferLibrary;m_120204_(Lnet/minecraft/resources/ResourceLocation;Z)Ljava/util/concurrent/CompletableFuture;"
+    },
+    "forge/net/mca/mixin/client/MixinTranslationStorage": {
+      "get": "Lnet/minecraft/client/resources/language/ClientLanguage;m_118919_(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
+      "hasTranslation(Ljava/lang/String;)Z": "Lnet/minecraft/client/resources/language/ClientLanguage;m_6722_(Ljava/lang/String;)Z"
+    }
+  },
+  "data": {
+    "searge": {
+      "forge/net/mca/mixin/MixinAbstractFurnaceBlockEntity": {
+        "dropExperienceForRecipesUsed": "Lnet/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity;m_155003_(Lnet/minecraft/server/level/ServerPlayer;)V"
+      },
+      "forge/net/mca/mixin/MixinActivity": {
+        "<init>": "<init>"
+      },
+      "forge/net/mca/mixin/MixinCriteria": {
+        "register": "m_10595_(Lnet/minecraft/advancements/CriterionTrigger;)Lnet/minecraft/advancements/CriterionTrigger;"
+      },
+      "forge/net/mca/mixin/MixinDefaultParticleType": {
+        "<init>": "<init>"
+      },
+      "forge/net/mca/mixin/MixinEntityType": {
+        "isIn": "Lnet/minecraft/world/entity/EntityType;m_204039_(Lnet/minecraft/tags/TagKey;)Z"
+      },
+      "forge/net/mca/mixin/MixinFlintAndSteelItem": {
+        "useOnBlock(Lnet/minecraft/item/ItemUsageContext;)Lnet/minecraft/util/ActionResult;": "Lnet/minecraft/world/item/FlintAndSteelItem;m_6225_(Lnet/minecraft/world/item/context/UseOnContext;)Lnet/minecraft/world/InteractionResult;"
+      },
+      "forge/net/mca/mixin/MixinGoatEntity": {
+        "getMilkingSound()Lnet/minecraft/sound/SoundEvent;": "Lnet/minecraft/world/entity/animal/goat/Goat;m_149403_()Lnet/minecraft/sounds/SoundEvent;"
+      },
+      "forge/net/mca/mixin/MixinHorseBaseEntity": {
+        "isImmobile()Z": "Lnet/minecraft/world/entity/animal/horse/AbstractHorse;m_6107_()Z"
+      },
+      "forge/net/mca/mixin/MixinMemoryModuleType": {
+        "<init>": "<init>"
+      },
+      "forge/net/mca/mixin/MixinMilkBucketItem": {
+        "finishUsing": "Lnet/minecraft/world/item/MilkBucketItem;m_5922_(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/LivingEntity;)Lnet/minecraft/world/item/ItemStack;"
+      },
+      "forge/net/mca/mixin/MixinPlayerEntity": {
+        "dropItem(Lnet/minecraft/item/ItemStack;ZZ)Lnet/minecraft/entity/ItemEntity;": "Lnet/minecraft/world/entity/player/Player;m_7197_(Lnet/minecraft/world/item/ItemStack;ZZ)Lnet/minecraft/world/entity/item/ItemEntity;"
+      },
+      "forge/net/mca/mixin/MixinPlayerInventory": {
+        "dropSelectedItem(Z)Lnet/minecraft/item/ItemStack;": "Lnet/minecraft/world/entity/player/Inventory;m_182403_(Z)Lnet/minecraft/world/item/ItemStack;"
+      },
+      "forge/net/mca/mixin/MixinProtoChunk": {
+        "addEntity(Lnet/minecraft/entity/Entity;)V": "Lnet/minecraft/world/level/chunk/ProtoChunk;m_6286_(Lnet/minecraft/world/entity/Entity;)V"
+      },
+      "forge/net/mca/mixin/MixinSensorType": {
+        "<init>": "<init>"
+      },
+      "forge/net/mca/mixin/MixinServerPlayNetworkHandler": {
+        "onChatMessage": "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;m_7388_(Lnet/minecraft/network/protocol/game/ServerboundChatPacket;)V"
+      },
+      "forge/net/mca/mixin/MixinServerWorld": {
+        "addEntity(Lnet/minecraft/entity/Entity;)Z": "Lnet/minecraft/server/level/ServerLevel;m_8872_(Lnet/minecraft/world/entity/Entity;)Z"
+      },
+      "forge/net/mca/mixin/MixinTranslatableText": {
+        "updateTranslations()V": "Lnet/minecraft/network/chat/contents/TranslatableContents;m_237524_()V"
+      },
+      "forge/net/mca/mixin/MixinVillagerEntity": {
+        "initialize": "Lnet/minecraft/world/entity/npc/Villager;m_6518_(Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/world/DifficultyInstance;Lnet/minecraft/world/entity/MobSpawnType;Lnet/minecraft/world/entity/SpawnGroupData;Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/entity/SpawnGroupData;"
+      },
+      "forge/net/mca/mixin/MixinVillagerEntityInvoker": {
+        "beginTradeWith": "m_35536_(Lnet/minecraft/world/entity/player/Player;)V"
+      },
+      "forge/net/mca/mixin/MixinVillagerProfession": {
+        "<init>": "<init>"
+      },
+      "forge/net/mca/mixin/MixinZombieEntity": {
+        "onKilledOther(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/LivingEntity;)Z": "Lnet/minecraft/world/entity/monster/Zombie;m_214076_(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;)Z"
+      },
+      "forge/net/mca/mixin/MixinZombieVillagerEntity": {
+        "initialize": "Lnet/minecraft/world/entity/monster/ZombieVillager;m_6518_(Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/world/DifficultyInstance;Lnet/minecraft/world/entity/MobSpawnType;Lnet/minecraft/world/entity/SpawnGroupData;Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/entity/SpawnGroupData;",
+        "setVillagerData": "Lnet/minecraft/world/entity/monster/ZombieVillager;m_34375_(Lnet/minecraft/world/entity/npc/VillagerData;)V"
+      },
+      "forge/net/mca/mixin/client/MixinArmorFeatureRenderer": {
+        "getModel": "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;m_117078_(Lnet/minecraft/world/entity/EquipmentSlot;)Lnet/minecraft/client/model/HumanoidModel;",
+        "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/entity/LivingEntity;FFFFFF)V": "Lnet/minecraft/client/renderer/entity/layers/HumanoidArmorLayer;m_6494_(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/LivingEntity;FFFFFF)V"
+      },
+      "forge/net/mca/mixin/client/MixinGameRenderer": {
+        "tick": "Lnet/minecraft/client/renderer/GameRenderer;m_109148_()V"
+      },
+      "forge/net/mca/mixin/client/MixinHeldItemFeatureRenderer": {
+        "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/entity/LivingEntity;FFFFFF)V": "Lnet/minecraft/client/renderer/entity/layers/ItemInHandLayer;m_6494_(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/LivingEntity;FFFFFF)V"
+      },
+      "forge/net/mca/mixin/client/MixinLivingEntityRenderer": {
+        "getRenderLayer(Lnet/minecraft/entity/LivingEntity;ZZZ)Lnet/minecraft/client/render/RenderLayer;": "Lnet/minecraft/client/renderer/entity/LivingEntityRenderer;m_7225_(Lnet/minecraft/world/entity/LivingEntity;ZZZ)Lnet/minecraft/client/renderer/RenderType;"
+      },
+      "forge/net/mca/mixin/client/MixinPlayerEntityClient": {
+        "getActiveEyeHeight(Lnet/minecraft/entity/EntityPose;Lnet/minecraft/entity/EntityDimensions;)F": "Lnet/minecraft/world/entity/player/Player;m_6431_(Lnet/minecraft/world/entity/Pose;Lnet/minecraft/world/entity/EntityDimensions;)F"
+      },
+      "forge/net/mca/mixin/client/MixinPlayerEntityRenderer": {
+        "<init>(Lnet/minecraft/client/render/entity/EntityRendererFactory$Context;Z)V": "Lnet/minecraft/client/renderer/entity/player/PlayerRenderer;<init>(Lnet/minecraft/client/renderer/entity/EntityRendererProvider$Context;Z)V",
+        "renderLeftArm(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/client/network/AbstractClientPlayerEntity;)V": "Lnet/minecraft/client/renderer/entity/player/PlayerRenderer;m_117813_(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/player/AbstractClientPlayer;)V",
+        "renderRightArm(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/client/network/AbstractClientPlayerEntity;)V": "Lnet/minecraft/client/renderer/entity/player/PlayerRenderer;m_117770_(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/player/AbstractClientPlayer;)V",
+        "scale(Lnet/minecraft/client/network/AbstractClientPlayerEntity;Lnet/minecraft/client/util/math/MatrixStack;F)V": "Lnet/minecraft/client/renderer/entity/player/PlayerRenderer;m_7546_(Lnet/minecraft/client/player/AbstractClientPlayer;Lcom/mojang/blaze3d/vertex/PoseStack;F)V"
+      },
+      "forge/net/mca/mixin/client/MixinSoundLoader": {
+        "loadStreamed(Lnet/minecraft/util/Identifier;Z)Ljava/util/concurrent/CompletableFuture;": "Lnet/minecraft/client/sounds/SoundBufferLibrary;m_120204_(Lnet/minecraft/resources/ResourceLocation;Z)Ljava/util/concurrent/CompletableFuture;"
+      },
+      "forge/net/mca/mixin/client/MixinTranslationStorage": {
+        "get": "Lnet/minecraft/client/resources/language/ClientLanguage;m_118919_(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
+        "hasTranslation(Ljava/lang/String;)Z": "Lnet/minecraft/client/resources/language/ClientLanguage;m_6722_(Ljava/lang/String;)Z"
+      }
+    }
+  }
+}

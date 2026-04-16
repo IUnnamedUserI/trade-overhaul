@@ -1,0 +1,44 @@
+{
+  "required": true,
+  "minVersion": "0.7",
+  "package": "quilt.net.mca.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "MixinAbstractFurnaceBlockEntity",
+    "MixinActivity",
+    "MixinCriteria",
+    "MixinDefaultParticleType",
+    "MixinEntityType",
+    "MixinFlintAndSteelItem",
+    "MixinGoatEntity",
+    "MixinHorseBaseEntity",
+    "MixinMemoryModuleType",
+    "MixinMilkBucketItem",
+    "MixinPlayerEntity",
+    "MixinPlayerInventory",
+    "MixinProtoChunk",
+    "MixinSensorType",
+    "MixinServerPlayNetworkHandler",
+    "MixinServerWorld",
+    "MixinTranslatableText",
+    "MixinVillagerEntity",
+    "MixinVillagerEntityInvoker",
+    "MixinVillagerProfession",
+    "MixinZombieEntity",
+    "MixinZombieVillagerEntity"
+  ],
+  "client": [
+    "client.MixinArmorFeatureRenderer",
+    "client.MixinGameRenderer",
+    "client.MixinHeldItemFeatureRenderer",
+    "client.MixinLivingEntityRenderer",
+    "client.MixinPlayerEntityClient",
+    "client.MixinPlayerEntityRenderer",
+    "client.MixinSoundLoader",
+    "client.MixinTranslationStorage"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "refmap": "quilt-minecraft-comes-alive-common-refmap.json"
+}
