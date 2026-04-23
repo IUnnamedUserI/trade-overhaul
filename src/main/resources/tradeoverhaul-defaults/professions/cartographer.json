@@ -48,25 +48,17 @@
 			"sell": 300,
 			"minStock": 1,
 			"maxStock": 3,
-			"xpMultiplier": 0.5
+			"xpMultiplier": 2
 		}
 	],
 	"level2Pool": [
-		{
-			"item": "minecraft:filled_map",
-			"buy": 200,
-			"sell": 100,
-			"minStock": 4,
-			"maxStock": 12,
-			"xpMultiplier": 0.2
-		},
 		{
 			"item": "minecraft:glass_pane",
 			"buy": 10,
 			"sell": 5,
 			"minStock": 2,
 			"maxStock": 16,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.1
 		},
 		{
 			"item": "minecraft:item_frame",
@@ -74,7 +66,7 @@
 			"sell": 75,
 			"minStock": 2,
 			"maxStock": 8,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 0.5
 		},
 		{
 			"item": "minecraft:painting",
@@ -82,7 +74,7 @@
 			"sell": 50,
 			"minStock": 2,
 			"maxStock": 12,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 1
 		}
 	],
 	"level3Pool": [
@@ -92,7 +84,7 @@
 			"sell": 70,
 			"minStock": 3,
 			"maxStock": 8,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 1
 		},
 		{
 			"item": "minecraft:book",
@@ -108,7 +100,7 @@
 			"sell": 100,
 			"minStock": 1,
 			"maxStock": 3,
-			"xpMultiplier": 0.5
+			"xpMultiplier": 0.75
 		}
 	],
 	"level4Pool": [
@@ -118,7 +110,7 @@
 			"sell": 400,
 			"minStock": 1,
 			"maxStock": 2,
-			"xpMultiplier": 0.5
+			"xpMultiplier": 2
 		},
 		{
 			"item": "minecraft:spyglass",
@@ -126,7 +118,7 @@
 			"sell": 600,
 			"minStock": 1,
 			"maxStock": 2,
-			"xpMultiplier": 0.5
+			"xpMultiplier": 2
 		}
 	],
 	"level5Pool": [
@@ -136,7 +128,7 @@
 			"sell": 200,
 			"minStock": 1,
 			"maxStock": 4,
-			"xpMultiplier": 0.5
+			"xpMultiplier": 5
 		}
 	]
 }

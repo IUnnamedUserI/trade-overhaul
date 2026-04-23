@@ -43,7 +43,7 @@
 			"sell": 5,
 			"minStock": 16,
 			"maxStock": 48,
-			"xpMultiplier": 0.01
+			"xpMultiplier": 0.03125
 		},
 		{
 			"item": "minecraft:flint",
@@ -51,7 +51,7 @@
 			"sell": 10,
 			"minStock": 8,
 			"maxStock": 24,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.1
 		},
 		{
 			"item": "minecraft:feather",
@@ -59,7 +59,7 @@
 			"sell": 10,
 			"minStock": 8,
 			"maxStock": 24,
-			"xpMultiplier": 0.01
+			"xpMultiplier": 0.1
 		},
 		{
 			"item": "minecraft:string",
@@ -67,7 +67,7 @@
 			"sell": 25,
 			"minStock": 8,
 			"maxStock": 24,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.1
 		}
 	],
 	"level2Pool": [
@@ -77,7 +77,7 @@
 			"sell": 7,
 			"minStock":48,
 			"maxStock": 192,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.125
 		},
 		{
 			"item": "minecraft:bow",
@@ -90,7 +90,7 @@
 			"enchantMaxCount": 2,
 			"enchantMinLevel": 1,
 			"enchantMaxLevel": 2,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 3.0
 		},
 		{
 			"item": "minecraft:crossbow",
@@ -103,7 +103,7 @@
 			"enchantMaxCount": 2,
 			"enchantMinLevel": 1,
 			"enchantMaxLevel": 2,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 3.0
 		}
 	],
 	"level3Pool": [
@@ -113,7 +113,7 @@
 			"sell": 15,
 			"minStock": 8,
 			"maxStock": 32,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 0.15
 		},
 		{
 			"item": "minecraft:target",
@@ -121,7 +121,7 @@
 			"sell": 200,
 			"minStock": 2,
 			"maxStock": 6,
-			"xpMultiplier": 0.5
+			"xpMultiplier": 1
 		}
 	],
 	"level4Pool": [
@@ -143,10 +143,10 @@
 			"maxStock": 1,
 			"enchant": true,
 			"enchantChance": 70,
-			"enchantMaxCount": 2,
+			"enchantMaxCount": 3,
 			"enchantMinLevel": 1,
 			"enchantMaxLevel": 2,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 3.0
 		},
 		{
 			"item": "minecraft:crossbow",
@@ -156,10 +156,10 @@
 			"maxStock": 1,
 			"enchant": true,
 			"enchantChance": 70,
-			"enchantMaxCount": 2,
+			"enchantMaxCount": 3,
 			"enchantMinLevel": 1,
 			"enchantMaxLevel": 2,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 3.0
 		}
 	]
 }

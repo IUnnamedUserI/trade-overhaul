@@ -38,7 +38,7 @@
 			"sell": 20,
 			"minStock": 8,
 			"maxStock": 24,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.5
 		},
 		{
 			"item": "minecraft:salmon",
@@ -46,7 +46,7 @@
 			"sell": 25,
 			"minStock": 8,
 			"maxStock": 24,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.5
 		},
 		{
 			"item": "minecraft:string",
@@ -54,7 +54,7 @@
 			"sell": 20,
 			"minStock": 6,
 			"maxStock": 16,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.1
 		},
 		{
 			"item": "minecraft:coal",
@@ -62,7 +62,7 @@
 			"sell": 5,
 			"minStock": 12,
 			"maxStock": 36,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.2
 		}
 	],
 	"level2Pool": [
@@ -72,7 +72,7 @@
 			"sell": 40,
 			"minStock": 6,
 			"maxStock": 20,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 0.75
 		},
 		{
 			"item": "minecraft:cooked_salmon",
@@ -80,7 +80,7 @@
 			"sell": 50,
 			"minStock": 6,
 			"maxStock": 20,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 0.75
 		},
 		{
 			"item": "minecraft:fishing_rod",
@@ -93,7 +93,7 @@
 			"enchantMaxCount": 3,
 			"enchantMinLevel": 1,
 			"enchantMaxLevel": 2,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 5.0
 		}
 	],
 	"level3Pool": [
@@ -103,7 +103,7 @@
 			"sell": 80,
 			"minStock": 4,
 			"maxStock": 8,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 2
 		},
 		{
 			"item": "minecraft:pufferfish",
@@ -111,7 +111,7 @@
 			"sell": 100,
 			"minStock": 2,
 			"maxStock": 6,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 2
 		},
 		{
 			"item": "minecraft:campfire",
@@ -119,7 +119,7 @@
 			"sell": 100,
 			"minStock": 2,
 			"maxStock": 4,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 1
 		}
 	],
 	"level4Pool": [
@@ -137,7 +137,7 @@
 			"sell": 50,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 0.5
 		},
 		{
 			"item": "minecraft:ink_sac",
@@ -145,7 +145,7 @@
 			"sell": 20,
 			"minStock": 4,
 			"maxStock": 12,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.5
 		}
 	],
 	"level5Pool": [
@@ -155,7 +155,7 @@
 			"sell": 400,
 			"minStock": 2,
 			"maxStock": 6,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 2
 		},
 		{
 			"item": "minecraft:prismarine_crystals",
@@ -163,7 +163,7 @@
 			"sell": 300,
 			"minStock": 2,
 			"maxStock": 6,
-			"xpMultiplier": 0.5
+			"xpMultiplier": 2
 		}
 	]
 }

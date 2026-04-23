@@ -73,23 +73,6 @@
 			"max_level": 2
 		}
 	],
-	"toolEnchantments": [
-		{
-			"id": "minecraft:efficiency",
-			"max_level": 3
-		},
-		{
-			"id": "minecraft:fortune",
-			"max_level": 2
-		},
-		{
-			"id": "minecraft:silk_touch"
-		},
-		{
-			"id": "minecraft:unbreaking",
-			"max_level": 2
-		}
-	],
 	"levelMoneySettings": {
 		"level1StartMoney": 300,
 		"level2StartMoney": 500,
@@ -109,7 +92,7 @@
 			"sell": 6,
 			"minStock": 12,
 			"maxStock": 36,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.13
 		},
 		{
 			"item": "minecraft:iron_sword",
@@ -122,7 +105,7 @@
 			"enchantMaxCount": 2,
 			"enchantMinLevel": 1,
 			"enchantMaxLevel": 2,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 5
 		},
 		{
 			"item": "minecraft:iron_axe",
@@ -130,7 +113,7 @@
 			"sell": 500,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 5
 		}
 	],
 	"level2Pool": [
@@ -140,7 +123,7 @@
 			"sell": 110,
 			"minStock": 4,
 			"maxStock": 12,
-			"xpMultiplier": 0.1
+			"xpMultiplier": 0.5
 		},
 		{
 			"item": "minecraft:bell",
@@ -148,7 +131,7 @@
 			"sell": 800,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 0.5
+			"xpMultiplier": 5
 		}
 	],
 	"level3Pool": [
@@ -158,7 +141,7 @@
 			"sell": 10,
 			"minStock": 8,
 			"maxStock": 32,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.1
 		}
 	],
 	"level4Pool": [
@@ -173,7 +156,7 @@
 			"enchantMaxCount": 3,
 			"enchantMinLevel": 1,
 			"enchantMaxLevel": 2,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 7.5
 		},
 		{
 			"item": "minecraft:diamond",
@@ -181,7 +164,7 @@
 			"sell": 600,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 0.5
+			"xpMultiplier": 3
 		}
 	],
 	"level5Pool": [
@@ -196,7 +179,7 @@
 			"enchantMaxCount": 3,
 			"enchantMinLevel": 1,
 			"enchantMaxLevel": 2,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 7.5
 		}
 	]
 }

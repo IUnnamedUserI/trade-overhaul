@@ -54,7 +54,7 @@
 			"sell": 6,
 			"minStock": 12,
 			"maxStock": 36,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.13
 		},
 		{
 			"item": "minecraft:iron_ingot",
@@ -62,7 +62,7 @@
 			"sell": 100,
 			"minStock": 4,
 			"maxStock": 12,
-			"xpMultiplier": 0.1
+			"xpMultiplier": 0.5
 		},
 		{
 			"item": "minecraft:chainmail_boots",
@@ -70,7 +70,7 @@
 			"sell": 300,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 3.0
 		},
 		{
 			"item": "minecraft:chainmail_leggings",
@@ -78,7 +78,7 @@
 			"sell": 400,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 3.0
 		}
 	],
 	"level2Pool": [
@@ -88,7 +88,7 @@
 			"sell": 800,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 5.0
 		},
 		{
 			"item": "minecraft:iron_boots",
@@ -96,7 +96,7 @@
 			"sell": 500,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 5.0
 		},
 		{
 			"item": "minecraft:shield",
@@ -104,7 +104,7 @@
 			"sell": 150,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 3.0
 		},
 		{
 			"item": "minecraft:chainmail_chestplate",
@@ -112,7 +112,7 @@
 			"sell": 500,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 3.0
 		},
 		{
 			"item": "minecraft:chainmail_helmet",
@@ -120,7 +120,7 @@
 			"sell": 350,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 3.0
 		}
 	],
 	"level3Pool": [
@@ -130,7 +130,7 @@
 			"sell": 900,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 5.0
 		},
 		{
 			"item": "minecraft:iron_helmet",
@@ -138,7 +138,7 @@
 			"sell": 600,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 5.0
 		},
 		{
 			"item": "minecraft:bell",
@@ -146,7 +146,7 @@
 			"sell": 800,
 			"minStock": 1,
 			"maxStock": 3,
-			"xpMultiplier": 0.5
+			"xpMultiplier": 5
 		},
 		{
 			"item": "minecraft:lava_bucket",
@@ -154,7 +154,7 @@
 			"sell": 400,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 0.5
+			"xpMultiplier": 5
 		},
 		{
 			"item": "minecraft:diamond",
@@ -162,7 +162,7 @@
 			"sell": 600,
 			"minStock": 1,
 			"maxStock": 3,
-			"xpMultiplier": 0.5
+			"xpMultiplier": 3
 		}
 	],
 	"level4Pool": [
@@ -177,7 +177,7 @@
 			"enchantMaxCount": 3,
 			"enchantMinLevel": 1,
 			"enchantMaxLevel": 2,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 7.5
 		},
 		{
 			"item": "minecraft:diamond_leggings",
@@ -190,7 +190,7 @@
 			"enchantMaxCount": 3,
 			"enchantMinLevel": 1,
 			"enchantMaxLevel": 2,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 7.5
 		},
 		{
 			"item": "minecraft:anvil",
@@ -198,7 +198,7 @@
 			"sell": 3000,
 			"minStock": 1,
 			"maxStock": 2,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 5
 		}
 	],
 	"level5Pool": [
@@ -213,7 +213,7 @@
 			"enchantMaxCount": 3,
 			"enchantMinLevel": 1,
 			"enchantMaxLevel": 2,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 7.5
 		},
 		{
 			"item": "minecraft:diamond_helmet",
@@ -226,7 +226,7 @@
 			"enchantMaxCount": 3,
 			"enchantMinLevel": 1,
 			"enchantMaxLevel": 2,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 7.5
 		}
 	]
 }

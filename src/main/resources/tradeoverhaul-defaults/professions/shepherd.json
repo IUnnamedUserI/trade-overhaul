@@ -32,7 +32,7 @@
 			"sell": 20,
 			"minStock": 16,
 			"maxStock": 64,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.1
 		},
 		{
 			"item": "minecraft:brown_wool",
@@ -40,7 +40,7 @@
 			"sell": 25,
 			"minStock": 8,
 			"maxStock": 32,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.1
 		},
 		{
 			"item": "minecraft:black_wool",
@@ -48,7 +48,7 @@
 			"sell": 25,
 			"minStock": 8,
 			"maxStock": 32,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.1
 		},
 		{
 			"item": "minecraft:gray_wool",
@@ -56,7 +56,7 @@
 			"sell": 25,
 			"minStock": 8,
 			"maxStock": 32,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.1
 		},
 		{
 			"item": "minecraft:shears",
@@ -64,7 +64,7 @@
 			"sell": 100,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 3.0
 		},
 		{
 			"item": "minecraft:string",
@@ -72,7 +72,7 @@
 			"sell": 15,
 			"minStock": 8,
 			"maxStock": 32,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.1
 		}
 	],
 	"level2Pool": [
@@ -82,7 +82,7 @@
 			"sell": 10,
 			"minStock": 4,
 			"maxStock": 16,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.15
 		},
 		{
 			"item": "minecraft:lime_dye",
@@ -90,7 +90,7 @@
 			"sell": 10,
 			"minStock": 4,
 			"maxStock": 16,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.15
 		},
 		{
 			"item": "minecraft:gray_dye",
@@ -98,7 +98,7 @@
 			"sell": 10,
 			"minStock": 4,
 			"maxStock": 16,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.15
 		},
 		{
 			"item": "minecraft:light_blue_dye",
@@ -106,7 +106,7 @@
 			"sell": 10,
 			"minStock": 4,
 			"maxStock": 16,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.15
 		},
 		{
 			"item": "minecraft:white_dye",
@@ -114,7 +114,7 @@
 			"sell": 10,
 			"minStock": 4,
 			"maxStock": 16,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.15
 		},
 		{
 			"item": "minecraft:light_gray_wool",
@@ -348,7 +348,7 @@
 			"sell": 10,
 			"minStock": 4,
 			"maxStock": 16,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.15
 		},
 		{
 			"item": "minecraft:light_gray_dye",
@@ -356,7 +356,7 @@
 			"sell": 10,
 			"minStock": 4,
 			"maxStock": 16,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.15
 		},
 		{
 			"item": "minecraft:pink_dye",
@@ -364,7 +364,7 @@
 			"sell": 10,
 			"minStock": 4,
 			"maxStock": 16,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.15
 		},
 		{
 			"item": "minecraft:yellow_dye",
@@ -372,7 +372,7 @@
 			"sell": 10,
 			"minStock": 4,
 			"maxStock": 16,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.15
 		},
 		{
 			"item": "minecraft:orange_dye",
@@ -380,7 +380,7 @@
 			"sell": 10,
 			"minStock": 4,
 			"maxStock": 16,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.15
 		},
 		{
 			"item": "minecraft:white_bed",
@@ -388,7 +388,7 @@
 			"sell": 50,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 1
 		},
 		{
 			"item": "minecraft:brown_bed",
@@ -396,7 +396,7 @@
 			"sell": 50,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 1
 		},
 		{
 			"item": "minecraft:black_bed",
@@ -404,7 +404,7 @@
 			"sell": 50,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 1
 		},
 		{
 			"item": "minecraft:gray_bed",
@@ -412,7 +412,7 @@
 			"sell": 50,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 1
 		},
 		{
 			"item": "minecraft:light_gray_bed",
@@ -420,7 +420,7 @@
 			"sell": 50,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 1
 		},
 		{
 			"item": "minecraft:orange_bed",
@@ -428,7 +428,7 @@
 			"sell": 50,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 1
 		},
 		{
 			"item": "minecraft:yellow_bed",
@@ -436,7 +436,7 @@
 			"sell": 50,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 1
 		},
 		{
 			"item": "minecraft:lime_bed",
@@ -444,7 +444,7 @@
 			"sell": 50,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 1
 		},
 		{
 			"item": "minecraft:green_bed",
@@ -452,7 +452,7 @@
 			"sell": 50,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 0.1
 		},
 		{
 			"item": "minecraft:cyan_bed",
@@ -460,7 +460,7 @@
 			"sell": 50,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 1
 		},
 		{
 			"item": "minecraft:blue_bed",
@@ -468,7 +468,7 @@
 			"sell": 50,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 1
 		},
 		{
 			"item": "minecraft:light_blue_bed",
@@ -476,7 +476,7 @@
 			"sell": 50,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 1
 		},
 		{
 			"item": "minecraft:purple_bed",
@@ -484,7 +484,7 @@
 			"sell": 50,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 1
 		},
 		{
 			"item": "minecraft:magenta_bed",
@@ -492,7 +492,7 @@
 			"sell": 50,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 1
 		},
 		{
 			"item": "minecraft:pink_bed",
@@ -500,7 +500,7 @@
 			"sell": 50,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 1
 		},
 		{
 			"item": "minecraft:red_bed",
@@ -508,7 +508,7 @@
 			"sell": 50,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 1
 		}
 	],
 	"level4Pool": [
@@ -518,7 +518,7 @@
 			"sell": 10,
 			"minStock": 4,
 			"maxStock": 16,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.15
 		},
 		{
 			"item": "minecraft:brown_dye",
@@ -526,7 +526,7 @@
 			"sell": 10,
 			"minStock": 4,
 			"maxStock": 16,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.15
 		},
 		{
 			"item": "minecraft:blue_dye",
@@ -534,7 +534,7 @@
 			"sell": 10,
 			"minStock": 4,
 			"maxStock": 16,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.15
 		},
 		{
 			"item": "minecraft:purple_dye",
@@ -542,7 +542,7 @@
 			"sell": 10,
 			"minStock": 4,
 			"maxStock": 16,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.15
 		},
 		{
 			"item": "minecraft:cyan_dye",
@@ -550,7 +550,7 @@
 			"sell": 10,
 			"minStock": 4,
 			"maxStock": 16,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.15
 		},
 		{
 			"item": "minecraft:magenta_dye",
@@ -558,7 +558,7 @@
 			"sell": 10,
 			"minStock": 4,
 			"maxStock": 16,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.15
 		},
 		{
 			"item": "minecraft:white_banner",
@@ -566,7 +566,7 @@
 			"sell": 100,
 			"minStock": 3,
 			"maxStock": 8,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 2
 		},
 		{
 			"item": "minecraft:brown_banner",
@@ -574,7 +574,7 @@
 			"sell": 100,
 			"minStock": 3,
 			"maxStock": 8,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 2
 		},
 		{
 			"item": "minecraft:black_banner",
@@ -582,7 +582,7 @@
 			"sell": 100,
 			"minStock": 3,
 			"maxStock": 8,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 2
 		},
 		{
 			"item": "minecraft:gray_banner",
@@ -590,7 +590,7 @@
 			"sell": 100,
 			"minStock": 3,
 			"maxStock": 8,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 2
 		},
 		{
 			"item": "minecraft:light_gray_banner",
@@ -598,7 +598,7 @@
 			"sell": 100,
 			"minStock": 3,
 			"maxStock": 8,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 2
 		},
 		{
 			"item": "minecraft:orange_banner",
@@ -606,7 +606,7 @@
 			"sell": 100,
 			"minStock": 3,
 			"maxStock": 8,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 2
 		},
 		{
 			"item": "minecraft:yellow_banner",
@@ -614,7 +614,7 @@
 			"sell": 100,
 			"minStock": 3,
 			"maxStock": 8,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 2
 		},
 		{
 			"item": "minecraft:lime_banner",
@@ -622,7 +622,7 @@
 			"sell": 100,
 			"minStock": 3,
 			"maxStock": 8,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 2
 		},
 		{
 			"item": "minecraft:green_banner",
@@ -630,7 +630,7 @@
 			"sell": 100,
 			"minStock": 3,
 			"maxStock": 8,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 2
 		},
 		{
 			"item": "minecraft:cyan_banner",
@@ -638,7 +638,7 @@
 			"sell": 100,
 			"minStock": 3,
 			"maxStock": 8,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 2
 		},
 		{
 			"item": "minecraft:blue_banner",
@@ -646,7 +646,7 @@
 			"sell": 100,
 			"minStock": 3,
 			"maxStock": 8,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 2
 		},
 		{
 			"item": "minecraft:light_blue_banner",
@@ -654,7 +654,7 @@
 			"sell": 100,
 			"minStock": 3,
 			"maxStock": 8,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 2
 		},
 		{
 			"item": "minecraft:purple_banner",
@@ -662,7 +662,7 @@
 			"sell": 100,
 			"minStock": 3,
 			"maxStock": 8,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 2
 		},
 		{
 			"item": "minecraft:magenta_banner",
@@ -670,7 +670,7 @@
 			"sell": 100,
 			"minStock": 3,
 			"maxStock": 8,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 2
 		},
 		{
 			"item": "minecraft:pink_banner",
@@ -678,7 +678,7 @@
 			"sell": 100,
 			"minStock": 3,
 			"maxStock": 8,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 2
 		},
 		{
 			"item": "minecraft:red_banner",
@@ -686,7 +686,7 @@
 			"sell": 100,
 			"minStock": 3,
 			"maxStock": 8,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 2
 		}
 	],
 	"level5Pool": [
@@ -696,7 +696,7 @@
 			"sell": 100,
 			"minStock": 2,
 			"maxStock": 4,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 1
 		}
 	]
 }

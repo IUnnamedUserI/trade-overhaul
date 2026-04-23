@@ -282,7 +282,7 @@
 			"sell": 60,
 			"minStock": 6,
 			"maxStock": 32,
-			"xpMultiplier": 0.5
+			"xpMultiplier": 1
 		},
 		{
 			"item": "minecraft:paper",
@@ -298,7 +298,7 @@
 			"sell": 40,
 			"minStock": 4,
 			"maxStock": 12,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.5
 		}
 	],
 	"level2Pool": [
@@ -308,7 +308,7 @@
 			"sell": 180,
 			"minStock": 4,
 			"maxStock": 8,
-			"xpMultiplier": 0.5
+			"xpMultiplier": 3
 		},
 		{
 			"item": "minecraft:lantern",
@@ -316,7 +316,7 @@
 			"sell": 280,
 			"minStock": 4,
 			"maxStock": 12,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 0.5
 		},
 		{
 			"item": "minecraft:glass",
@@ -324,7 +324,7 @@
 			"sell": 50,
 			"minStock": 8,
 			"maxStock": 24,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.1
 		}
 	],
 	"level3Pool": [
@@ -334,7 +334,7 @@
 			"sell": 300,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 0.5
+			"xpMultiplier": 2
 		},
 		{
 			"item": "minecraft:clock",
@@ -342,7 +342,7 @@
 			"sell": 350,
 			"minStock": 1,
 			"maxStock": 3,
-			"xpMultiplier": 0.5
+			"xpMultiplier": 2
 		},
 		{
 			"item": "minecraft:chiseled_bookshelf",
@@ -350,7 +350,7 @@
 			"sell": 150,
 			"minStock": 4,
 			"maxStock": 8,
-			"xpMultiplier": 0.5
+			"xpMultiplier": 2
 		},
 		{
 			"item": "minecraft:compass",
@@ -358,7 +358,7 @@
 			"sell": 250,
 			"minStock": 1,
 			"maxStock": 3,
-			"xpMultiplier": 0.5
+			"xpMultiplier": 2
 		}
 	],
 	"level4Pool": [
@@ -368,7 +368,7 @@
 			"sell": 500,
 			"minStock": 1,
 			"maxStock": 3,
-			"xpMultiplier": 0.5
+			"xpMultiplier": 2
 		},
 		{
 			"item": "minecraft:name_tag",
@@ -384,7 +384,7 @@
 			"sell": 300,
 			"minStock": 1,
 			"maxStock": 3,
-			"xpMultiplier": 0.5
+			"xpMultiplier": 0.75
 		}
 	],
 	"level5Pool": [
@@ -394,7 +394,7 @@
 			"sell": 1200,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 1.5
+			"xpMultiplier": 5
 		}
 	]
 }

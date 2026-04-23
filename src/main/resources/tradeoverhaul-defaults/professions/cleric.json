@@ -32,7 +32,7 @@
 			"sell": 10,
 			"minStock": 6,
 			"maxStock": 42,
-			"xpMultiplier": 0.01
+			"xpMultiplier": 0.0625
 		},
 		{
 			"item": "minecraft:gunpowder",
@@ -48,7 +48,7 @@
 			"sell": 40,
 			"minStock": 4,
 			"maxStock": 16,
-			"xpMultiplier": 0.1
+			"xpMultiplier": 0.5
 		}
 	],
 	"level2Pool": [
@@ -58,7 +58,7 @@
 			"sell": 50,
 			"minStock": 4,
 			"maxStock": 16,
-			"xpMultiplier": 0.1
+			"xpMultiplier": 1
 		},
 		{
 			"item": "minecraft:spider_eye",
@@ -66,7 +66,7 @@
 			"sell": 25,
 			"minStock": 4,
 			"maxStock": 16,
-			"xpMultiplier": 0.01
+			"xpMultiplier": 0.1
 		},
 		{
 			"item": "minecraft:fermented_spider_eye",
@@ -82,7 +82,7 @@
 			"sell": 175,
 			"minStock": 4,
 			"maxStock": 12,
-			"xpMultiplier": 0.1
+			"xpMultiplier": 1
 		},
 		{
 			"item": "minecraft:lapis_lazuli",
@@ -90,7 +90,7 @@
 			"sell": 75,
 			"minStock": 6,
 			"maxStock": 24,
-			"xpMultiplier": 0.1
+			"xpMultiplier": 0.5
 		}
 	],
 	"level3Pool": [
@@ -108,7 +108,7 @@
 			"sell": 125,
 			"minStock": 2,
 			"maxStock": 4,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 0.5
 		},
 		{
 			"item": "minecraft:glass_bottle",
@@ -124,7 +124,7 @@
 			"sell": 350,
 			"minStock": 2,
 			"maxStock": 4,
-			"xpMultiplier": 0.5
+			"xpMultiplier": 1
 		}
 	],
 	"level4Pool": [
@@ -134,7 +134,7 @@
 			"sell": 400,
 			"minStock": 2,
 			"maxStock": 8,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 2
 		},
 		{
 			"item": "minecraft:experience_bottle",
@@ -162,14 +162,6 @@
 		}
 	],
 	"level5Pool": [
-		{
-			"item": "minecraft:totem_of_undying",
-			"buy": 5000,
-			"sell": 2500,
-			"minStock": 1,
-			"maxStock": 2,
-			"xpMultiplier": 1.5
-		},
 		{
 			"item": "minecraft:scute",
 			"buy": 400,

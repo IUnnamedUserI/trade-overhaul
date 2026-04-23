@@ -32,7 +32,7 @@
 			"sell": 20,
 			"minStock": 3,
 			"maxStock": 14,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.15
 		},
 		{
 			"item": "minecraft:porkchop",
@@ -40,7 +40,7 @@
 			"sell": 25,
 			"minStock": 3,
 			"maxStock": 14,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.2
 		},
 		{
 			"item": "minecraft:beef",
@@ -48,7 +48,7 @@
 			"sell": 30,
 			"minStock": 3,
 			"maxStock": 14,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.2
 		}
 	],
 	"level2Pool": [
@@ -66,7 +66,7 @@
 			"sell": 40,
 			"minStock": 3,
 			"maxStock": 14,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 0.25
 		},
 		{
 			"item": "minecraft:cooked_beef",
@@ -74,7 +74,7 @@
 			"sell": 55,
 			"minStock": 3,
 			"maxStock": 14,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 0.25
 		}
 	],
 	"level3Pool": [
@@ -84,7 +84,7 @@
 			"sell": 80,
 			"minStock": 2,
 			"maxStock": 6,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.3
 		},
 		{
 			"item": "minecraft:cooked_rabbit",
@@ -92,7 +92,7 @@
 			"sell": 100,
 			"minStock": 2,
 			"maxStock": 6,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 0.35
 		},
 		{
 			"item": "minecraft:mutton",
@@ -100,7 +100,7 @@
 			"sell": 20,
 			"minStock": 3,
 			"maxStock": 14,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.20
 		},
 		{
 			"item": "minecraft:cooked_mutton",
@@ -108,7 +108,7 @@
 			"sell": 30,
 			"minStock": 3,
 			"maxStock": 14,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 0.25
 		}
 	],
 	"level4Pool": [

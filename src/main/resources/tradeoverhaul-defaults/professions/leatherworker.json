@@ -32,7 +32,7 @@
 			"sell": 40,
 			"minStock": 6,
 			"maxStock": 24,
-			"xpMultiplier": 0.1
+			"xpMultiplier": 0.3
 		},
 		{
 			"item": "minecraft:leather_leggings",
@@ -40,7 +40,7 @@
 			"sell": 300,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 3.0
 		},
 		{
 			"item": "minecraft:leather_chestplate",
@@ -48,7 +48,7 @@
 			"sell": 340,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 3.0
 		}
 	],
 	"level2Pool": [
@@ -58,7 +58,7 @@
 			"sell": 200,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 3.0
 		},
 		{
 			"item": "minecraft:leather_helmet",
@@ -66,7 +66,7 @@
 			"sell": 225,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 3.0
 		},
 		{
 			"item": "minecraft:flint",
@@ -74,7 +74,7 @@
 			"sell": 12,
 			"minStock": 4,
 			"maxStock": 16,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.1
 		}
 	],
 	"level3Pool": [
@@ -84,7 +84,7 @@
 			"sell": 300,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 5.0
 		},
 		{
 			"item": "minecraft:item_frame",
@@ -100,7 +100,7 @@
 			"sell": 50,
 			"minStock": 4,
 			"maxStock": 24,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.5
 		}
 	],
 	"level4Pool": [
@@ -110,7 +110,7 @@
 			"sell": 300,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 3.0
 		},
 		{
 			"item": "minecraft:scute",

@@ -53,7 +53,7 @@
 			"sell": 35,
 			"minStock": 6,
 			"maxStock": 16,
-			"xpMultiplier": 0.1
+			"xpMultiplier": 0.15
 		},
 		{
 			"item": "minecraft:wheat",
@@ -61,7 +61,7 @@
 			"sell": 10,
 			"minStock": 12,
 			"maxStock": 48,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.1
 		},
 		{
 			"item": "minecraft:carrot",
@@ -69,7 +69,7 @@
 			"sell": 15,
 			"minStock": 12,
 			"maxStock": 48,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.09
 		},
 		{
 			"item": "minecraft:potato",
@@ -77,7 +77,7 @@
 			"sell": 10,
 			"minStock": 12,
 			"maxStock": 48,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.075
 		},
 		{
 			"item": "minecraft:beetroot",
@@ -85,7 +85,7 @@
 			"sell": 20,
 			"minStock": 12,
 			"maxStock": 48,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.13
 		}
 	],
 	"level2Pool": [
@@ -95,7 +95,7 @@
 			"sell": 5,
 			"minStock": 6,
 			"maxStock": 12,
-			"xpMultiplier": 0.01
+			"xpMultiplier": 0.05
 		},
 		{
 			"item": "minecraft:pumpkin_seeds",
@@ -103,7 +103,7 @@
 			"sell": 5,
 			"minStock": 6,
 			"maxStock": 12,
-			"xpMultiplier": 0.01
+			"xpMultiplier": 0.05
 		},
 		{
 			"item": "minecraft:pumpkin",
@@ -111,7 +111,7 @@
 			"sell": 40,
 			"minStock": 2,
 			"maxStock": 6,
-			"xpMultiplier": 0.1
+			"xpMultiplier": 1
 		},
 		{
 			"item": "minecraft:apple",
@@ -119,7 +119,7 @@
 			"sell": 15,
 			"minStock": 8,
 			"maxStock": 24,
-			"xpMultiplier": 0.1
+			"xpMultiplier": 0.5
 		},
 		{
 			"item": "minecraft:sweet_berries",
@@ -135,7 +135,7 @@
 			"sell": 4,
 			"minStock": 8,
 			"maxStock": 24,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.1
 		}
 	],
 	"level3Pool": [
@@ -145,7 +145,7 @@
 			"sell": 5,
 			"minStock": 8,
 			"maxStock": 24,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.1
 		},
 		{
 			"item": "minecraft:egg",
@@ -153,7 +153,7 @@
 			"sell": 25,
 			"minStock": 4,
 			"maxStock": 16,
-			"xpMultiplier": 0.2
+			"xpMultiplier": 0.5
 		},
 		{
 			"item": "minecraft:pumpkin_pie",
@@ -195,7 +195,7 @@
 			"sell": 90,
 			"minStock": 2,
 			"maxStock": 8,
-			"xpMultiplier": 0.5
+			"xpMultiplier": 0.9
 		},
 		{
 			"item": "minecraft:dried_kelp",

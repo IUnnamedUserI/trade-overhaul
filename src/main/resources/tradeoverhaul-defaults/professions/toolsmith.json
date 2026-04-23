@@ -49,7 +49,7 @@
 			"sell": 6,
 			"minStock": 12,
 			"maxStock": 36,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.13
 		},
 		{
 			"item": "minecraft:stone_axe",
@@ -57,7 +57,7 @@
 			"sell": 50,
 			"minStock": 1,
 			"maxStock": 3,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 3
 		},
 		{
 			"item": "minecraft:stone_shovel",
@@ -65,7 +65,7 @@
 			"sell": 40,
 			"minStock": 1,
 			"maxStock": 3,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 3
 		},
 		{
 			"item": "minecraft:stone_pickaxe",
@@ -73,7 +73,7 @@
 			"sell": 50,
 			"minStock": 1,
 			"maxStock": 3,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 3
 		},
 		{
 			"item": "minecraft:stone_hoe",
@@ -81,7 +81,7 @@
 			"sell": 45,
 			"minStock": 1,
 			"maxStock": 3,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 3
 		}
 	],
 	"level2Pool": [
@@ -91,7 +91,7 @@
 			"sell": 100,
 			"minStock": 4,
 			"maxStock": 12,
-			"xpMultiplier": 0.1
+			"xpMultiplier": 0.5
 		},
 		{
 			"item": "minecraft:bell",
@@ -99,7 +99,7 @@
 			"sell": 800,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 0.5
+			"xpMultiplier": 5
 		}
 	],
 	"level3Pool": [
@@ -109,7 +109,7 @@
 			"sell": 10,
 			"minStock": 8,
 			"maxStock": 32,
-			"xpMultiplier": 0.05
+			"xpMultiplier": 0.1
 		},
 		{
 			"item": "minecraft:iron_axe",
@@ -122,7 +122,7 @@
 			"enchantMaxCount": 3,
 			"enchantMinLevel": 1,
 			"enchantMaxLevel": 2,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 5
 		},
 		{
 			"item": "minecraft:iron_shovel",
@@ -135,7 +135,7 @@
 			"enchantMaxCount": 3,
 			"enchantMinLevel": 1,
 			"enchantMaxLevel": 2,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 5
 		},
 		{
 			"item": "minecraft:iron_pickaxe",
@@ -148,7 +148,7 @@
 			"enchantMaxCount": 3,
 			"enchantMinLevel": 1,
 			"enchantMaxLevel": 2,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 5
 		},
 		{
 			"item": "minecraft:diamond_hoe",
@@ -156,7 +156,7 @@
 			"sell": 900,
 			"minStock": 1,
 			"maxStock": 1,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 7.5
 		}
 	],
 	"level4Pool": [
@@ -171,7 +171,7 @@
 			"enchantMaxCount": 3,
 			"enchantMinLevel": 1,
 			"enchantMaxLevel": 2,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 7.5
 		},
 		{
 			"item": "minecraft:diamond_axe",
@@ -184,7 +184,7 @@
 			"enchantMaxCount": 3,
 			"enchantMinLevel": 1,
 			"enchantMaxLevel": 2,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 7.5
 		},
 		{
 			"item": "minecraft:diamond",
@@ -192,7 +192,7 @@
 			"sell": 600,
 			"minStock": 1,
 			"maxStock": 3,
-			"xpMultiplier": 0.5
+			"xpMultiplier": 3
 		}
 	],
 	"level5Pool": [
@@ -207,7 +207,7 @@
 			"enchantMaxCount": 3,
 			"enchantMinLevel": 1,
 			"enchantMaxLevel": 2,
-			"xpMultiplier": 1.0
+			"xpMultiplier": 7.5
 		}
 	]
 }
