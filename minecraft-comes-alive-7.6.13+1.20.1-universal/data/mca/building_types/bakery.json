@@ -1,9 +1,0 @@
-{
-  "color": "ffaaaaaa",
-  "visible": false,
-  "priority": 1,
-  "blocks": {
-    "minecraft:cake": 1,
-    "minecraft:smoker": 1
-  }
-}
