@@ -1,6 +1,7 @@
 package com.unnameduser.tradeoverhaul.common.component;
 
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.text.Text;
 
 /**
  * Простой компонент валюты для жителей (не зависит от Numismatic Overhaul).
@@ -72,9 +73,25 @@ public class VillagerCurrencyComponent {
 	 */
 	public String formatMoneyVertical() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("§6ЗМ: §f").append(gold).append(" ");
-		sb.append("§fСМ: §f").append(silver).append(" ");
-		sb.append("§eММ: §f").append(copper);
+		// Золото (§6 = золотой цвет)
+		sb.append("§6")
+				.append(Text.translatable("currency.gold.short").getString())
+				.append(": §f")
+				.append(gold)
+				.append(" ");
+
+// Серебро (§7 = серый, лучше видно на фоне)
+		sb.append("§7")
+				.append(Text.translatable("currency.silver.short").getString())
+				.append(": §f")
+				.append(silver)
+				.append(" ");
+
+// Медь (§6 = коричневато-жёлтый, или §e для яркости)
+		sb.append("§e")
+				.append(Text.translatable("currency.copper.short").getString())
+				.append(": §f")
+				.append(copper);
 		return sb.toString();
 	}
 	

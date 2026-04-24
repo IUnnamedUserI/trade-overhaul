@@ -1,18 +1,7 @@
 {
 	"profession": "minecraft:armorer",
 	"offersCount": 10,
-	"buyPool": [
-		{
-			"tag": "c:ingots/iron",
-			"buyPrice": 100,
-			"discountFactor": 60
-		},
-		{
-			"tag": "c:ores/coal",
-			"buyPrice": 50,
-			"discountFactor": 70
-		}
-	],
+	"buyPool": [],
 	"armorEnchantments": [
 		{ "id": "minecraft:protection", "max_level": 2 },
 		{ "id": "minecraft:fire_protection", "max_level": 2 },
@@ -36,11 +25,11 @@
 		{ "id": "minecraft:soul_speed", "max_level": 2 }
 	],
 	"levelMoneySettings": {
-		"level1StartMoney": 300,
-		"level2StartMoney": 500,
-		"level3StartMoney": 800,
-		"level4StartMoney": 1200,
-		"level5StartMoney": 2000,
+		"level1StartMoney": 500,
+		"level2StartMoney": 800,
+		"level3StartMoney": 1200,
+		"level4StartMoney": 2000,
+		"level5StartMoney": 3000,
 		"level1RestockMoney": 400,
 		"level2RestockMoney": 700,
 		"level3RestockMoney": 1100,

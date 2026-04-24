@@ -9,5 +9,21 @@
 	"gui.tradeoverhaul.expected_xp": "Ожидаемый XP: +%.2f",
 	"command.tradeoverhaul.refresh.all": "Обновлено %d жителей(ей)",
 	"command.tradeoverhaul.refresh.near": "Обновлено %d жителей(ей) в радиусе %d блоков от %s",
-	"tradeoverhaul.config.itemPriceMultipliers": "Множители цен предметов"
+	"tradeoverhaul.config.itemPriceMultipliers": "Множители цен предметов",
+
+	"tradeoverhaul.gui.maxlevel": "МАКСИМАЛЬНЫЙ УРОВЕНЬ",
+	"tradeoverhaul.level.novice": "Новичок",
+	"tradeoverhaul.level.apprentice": "Подмастерье",
+	"tradeoverhaul.level.journeyman": "Ремесленник",
+	"tradeoverhaul.level.expert": "Эксперт",
+	"tradeoverhaul.level.master": "Мастер",
+	"tradeoverhaul.gui.level": "Ур.",
+
+	"currency.gold.short": "ЗМ",
+	"currency.silver.short": "СМ",
+	"currency.copper.short": "ММ",
+
+	"currency.gold": "золот.",
+	"currency.silver": "серебр.",
+	"currency.copper": "медн."
 }

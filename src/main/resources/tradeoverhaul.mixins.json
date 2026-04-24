@@ -6,7 +6,8 @@
 	"mixins": [
 		"LivingEntityDamageMixin",
 		"VillagerEntityMixin",
-		"VillagerWorkstationMixin"
+		"VillagerWorkstationMixin",
+		"VillagerTradeMixin"
 	],
 	"client": [
 		"VillagerEntityMixin"

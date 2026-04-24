@@ -4,6 +4,7 @@ import com.unnameduser.tradeoverhaul.client.gui.VillagerTradeScreenHandler;
 import com.unnameduser.tradeoverhaul.common.VillagerTradeData;
 import com.unnameduser.tradeoverhaul.common.command.TradeOverhaulCommand;
 import com.unnameduser.tradeoverhaul.common.config.TradeConfigLoader;
+import com.unnameduser.tradeoverhaul.common.network.ConfigSyncPayload;
 import com.unnameduser.tradeoverhaul.common.network.ModNetworking;
 import com.unnameduser.tradeoverhaul.common.trade.GlobalRestockTimer;
 import net.fabricmc.api.ModInitializer;
@@ -20,6 +21,8 @@ import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;;;
 
 public class TradeOverhaulMod implements ModInitializer {
 	public static final String MOD_ID = "tradeoverhaul";
@@ -47,5 +50,18 @@ public class TradeOverhaulMod implements ModInitializer {
 		LOGGER.info("Registering global restock timer...");
 		GlobalRestockTimer.register();
 		LOGGER.info("Trade Overhaul initialization complete!");
+
+		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+			ConfigSyncPayload payload = ConfigSyncPayload.fromServerConfigs();
+
+			// Создаём буфер и записываем данные
+			var buf = net.fabricmc.fabric.api.networking.v1.PacketByteBufs.create();
+			payload.write(buf);
+
+			// Отправляем классическим способом для 1.20.1
+			net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(handler.player, ConfigSyncPayload.ID, buf);
+
+			TradeOverhaulMod.LOGGER.debug("Sent config sync to player {}", handler.player.getName().getString());
+		});
 	}
 }

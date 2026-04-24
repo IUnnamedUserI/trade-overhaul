@@ -1,24 +1,13 @@
 {
 	"profession": "minecraft:butcher",
 	"offersCount": 10,
-	"buyPool": [
-		{
-			"tag": "c:raw_meefs",
-			"buyPrice": 50,
-			"discountFactor": 70
-		},
-		{
-			"tag": "c:leathers",
-			"buyPrice": 80,
-			"discountFactor": 65
-		}
-	],
+	"buyPool": [],
 	"levelMoneySettings": {
-		"level1StartMoney": 300,
-		"level2StartMoney": 500,
-		"level3StartMoney": 800,
-		"level4StartMoney": 1200,
-		"level5StartMoney": 2000,
+		"level1StartMoney": 500,
+		"level2StartMoney": 800,
+		"level3StartMoney": 1200,
+		"level4StartMoney": 2000,
+		"level5StartMoney": 3000,
 		"level1RestockMoney": 400,
 		"level2RestockMoney": 700,
 		"level3RestockMoney": 1100,

@@ -9,5 +9,21 @@
 	"gui.tradeoverhaul.expected_xp": "Expected XP: +%.2f",
 	"command.tradeoverhaul.refresh.all": "Refreshed %d villager(s)",
 	"command.tradeoverhaul.refresh.near": "Refreshed %d villager(s) within %d blocks of %s",
-	"tradeoverhaul.config.itemPriceMultipliers": "Item Price Multipliers"
+	"tradeoverhaul.config.itemPriceMultipliers": "Item Price Multipliers",
+
+	"tradeoverhaul.gui.maxlevel": "MAX",
+	"tradeoverhaul.level.novice": "Novice",
+	"tradeoverhaul.level.apprentice": "Apprentice",
+	"tradeoverhaul.level.journeyman": "Journeyman",
+	"tradeoverhaul.level.expert": "Expert",
+	"tradeoverhaul.level.master": "Master",
+	"tradeoverhaul.gui.level": "Lvl.",
+
+	"currency.gold.short": "GM",
+	"currency.silver.short": "SM",
+	"currency.copper.short": "CM",
+
+	"currency.gold": "gold",
+	"currency.silver": "silver",
+	"currency.copper": "copper"
 }

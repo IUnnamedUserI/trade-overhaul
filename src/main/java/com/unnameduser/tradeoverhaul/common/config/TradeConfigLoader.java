@@ -15,10 +15,7 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 public final class TradeConfigLoader {
@@ -195,4 +192,118 @@ public final class TradeConfigLoader {
 		return professions.get(professionId);
 	}
 
+	// ========== МЕТОДЫ ДЛЯ СИНХРОНИЗАЦИИ КОНФИГОВ ==========
+
+	/**
+	 * Возвращает копию всех загруженных профессий (для отправки клиенту)
+	 */
+	public static Map<Identifier, ProfessionTradeFile> getAllProfessions() {
+		Map<Identifier, ProfessionTradeFile> copy = new HashMap<>();
+		for (Map.Entry<Identifier, ProfessionTradeFile> entry : professions.entrySet()) {
+			// Глубокая копия через JSON, чтобы избежать модификации оригинала
+			try {
+				String json = GSON.toJson(entry.getValue());
+				ProfessionTradeFile cloned = GSON.fromJson(json, ProfessionTradeFile.class);
+				copy.put(entry.getKey(), cloned);
+			} catch (Exception e) {
+				TradeOverhaulMod.LOGGER.warn("Failed to clone profession config for {}", entry.getKey(), e);
+			}
+		}
+		return Collections.unmodifiableMap(copy);
+	}
+
+	/**
+	 * Временно заменяет конфиг профессии (для клиентской синхронизации)
+	 * @return предыдущий конфиг или null
+	 */
+	public static ProfessionTradeFile setProfessionTemp(Identifier professionId, ProfessionTradeFile file) {
+		if (professions instanceof HashMap) {
+			return ((HashMap<Identifier, ProfessionTradeFile>) professions).put(professionId, file);
+		}
+		// Если map неизменяемый — создаём новый
+		HashMap<Identifier, ProfessionTradeFile> mutable = new HashMap<>(professions);
+		ProfessionTradeFile old = mutable.put(professionId, file);
+		professions = Collections.unmodifiableMap(mutable);
+		return old;
+	}
+
+	/**
+	 * Восстанавливает конфиг профессии из временного хранилища
+	 */
+	public static void restoreProfession(Identifier professionId, ProfessionTradeFile original) {
+		if (original != null) {
+			setProfessionTemp(professionId, original);
+		} else {
+			if (professions instanceof HashMap) {
+				((HashMap<Identifier, ProfessionTradeFile>) professions).remove(professionId);
+			} else {
+				HashMap<Identifier, ProfessionTradeFile> mutable = new HashMap<>(professions);
+				mutable.remove(professionId);
+				professions = Collections.unmodifiableMap(mutable);
+			}
+		}
+	}
+
+	/**
+	 * Генерирует хеш всех конфигов для быстрой проверки синхронизации
+	 */
+	public static String getConfigsHash() {
+		try {
+			java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+			
+			// Хеш настроек
+			md.update(GSON.toJson(settings).getBytes(StandardCharsets.UTF_8));
+			
+			// Хеш профессий (сортируем по ID для детерминизма)
+			List<Identifier> sortedIds = new ArrayList<>(professions.keySet());
+			sortedIds.sort(Identifier::compareTo);
+			for (Identifier id : sortedIds) {
+				md.update(id.toString().getBytes(StandardCharsets.UTF_8));
+				md.update(GSON.toJson(professions.get(id)).getBytes(StandardCharsets.UTF_8));
+			}
+			
+			byte[] hash = md.digest();
+			StringBuilder sb = new StringBuilder();
+			for (byte b : hash) {
+				sb.append(String.format("%02x", b));
+			}
+			return sb.toString();
+		} catch (Exception e) {
+			TradeOverhaulMod.LOGGER.warn("Failed to generate config hash", e);
+			return "error";
+		}
+	}
+
+	/**
+	 * Сериализует конфиг профессии в JSON-строку
+	 */
+	public static String professionToJson(ProfessionTradeFile file) {
+		return GSON.toJson(file);
+	}
+
+	/**
+	 * Десериализует конфиг профессии из JSON-строки
+	 */
+	public static ProfessionTradeFile professionFromJson(String json) {
+		return GSON.fromJson(json, ProfessionTradeFile.class);
+	}
+
+	/**
+	 * Сериализует настройки в JSON-строку
+	 */
+	public static String settingsToJson() {
+		return GSON.toJson(settings);
+	}
+
+	/**
+	 * Десериализует настройки из JSON-строки
+	 */
+	public static TradeOverhaulSettings settingsFromJson(String json) {
+		TradeOverhaulSettings s = GSON.fromJson(json, TradeOverhaulSettings.class);
+		return s != null ? s : new TradeOverhaulSettings();
+	}
+
+	public static void setSettings(TradeOverhaulSettings newSettings) {
+		settings = newSettings;
+	}
 }

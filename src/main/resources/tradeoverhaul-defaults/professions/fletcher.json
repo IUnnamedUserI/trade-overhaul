@@ -1,18 +1,7 @@
 {
 	"profession": "minecraft:fletcher",
 	"offersCount": 10,
-	"buyPool": [
-		{
-			"tag": "c:feathers",
-			"buyPrice": 50,
-			"discountFactor": 60
-		},
-		{
-			"tag": "c:sticks",
-			"buyPrice": 20,
-			"discountFactor": 75
-		}
-	],
+	"buyPool": [],
 	"bowEnchantments": [
 		{ "id": "minecraft:power", "max_level": 2 },
 		{ "id": "minecraft:punch", "max_level": 1 },
@@ -25,11 +14,11 @@
 		{ "id": "minecraft:unbreaking", "max_level": 2 }
 	],
 	"levelMoneySettings": {
-		"level1StartMoney": 300,
-		"level2StartMoney": 500,
-		"level3StartMoney": 800,
-		"level4StartMoney": 1200,
-		"level5StartMoney": 2000,
+		"level1StartMoney": 500,
+		"level2StartMoney": 800,
+		"level3StartMoney": 1200,
+		"level4StartMoney": 2000,
+		"level5StartMoney": 3000,
 		"level1RestockMoney": 400,
 		"level2RestockMoney": 700,
 		"level3RestockMoney": 1100,

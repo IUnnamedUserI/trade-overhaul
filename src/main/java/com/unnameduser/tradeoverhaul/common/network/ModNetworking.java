@@ -3,6 +3,7 @@ package com.unnameduser.tradeoverhaul.common.network;
 import com.unnameduser.tradeoverhaul.client.gui.VillagerTradeScreenHandler;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.item.ItemStack;
+import com.unnameduser.tradeoverhaul.common.network.ConfigSyncPayload;
 
 public class ModNetworking {
 

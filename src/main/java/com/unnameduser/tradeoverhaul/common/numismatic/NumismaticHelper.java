@@ -5,6 +5,7 @@ import com.glisco.numismaticoverhaul.currency.CurrencyComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;
+import net.minecraft.text.Text;
 
 /**
  * Утилиты для работы с валютой Numismatic Overhaul.
@@ -129,61 +130,22 @@ public class NumismaticHelper {
 			return 0;
 		}
 	}
-	
-	/**
-	 * Форматирует сумму в читаемый вид.
-	 * @param amount количество монет в медном эквиваленте
-	 * @return строка вида "1 золотая, 5 серебряных, 3 медных"
-	 */
-	public static String formatMoney(int amount) {
-		if (amount <= 0) {
-			return "0 монет";
-		}
-		
+
+	public static String formatMoney(int totalCopper) {
+		int gold = totalCopper / 10000;
+		int silver = (totalCopper % 10000) / 100;
+		int copper = totalCopper % 100;
+
 		StringBuilder sb = new StringBuilder();
-		
-		// Numismatic Overhaul: 1 золотая = 100 серебряных = 10000 медных
-		// 1 серебряная = 100 медных
-		int gold = amount / 10000;
-		int remaining = amount % 10000;
-		int silver = remaining / 100;
-		int copper = remaining % 100;
-		
 		if (gold > 0) {
-			sb.append(gold).append(" золот");
-			if (gold % 10 == 1 && gold % 100 != 11) {
-				sb.append("ая");
-			} else if (gold % 10 >= 2 && gold % 10 <= 4 && (gold % 100 < 10 || gold % 100 >= 20)) {
-				sb.append("ые");
-			} else {
-				sb.append("ых");
-			}
+			sb.append(gold).append(" ").append(Text.translatable("currency.gold").getString()).append(" ");
 		}
-		
 		if (silver > 0) {
-			if (sb.length() > 0) sb.append(", ");
-			sb.append(silver).append(" серебрян");
-			if (silver % 10 == 1 && silver % 100 != 11) {
-				sb.append("ая");
-			} else if (silver % 10 >= 2 && silver % 10 <= 4 && (silver % 100 < 10 || silver % 100 >= 20)) {
-				sb.append("ые");
-			} else {
-				sb.append("ых");
-			}
+			sb.append(silver).append(" ").append(Text.translatable("currency.silver").getString()).append(" ");
 		}
-		
-		if (copper > 0) {
-			if (sb.length() > 0) sb.append(", ");
-			sb.append(copper).append(" медн");
-			if (copper % 10 == 1 && copper % 100 != 11) {
-				sb.append("ая");
-			} else if (copper % 10 >= 2 && copper % 10 <= 4 && (copper % 100 < 10 || copper % 100 >= 20)) {
-				sb.append("ые");
-			} else {
-				sb.append("ых");
-			}
+		if (copper > 0 || (gold == 0 && silver == 0)) {
+			sb.append(copper).append(" ").append(Text.translatable("currency.copper").getString());
 		}
-		
-		return sb.toString();
+		return sb.toString().trim();
 	}
 }
