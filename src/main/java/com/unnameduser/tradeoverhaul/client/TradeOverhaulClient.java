@@ -10,6 +10,7 @@ import com.unnameduser.tradeoverhaul.common.network.ConfigSyncPayload;
 import com.unnameduser.tradeoverhaul.common.network.DamageReputationSyncPayload;
 import com.unnameduser.tradeoverhaul.common.network.ProfessionLevelSyncPayload;
 import com.unnameduser.tradeoverhaul.common.network.VillagerInventorySyncPayload;
+import com.unnameduser.tradeoverhaul.screen.VillagerInteractionScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -37,6 +38,8 @@ public class TradeOverhaulClient implements ClientModInitializer {
         HandledScreens.register(TradeOverhaulMod.VILLAGER_TRADE_SCREEN_HANDLER, VillagerTradeScreen::new);
 
         // ========== СУЩЕСТВУЮЩИЕ ОБРАБОТЧИКИ ПАКЕТОВ ==========
+
+        HandledScreens.register(TradeOverhaulMod.VILLAGER_CRAFTING_SCREEN_HANDLER, VillagerInteractionScreen::new);
 
         // Регистрируем обработчик синхронизации инвентаря жителя
         ClientPlayNetworking.registerGlobalReceiver(VillagerInventorySyncPayload.ID, (client, handler, buf, responseSender) -> {

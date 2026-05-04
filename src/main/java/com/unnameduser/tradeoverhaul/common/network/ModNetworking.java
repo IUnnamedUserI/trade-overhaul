@@ -1,26 +1,43 @@
 package com.unnameduser.tradeoverhaul.common.network;
 
+import com.unnameduser.tradeoverhaul.TradeOverhaulMod;
 import com.unnameduser.tradeoverhaul.client.gui.VillagerTradeScreenHandler;
+import com.unnameduser.tradeoverhaul.screen.VillagerCraftingScreenHandler;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.item.ItemStack;
 import com.unnameduser.tradeoverhaul.common.network.ConfigSyncPayload;
+import com.unnameduser.tradeoverhaul.common.network.CraftRequestC2SPacket;
+import net.minecraft.util.Identifier;
 
 public class ModNetworking {
 
 	public static void register() {
-		ServerPlayNetworking.registerGlobalReceiver(TradePayload.ID, (server, player, networkHandler, buf, responseSender) -> {
-			TradePayload payload = TradePayload.read(buf);
-			server.execute(() -> {
-				if (player.currentScreenHandler instanceof VillagerTradeScreenHandler tradeHandler
-						&& tradeHandler.syncId == payload.syncId()) {
-					if (payload.isBuying()) {
-						tradeHandler.handleBuyOnServer(payload.slot(), player, payload.buyWholeStack(), payload.buyTen());
-					} else {
-						tradeHandler.handleSellOnServer(payload.slot(), player, payload.sellWholeStack(), payload.buyTen());
-					}
+		ServerPlayNetworking.registerGlobalReceiver(
+				new Identifier(TradeOverhaulMod.MOD_ID, "craft_request"),
+				(server, player, handler, buf, responseSender) -> {
+					CraftRequestC2SPacket packet = CraftRequestC2SPacket.decode(buf);
+					server.execute(() -> {
+						// Получаем ScreenHandler игрока
+						if (player.currentScreenHandler instanceof VillagerCraftingScreenHandler craftingHandler) {
+							craftingHandler.handleCraftRequest(player, packet.getRecipeId(), packet.getSelectedSlot());
+						} else {
+							System.out.println("[TradeOverhaul] Player doesn't have crafting screen open");
+						}
+					});
 				}
-			});
-		});
+		);
+
+		ServerPlayNetworking.registerGlobalReceiver(
+				new Identifier(TradeOverhaulMod.MOD_ID, "craft_request"),
+				(server, player, handler, buf, responseSender) -> {
+					CraftRequestC2SPacket packet = CraftRequestC2SPacket.decode(buf);
+					server.execute(() -> {
+						// TODO: обработка крафта на сервере
+						System.out.println("[TradeOverhaul] Server received craft request: " + packet.getRecipeId() +
+								" from slot " + packet.getSelectedSlot());
+					});
+				}
+		);
 	}
 
 	/**

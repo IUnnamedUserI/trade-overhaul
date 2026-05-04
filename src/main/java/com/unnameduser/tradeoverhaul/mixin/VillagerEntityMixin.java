@@ -8,6 +8,7 @@ import com.unnameduser.tradeoverhaul.common.component.VillagerCurrencyComponent;
 import com.unnameduser.tradeoverhaul.common.component.VillagerInventoryComponent;
 import com.unnameduser.tradeoverhaul.common.component.VillagerProfessionComponent;
 import com.unnameduser.tradeoverhaul.common.trade.TradeRestock;
+import com.unnameduser.tradeoverhaul.screen.VillagerCraftingScreenHandlerFactory;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -212,11 +213,19 @@ public class VillagerEntityMixin implements VillagerTradeData {
 
 			if (!villager.getWorld().isClient) {
 				tradeOverhaul_activeTrader = player;
-				// Инициализируем компонент валюты (создаётся при первом вызове getCurrency)
+
 				var profId = net.minecraft.registry.Registries.VILLAGER_PROFESSION.getId(profession);
-				com.unnameduser.tradeoverhaul.TradeOverhaulMod.LOGGER.info("Opening trade screen for villager {} (profession: {}, level: {})", 
-					villager.getUuid(), profId, villager.getVillagerData().getLevel());
-				player.openHandledScreen(new VillagerTradeScreenHandlerFactory(villager.getDisplayName(), villager));
+				TradeOverhaulMod.LOGGER.info("Interacting with villager {} (profession: {}, level: {})",
+						villager.getUuid(), profId, villager.getVillagerData().getLevel());
+
+				// НОВОЕ: Если игрок зажат Shift, открываем GUI крафта вместо торговли
+				if (player.isSneaking()) {
+					TradeOverhaulMod.LOGGER.info("Opening crafting GUI (Shift + RMB)");
+					player.openHandledScreen(new VillagerCraftingScreenHandlerFactory(villager.getDisplayName(), villager));
+				} else {
+					TradeOverhaulMod.LOGGER.info("Opening trade GUI (normal RMB)");
+					player.openHandledScreen(new VillagerTradeScreenHandlerFactory(villager.getDisplayName(), villager));
+				}
 			}
 
 			cir.setReturnValue(ActionResult.success(villager.getWorld().isClient));
