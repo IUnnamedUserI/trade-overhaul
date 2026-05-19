@@ -164,16 +164,29 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         // ВЫПОЛНЯЕМ КРАФТ
         System.out.println("[TradeOverhaul] Crafting...");
 
-        // Снимаем деньги
+// Снимаем деньги
         NumismaticHelper.removeMoney(player, recipe.getCost());
 
-        // Удаляем уникальный предмет (если есть)
+// СОХРАНЯЕМ NBT ДО УДАЛЕНИЯ ПРЕДМЕТА
+        ItemStack uniqueStackCopy = null;
+        if (uniqueIndex >= 0 && uniqueFoundSlot >= 0 && recipe.shouldCopyNbt()) {
+            ItemStack originalStack = inv.getStack(uniqueFoundSlot);
+            if (originalStack.hasNbt()) {
+                uniqueStackCopy = originalStack.copy();
+                System.out.println("[TradeOverhaul] === NBT DEBUG ===");
+                System.out.println("[TradeOverhaul] shouldCopyNbt: " + recipe.shouldCopyNbt());
+                System.out.println("[TradeOverhaul] Original NBT: " + originalStack.getNbt().toString());
+                System.out.println("[TradeOverhaul] Saved copy of unique item before deletion");
+            }
+        }
+
+// Удаляем уникальный предмет
         if (uniqueIndex >= 0 && uniqueFoundSlot >= 0) {
             Ingredient uniqueIngredient = ingredients.get(uniqueIndex);
             inv.getStack(uniqueFoundSlot).decrement(uniqueIngredient.getCount());
         }
 
-        // Удаляем расходники
+// Удаляем расходники
         for (int i = 0; i < ingredients.size(); i++) {
             if (i == uniqueIndex) continue;
             Ingredient ing = ingredients.get(i);
@@ -189,16 +202,20 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
             }
         }
 
-        // Создаём результат
+// Создаём результат
         ItemStack result = recipe.getResult().copy();
-        if (recipe.shouldCopyNbt() && uniqueStack != null && uniqueStack.hasNbt()) {
-            result.setNbt(uniqueStack.getNbt().copy());
+        if (recipe.shouldCopyNbt() && uniqueStackCopy != null && uniqueStackCopy.hasNbt()) {
+            result.setNbt(uniqueStackCopy.getNbt().copy());
             if (result.getNbt().contains("display")) {
                 result.getNbt().getCompound("display").remove("Name");
             }
+            System.out.println("[TradeOverhaul] Result NBT after copy: " + result.getNbt().toString());
+        } else {
+            System.out.println("[TradeOverhaul] NOT copying NBT (no unique stack or copy_nbt=false)");
         }
+        System.out.println("[TradeOverhaul] === END DEBUG ===");
 
-        // Добавляем результат
+// Добавляем результат
         if (!player.getInventory().insertStack(result)) {
             player.dropItem(result, false);
         }
