@@ -17,12 +17,10 @@ public class RecipeScrollListWidget extends EntryListWidget<RecipeScrollListWidg
     private final List<CraftRecipe> recipes;
     private final Runnable onSelectionChanged;
     private int selectedIndex = -1;
-    private final MinecraftClient client;
     private boolean visible = true;
 
     public RecipeScrollListWidget(MinecraftClient client, int x, int y, int width, int height, int itemHeight, List<CraftRecipe> recipes, Runnable onSelectionChanged) {
         super(client, width, height, y, y + height, itemHeight);
-        this.client = client;
         this.setLeftPos(x);
         this.recipes = recipes;
         this.onSelectionChanged = onSelectionChanged;
@@ -30,14 +28,12 @@ public class RecipeScrollListWidget extends EntryListWidget<RecipeScrollListWidg
         for (int i = 0; i < recipes.size(); i++) {
             this.addEntry(new RecipeEntry(recipes.get(i), i));
         }
+
+        System.out.println("[TradeOverhaul] RecipeScrollList created with " + recipes.size() + " recipes");
     }
 
     public void setVisible(boolean visible) {
         this.visible = visible;
-    }
-
-    public boolean isVisible() {
-        return visible;
     }
 
     @Override

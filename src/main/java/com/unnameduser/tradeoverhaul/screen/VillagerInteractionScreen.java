@@ -1,21 +1,27 @@
 package com.unnameduser.tradeoverhaul.screen;
 
 import com.unnameduser.tradeoverhaul.TradeOverhaulMod;
+import com.unnameduser.tradeoverhaul.client.gui.VillagerTradeScreen;
 import com.unnameduser.tradeoverhaul.common.numismatic.NumismaticHelper;
 import com.unnameduser.tradeoverhaul.common.RecipeManager;
 import com.unnameduser.tradeoverhaul.dto.CraftRecipe;
 import com.unnameduser.tradeoverhaul.dto.Ingredient;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+
+import com.unnameduser.tradeoverhaul.client.gui.VillagerTradeScreenHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,10 +68,19 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     private boolean showRecipesPanel = true;
 
     // Список рецептов
-    private RecipeScrollListWidget recipeScrollList;
+    private RecipeListPanel recipeListPanel;
     private List<CraftRecipe> availableRecipes = new ArrayList<>();
     private CraftRecipe currentRecipe;
     private int selectedRecipeIndex = -1;
+
+    // Поле поиска
+    private TextFieldWidget searchField;
+    private List<CraftRecipe> allRecipes = new ArrayList<>();
+
+    // Панель торговли
+    private VillagerTradeScreenHandler tradeHandler;
+
+    private VillagerTradeScreen tradeScreen;
 
     public VillagerInteractionScreen(VillagerCraftingScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
@@ -106,7 +121,7 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         // Динамическая высота панели рецептов
         int availableHeight = this.backgroundHeight - this.panelY - 50;
         int maxVisible = Math.min(8, availableHeight / 24);
-        recipesPanelHeight = maxVisible * 24 + 30;
+        recipesPanelHeight = maxVisible * 24 + 55;
 
         positionSlots();
 
@@ -131,7 +146,29 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         addDrawableChild(disassembleTabButton);
 
         updateTabButtons();
-        loadRecipes();
+        loadRecipes();  // Это создаст recipeListPanel
+
+        // ===== СОЗДАЁМ ПОЛЕ ПОИСКА (только один раз) =====
+        createSearchField();
+        initTradeScreen();
+    }
+
+    private void createSearchField() {
+        if (searchField != null) {
+            remove(searchField);
+        }
+
+        int x = (this.width - this.backgroundWidth) / 2;
+        int y = (this.height - this.backgroundHeight) / 2;
+        int panelX = x + this.recipesX - 30;
+        int panelY = y + this.panelY - 30;
+
+        searchField = new TextFieldWidget(this.textRenderer, panelX + 5, panelY + 22, recipesPanelWidth - 10, 14, Text.literal("Search"));
+        searchField.setMaxLength(50);
+        searchField.setDrawsBackground(true);
+        searchField.setVisible(showRecipesPanel);
+        searchField.setChangedListener(this::filterRecipes);
+        addDrawableChild(searchField);
     }
 
     private void positionSlots() {
@@ -158,13 +195,23 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     private void loadRecipes() {
         String professionId = handler.getProfessionId();
         int level = handler.getVillagerLevel();
-        availableRecipes = RecipeManager.getInstance().getCraftRecipesForProfession(professionId, level);
+        allRecipes = RecipeManager.getInstance().getCraftRecipesForProfession(professionId, level);
+
+        // Сортировка
+        allRecipes.sort((a, b) -> {
+            int levelCompare = Integer.compare(a.getRequiredLevel(), b.getRequiredLevel());
+            if (levelCompare != 0) return levelCompare;
+            return a.getResult().getName().getString().compareToIgnoreCase(b.getResult().getName().getString());
+        });
+
+        availableRecipes.clear();
+        availableRecipes.addAll(allRecipes);
         createRecipeList();
     }
 
     private void createRecipeList() {
-        if (recipeScrollList != null) {
-            remove(recipeScrollList);
+        if (recipeListPanel != null) {
+            remove(recipeListPanel);
         }
 
         int x = (this.width - this.backgroundWidth) / 2;
@@ -173,24 +220,18 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         int panelY = y + this.panelY - 30;
 
         int listWidth = recipesPanelWidth - 4;
-        int listHeight = recipesPanelHeight - 25;
+        int listHeight = recipesPanelHeight - 42;
 
-        recipeScrollList = new RecipeScrollListWidget(
-                this.client,
-                panelX + 2,
-                panelY + 22,
-                listWidth,
-                listHeight,
-                24,
-                availableRecipes,
-                () -> onRecipeSelected(recipeScrollList.getSelectedRecipe())
+        recipeListPanel = new RecipeListPanel(this, panelX + 2, panelY + 40, listWidth, listHeight, availableRecipes,
+                () -> onRecipeSelected(recipeListPanel.getSelectedRecipe())
         );
 
-        addSelectableChild(recipeScrollList);
+        addDrawableChild(recipeListPanel);
 
         if (!availableRecipes.isEmpty()) {
-            recipeScrollList.setSelectedIndex(0);
-            onRecipeSelected(recipeScrollList.getSelectedRecipe());
+            recipeListPanel.setSelectedIndex(-1);
+            currentRecipe = null;
+            selectedRecipeIndex = -1;
         }
 
         updatePanelVisibility();
@@ -210,6 +251,11 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     private void onTabSelected(TabType tab) {
         if (currentTab == tab) return;
         currentTab = tab;
+
+        if (tab == TabType.TRADE && tradeScreen == null) {
+            initTradeScreen();
+        }
+
         updateTabButtons();
         updatePanelVisibility();
     }
@@ -222,8 +268,11 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
 
     private void updatePanelVisibility() {
         showRecipesPanel = (currentTab == TabType.CRAFT);
-        if (recipeScrollList != null) {
-            recipeScrollList.setVisible(showRecipesPanel);
+        if (recipeListPanel != null) {
+            recipeListPanel.setVisible(showRecipesPanel);
+        }
+        if (searchField != null) {
+            searchField.setVisible(showRecipesPanel);
         }
     }
 
@@ -311,34 +360,43 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         craftEnabled = hasAllIngredients;
     }
 
+    // Исправленный render():
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context);
-        int x = (this.width - this.backgroundWidth) / 2;
-        int y = (this.height - this.backgroundHeight) / 2;
+        if (currentTab == TabType.TRADE) {
+            if (tradeScreen != null) {
+                tradeScreen.render(context, mouseX, mouseY, delta);
+            }
+        } else if (currentTab == TabType.CRAFT) {
+            this.renderBackground(context);
 
-        if (showRecipesPanel) {
-            int panelX = x + this.recipesX - 30;
-            int panelY = y + this.panelY - 30;
-            context.fill(panelX, panelY, panelX + recipesPanelWidth, panelY + recipesPanelHeight, 0xCC000000);
-            context.fill(panelX + 1, panelY + 1, panelX + recipesPanelWidth - 1, panelY + recipesPanelHeight - 1, 0xCC333333);
-            context.fill(panelX, panelY, panelX + recipesPanelWidth, panelY + 1, 0xFFAAAAAA);
-            context.fill(panelX, panelY + recipesPanelHeight - 1, panelX + recipesPanelWidth, panelY + recipesPanelHeight, 0xFFAAAAAA);
-            context.fill(panelX, panelY, panelX + 1, panelY + recipesPanelHeight, 0xFFAAAAAA);
-            context.fill(panelX + recipesPanelWidth - 1, panelY, panelX + recipesPanelWidth, panelY + recipesPanelHeight, 0xFFAAAAAA);
-            context.drawText(this.textRenderer, Text.literal("Recipes"), panelX + 5, panelY + 5, 0xFFFFFF, false);
-            context.fill(panelX + 2, panelY + 18, panelX + recipesPanelWidth - 2, panelY + 19, 0xFF666666);
+            int x = (this.width - this.backgroundWidth) / 2;
+            int y = (this.height - this.backgroundHeight) / 2;
+
+            if (showRecipesPanel) {
+                int panelX = x + this.recipesX - 30;
+                int panelY = y + this.panelY - 30;
+                context.fill(panelX, panelY, panelX + recipesPanelWidth, panelY + recipesPanelHeight, 0xCC000000);
+                context.fill(panelX + 1, panelY + 1, panelX + recipesPanelWidth - 1, panelY + recipesPanelHeight - 1, 0xCC333333);
+                context.fill(panelX, panelY, panelX + recipesPanelWidth, panelY + 1, 0xFFAAAAAA);
+                context.fill(panelX, panelY + recipesPanelHeight - 1, panelX + recipesPanelWidth, panelY + recipesPanelHeight, 0xFFAAAAAA);
+                context.fill(panelX, panelY, panelX + 1, panelY + recipesPanelHeight, 0xFFAAAAAA);
+                context.fill(panelX + recipesPanelWidth - 1, panelY, panelX + recipesPanelWidth, panelY + recipesPanelHeight, 0xFFAAAAAA);
+                context.drawText(this.textRenderer, Text.literal("Recipes"), panelX + 5, panelY + 5, 0xFFFFFF, false);
+                context.fill(panelX + 2, panelY + 18, panelX + recipesPanelWidth - 2, panelY + 19, 0xFF666666);
+            }
+
+            super.render(context, mouseX, mouseY, delta);
+            this.drawMouseoverTooltip(context, mouseX, mouseY);
+
+            context.drawText(this.textRenderer, this.playerInventoryLabel, x + this.inventoryX, y + this.titleY, 0xFFFFFF, true);
+            int playerMoney = NumismaticHelper.getTotalMoney(this.client.player);
+            var playerCurrency = new com.unnameduser.tradeoverhaul.common.component.VillagerCurrencyComponent();
+            playerCurrency.setTotalCopper(playerMoney);
+            context.drawText(this.textRenderer, playerCurrency.formatMoneyVertical(), x + this.inventoryX, y + this.titleY + 12, 0xFFFFFF, true);
+            drawRecipeInfo(context, x, y);
         }
-
-        super.render(context, mouseX, mouseY, delta);
-        this.drawMouseoverTooltip(context, mouseX, mouseY);
-
-        context.drawText(this.textRenderer, this.playerInventoryLabel, x + this.inventoryX, y + this.titleY, 0xFFFFFF, true);
-        int playerMoney = NumismaticHelper.getTotalMoney(this.client.player);
-        var playerCurrency = new com.unnameduser.tradeoverhaul.common.component.VillagerCurrencyComponent();
-        playerCurrency.setTotalCopper(playerMoney);
-        context.drawText(this.textRenderer, playerCurrency.formatMoneyVertical(), x + this.inventoryX, y + this.titleY + 12, 0xFFFFFF, true);
-        drawRecipeInfo(context, x, y);
+        // DISASSEMBLE пока пусто
     }
 
     @Override
@@ -380,8 +438,11 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
 
     @Override
     public void removed() {
-        if (recipeScrollList != null) {
-            remove(recipeScrollList);
+        if (recipeListPanel != null) {
+            remove(recipeListPanel);
+        }
+        if (searchField != null) {
+            remove(searchField);
         }
         super.removed();
     }
@@ -424,6 +485,37 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (currentTab == TabType.TRADE && tradeScreen != null) {
+            return tradeScreen.mouseClicked(mouseX, mouseY, button);
+        }
+        // Обработка клика по полю поиска - не сбрасываем выбранный рецепт
+        if (searchField != null && mouseX >= searchField.getX() && mouseX <= searchField.getX() + searchField.getWidth() &&
+                mouseY >= searchField.getY() && mouseY <= searchField.getY() + searchField.getHeight()) {
+            searchField.setFocused(true);
+            return searchField.mouseClicked(mouseX, mouseY, button);
+        } else if (searchField != null) {
+            searchField.setFocused(false);
+        }
+
+        // Сброс выбранного рецепта только при клике в пустую область (не по полю поиска, не по кнопке крафта, не по слотам)
+        if (button == 0) {
+            boolean clickedOnRecipePanel = isPointOverRecipePanel(mouseX, mouseY);
+            boolean clickedOnCraftButton = isPointOverCraftButton(mouseX, mouseY);
+            boolean clickedOnSlot = getSlotAt(mouseX, mouseY) != null;
+            boolean clickedOnSearchField = searchField != null && mouseX >= searchField.getX() && mouseX <= searchField.getX() + searchField.getWidth() &&
+                    mouseY >= searchField.getY() && mouseY <= searchField.getY() + searchField.getHeight();
+
+            if (!clickedOnRecipePanel && !clickedOnCraftButton && !clickedOnSlot && !clickedOnSearchField) {
+                if (currentRecipe != null) {
+                    currentRecipe = null;
+                    selectedRecipeIndex = -1;
+                    if (recipeListPanel != null) {
+                        recipeListPanel.setSelectedIndex(-1);
+                    }
+                }
+            }
+        }
+
         if (button == 1 && currentRecipe != null && currentRecipe.getUniqueIngredientIndex() >= 0) {
             Slot hoveredSlot = getSlotAt(mouseX, mouseY);
             if (hoveredSlot != null) {
@@ -452,5 +544,90 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
             return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    private boolean isPointOverRecipePanel(double mouseX, double mouseY) {
+        if (recipeListPanel == null) return false;
+        int x = (this.width - this.backgroundWidth) / 2;
+        int y = (this.height - this.backgroundHeight) / 2;
+        int panelX = x + this.recipesX - 30;
+        int panelY = y + this.panelY - 30;
+        return mouseX >= panelX && mouseX <= panelX + recipesPanelWidth &&
+                mouseY >= panelY && mouseY <= panelY + recipesPanelHeight;
+    }
+
+    private void filterRecipes(String searchText) {
+        availableRecipes.clear();
+        if (searchText == null || searchText.trim().isEmpty()) {
+            availableRecipes.addAll(allRecipes);
+        } else {
+            String lowerSearch = searchText.toLowerCase();
+            for (CraftRecipe recipe : allRecipes) {
+                if (recipe.getResult().getName().getString().toLowerCase().contains(lowerSearch)) {
+                    availableRecipes.add(recipe);
+                }
+            }
+        }
+        if (recipeListPanel != null) {
+            recipeListPanel.updateRecipes(availableRecipes);
+        }
+        currentRecipe = null;
+        selectedRecipeIndex = -1;
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (searchField != null && searchField.isFocused()) {
+            if (keyCode == 69) { // E
+                return true; // блокируем закрытие окна
+            }
+            if (searchField.keyPressed(keyCode, scanCode, modifiers)) {
+                return true;
+            }
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean charTyped(char chr, int modifiers) {
+        if (searchField != null && searchField.isFocused()) {
+            if (searchField.charTyped(chr, modifiers)) {
+                return true;
+            }
+        }
+        return super.charTyped(chr, modifiers);
+    }
+
+    public VillagerCraftingScreenHandler getCraftingHandler() {
+        return this.handler;
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+        if (currentTab == TabType.TRADE) {
+            return tradeScreen.mouseScrolled(mouseX, mouseY, amount);
+        }
+        return super.mouseScrolled(mouseX, mouseY, amount);
+    }
+
+    @Override
+    public void resize(MinecraftClient client, int width, int height) {
+        super.resize(client, width, height);
+        if (tradeScreen != null) {
+            tradeScreen.resize(client, width, height);
+        }
+    }
+
+    private void initTradeScreen() {
+        if (tradeScreen != null) return;
+
+        // Получаем жителя из мира по ID
+        VillagerEntity villager = handler.getVillagerFromWorld(client);
+        if (villager != null) {
+            tradeHandler = new VillagerTradeScreenHandler(handler.syncId, this.client.player.getInventory(), villager);
+            tradeScreen = new VillagerTradeScreen(tradeHandler, this.client.player.getInventory(), this.title);
+        } else {
+            System.err.println("[TradeOverhaul] Could not find villager with ID " + handler.getVillagerEntityId());
+        }
     }
 }
