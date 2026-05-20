@@ -1,5 +1,6 @@
 package com.unnameduser.tradeoverhaul.screen;
 
+import com.unnameduser.tradeoverhaul.common.numismatic.NumismaticHelper;
 import com.unnameduser.tradeoverhaul.dto.CraftRecipe;
 import com.unnameduser.tradeoverhaul.dto.Ingredient;
 import net.minecraft.client.MinecraftClient;
@@ -8,6 +9,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
@@ -171,11 +173,13 @@ public class RecipeListPanel extends ClickableWidget {
         }
 
         private boolean isCraftable() {
-            PlayerInventory inv = MinecraftClient.getInstance().player.getInventory();
-            int uniqueIndex = recipe.getUniqueIngredientIndex();
+            PlayerEntity player = MinecraftClient.getInstance().player;
+            if (player == null) return false;
+
+            PlayerInventory inv = player.getInventory();
             List<Ingredient> ingredients = recipe.getIngredients();
 
-            // Проверяем уровень жителя
+            // 1. Проверка уровня жителя
             if (parent != null && parent.getCraftingHandler() != null) {
                 int villagerLevel = parent.getCraftingHandler().getVillagerLevel();
                 if (recipe.getRequiredLevel() > villagerLevel) {
@@ -183,34 +187,29 @@ public class RecipeListPanel extends ClickableWidget {
                 }
             }
 
-            // Проверяем уникальный ингредиент
-            if (uniqueIndex >= 0 && uniqueIndex < ingredients.size()) {
-                Ingredient uniqueIng = ingredients.get(uniqueIndex);
-                boolean hasUnique = false;
-                for (int slot = 0; slot < inv.size(); slot++) {
-                    ItemStack stack = inv.getStack(slot);
-                    if (stack.getItem() == uniqueIng.getItem().getItem() &&
-                            stack.getCount() >= uniqueIng.getCount()) {
-                        hasUnique = true;
-                        break;
-                    }
-                }
-                if (!hasUnique) return false;
+            // 2. Проверка валюты
+            int cost = recipe.getCost();
+            if (cost > 0) {
+                long playerMoney = NumismaticHelper.getTotalMoney(player);
+                if (playerMoney < cost) return false;
             }
 
-            // Проверяем все ингредиенты
+            // 3. Проверка ингредиентов
             for (Ingredient ing : ingredients) {
                 int needed = ing.getCount();
+                ItemStack required = ing.getItem();
                 int found = 0;
+
                 for (int slot = 0; slot < inv.size(); slot++) {
                     ItemStack stack = inv.getStack(slot);
-                    if (stack.getItem() == ing.getItem().getItem()) {
+                    if (!stack.isEmpty() && stack.getItem() == required.getItem()) {
                         found += stack.getCount();
                         if (found >= needed) break;
                     }
                 }
                 if (found < needed) return false;
             }
+
             return true;
         }
 

@@ -11,11 +11,13 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 
 public class VillagerCraftingScreenHandler extends ScreenHandler {
 
@@ -26,12 +28,16 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
     private final int villagerEntityId;
     private VillagerEntity villager;
 
+    public static final int GRID_COLS = 6;
+    public static final int GRID_ROWS = 6;
+    public static final int ARMOR_SLOT_COUNT = 5;
+
     // === Клиентский конструктор (читает из буфера) ===
     public VillagerCraftingScreenHandler(int syncId, PlayerInventory playerInventory, PacketByteBuf buf) {
         super(TradeOverhaulMod.VILLAGER_CRAFTING_SCREEN_HANDLER, syncId);
-        this.villagerLevel = buf.readVarInt();
-        this.professionId = buf.readString();
-        this.villagerEntityId = buf.readVarInt();
+        this.villagerEntityId = buf.readInt();    // ← 1: ID жителя
+        this.professionId = buf.readString();     // ← 2: профессия
+        this.villagerLevel = buf.readInt();       // ← 3: уровень
         this.villager = null;
         addPlayerInventory(playerInventory);
     }
@@ -56,23 +62,78 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         return ItemStack.EMPTY;
     }
 
-    // === ОБРАБОТКА КРАФТА ===
     public void handleCraftRequest(ServerPlayerEntity player, String recipeId, int selectedSlot) {
-        // ✓ ИСПРАВЛЕНО: правильный метод из твоего RecipeManager
         CraftRecipe recipe = RecipeManager.getInstance().getCraftRecipeById(recipeId);
-        if (recipe == null) return;
+        if (recipe == null) {
+            System.out.println("[TradeOverhaul] Recipe not found: " + recipeId);
+            return;
+        }
 
-        // Проверка уровня жителя
-        if (recipe.getRequiredLevel() > villagerLevel) return;
+        if (recipe.getRequiredLevel() > villagerLevel) {
+            System.out.println("[TradeOverhaul] Level too low: required " + recipe.getRequiredLevel() + ", villager level " + villagerLevel);
+            return;
+        }
+
+        PlayerInventory inv = player.getInventory();
+
+        // === СОХРАНЯЕМ NBT ДО СПИСАНИЯ ===
+        ItemStack uniqueSource = null;
+        NbtCompound savedNbt = null;
+
+        if (recipe.shouldCopyNbt() && recipe.getUniqueIngredientIndex() >= 0) {
+            int uniqueIdx = recipe.getUniqueIngredientIndex();
+            if (uniqueIdx < recipe.getIngredients().size()) {
+                Ingredient uniqueIng = recipe.getIngredients().get(uniqueIdx);
+                ItemStack required = uniqueIng.getItem();
+
+                for (int i = 0; i < inv.size(); i++) {
+                    ItemStack stack = inv.getStack(i);
+                    if (!stack.isEmpty() && stack.getItem() == required.getItem()) {
+                        if (stack.getCount() >= uniqueIng.getCount()) {
+
+                            // === НОВАЯ ПРОВЕРКА: предмет должен иметь 100% прочность ===
+                            if (stack.isDamageable()) {
+                                int maxDamage = stack.getMaxDamage();
+                                int currentDamage = stack.getDamage();
+                                if (currentDamage > 0) {
+                                    // Отправляем сообщение игроку
+                                    player.sendMessage(Text.literal("§c[TradeOverhaul] Cannot craft with damaged item! Item must have 100% durability."), false);
+                                    System.out.println("[TradeOverhaul] Unique item is damaged (" + currentDamage + "/" + maxDamage + "), cannot craft");
+                                    return;
+                                }
+                            }
+                            // === КОНЕЦ ПРОВЕРКИ ===
+
+                            uniqueSource = stack;
+                            if (uniqueSource.hasNbt()) {
+                                savedNbt = uniqueSource.getNbt().copy();
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                if (uniqueSource == null) {
+                    player.sendMessage(Text.literal("§c[TradeOverhaul] Required unique item not found!"), false);
+                    return;
+                }
+            }
+        }
 
         // Проверка ингредиентов
-        if (!hasIngredients(player, recipe)) return;
+        if (!hasIngredients(player, recipe)) {
+            player.sendMessage(Text.literal("§c[TradeOverhaul] Missing ingredients!"), false);
+            return;
+        }
 
-        // Проверка и списание валюты (через getCost())
+        // Проверка валюты
         int cost = recipe.getCost();
         if (cost > 0) {
             long playerMoney = NumismaticHelper.getTotalMoney(player);
-            if (playerMoney < cost) return;
+            if (playerMoney < cost) {
+                player.sendMessage(Text.literal("§c[TradeOverhaul] Not enough money! Need " + cost + " copper."), false);
+                return;
+            }
             NumismaticHelper.removeMoney(player, cost);
         }
 
@@ -81,12 +142,22 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
 
         // Выдача результата
         ItemStack result = recipe.getResult().copy();
+
+        // Копируем сохранённый NBT
+        if (savedNbt != null) {
+            result.setNbt(savedNbt);
+            if (result.getNbt().contains("display")) {
+                result.getNbt().getCompound("display").remove("Name");
+            }
+            System.out.println("[TradeOverhaul] NBT copied from saved copy");
+        }
+
         if (!player.getInventory().insertStack(result)) {
             player.dropItem(result, false);
         }
 
-        // Синхронизация с клиентом
         player.currentScreenHandler.sendContentUpdates();
+        System.out.println("[TradeOverhaul] Craft completed successfully!");
     }
 
     private boolean hasIngredients(PlayerEntity player, CraftRecipe recipe) {
@@ -141,16 +212,20 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
     public void setVillager(VillagerEntity villager) { this.villager = villager; }
 
     private void addPlayerInventory(PlayerInventory playerInventory) {
-        // Main inventory (3 rows x 9 columns)
-        for (int row = 0; row < 3; ++row) {
-            for (int col = 0; col < 9; ++col) {
-                int index = col + row * 9 + 9; // +9 чтобы пропустить hotbar
-                this.addSlot(new net.minecraft.screen.slot.Slot(playerInventory, index, 8 + col * 18, 84 + row * 18));
-            }
+        // Слоты брони (39, 38, 37, 36, 40)
+        int[] armorSlots = {39, 38, 37, 36, 40};
+        for (int i = 0; i < ARMOR_SLOT_COUNT; i++) {
+            this.addSlot(new net.minecraft.screen.slot.Slot(playerInventory, armorSlots[i], 0, 0));
         }
-        // Hotbar (1 row x 9 columns)
-        for (int col = 0; col < 9; ++col) {
-            this.addSlot(new net.minecraft.screen.slot.Slot(playerInventory, col, 8 + col * 18, 142));
+
+        // Основной инвентарь (6x6 = 36 слотов, индексы 0-35)
+        for (int row = 0; row < GRID_ROWS; row++) {
+            for (int col = 0; col < GRID_COLS; col++) {
+                int invIndex = row * GRID_COLS + col;
+                if (invIndex < 36) {
+                    this.addSlot(new net.minecraft.screen.slot.Slot(playerInventory, invIndex, 0, 0));
+                }
+            }
         }
     }
 }

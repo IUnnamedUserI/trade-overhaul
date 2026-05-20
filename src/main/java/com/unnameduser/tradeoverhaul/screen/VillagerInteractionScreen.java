@@ -79,8 +79,14 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
 
     // Панель торговли
     private VillagerTradeScreenHandler tradeHandler;
-
     private VillagerTradeScreen tradeScreen;
+
+    // Фильтрация
+    private ItemStack filteredItem = ItemStack.EMPTY;
+    private boolean isFilterActive = false;
+    private int filteredSlot = -1;
+
+    private net.minecraft.client.util.math.Rect2i craftButtonBounds;
 
     public VillagerInteractionScreen(VillagerCraftingScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
@@ -146,9 +152,8 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         addDrawableChild(disassembleTabButton);
 
         updateTabButtons();
-        loadRecipes();  // Это создаст recipeListPanel
+        loadRecipes();
 
-        // ===== СОЗДАЁМ ПОЛЕ ПОИСКА (только один раз) =====
         createSearchField();
         initTradeScreen();
     }
@@ -197,7 +202,6 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         int level = handler.getVillagerLevel();
         allRecipes = RecipeManager.getInstance().getCraftRecipesForProfession(professionId, level);
 
-        // Сортировка
         allRecipes.sort((a, b) -> {
             int levelCompare = Integer.compare(a.getRequiredLevel(), b.getRequiredLevel());
             if (levelCompare != 0) return levelCompare;
@@ -241,6 +245,22 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         if (recipe == null) return;
         this.currentRecipe = recipe;
         this.selectedRecipeIndex = availableRecipes.indexOf(recipe);
+
+        if (isFilterActive && !filteredItem.isEmpty()) {
+            int uniqueIdx = recipe.getUniqueIngredientIndex();
+            if (uniqueIdx >= 0 && uniqueIdx < recipe.getIngredients().size()) {
+                Ingredient uniqueIng = recipe.getIngredients().get(uniqueIdx);
+                if (ItemStack.areItemsEqual(uniqueIng.getItem(), filteredItem)) {
+                    this.selectedItemSlot = filteredSlot;
+                    this.selectedItemStack = filteredItem.copy();
+                    this.hasSelectedItem = true;
+                    this.selectedInventoryIndex = getRealInventoryIndex(filteredSlot);
+                    System.out.println("[TradeOverhaul] Auto-selected filtered item as unique for recipe: " + recipe.getId());
+                    return;
+                }
+            }
+        }
+
         this.hasSelectedItem = false;
         this.selectedItemStack = ItemStack.EMPTY;
         this.selectedItemSlot = -1;
@@ -340,12 +360,25 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
             if (!hasUniqueSelected) hasAllIngredients = false;
         }
 
+        boolean itemNotDamaged = true;
+        if (uniqueIndex >= 0 && hasSelectedItem && !selectedItemStack.isEmpty()) {
+            itemNotDamaged = !selectedItemStack.isDamageable() || selectedItemStack.getDamage() == 0;
+        }
+
+        boolean canCraft = hasAllIngredients && (uniqueIndex < 0 || itemNotDamaged);
+        craftEnabled = canCraft;
+
         int buttonY;
         if (uniqueIndex >= 0) {
             buttonY = resultY + 50;
             context.drawText(this.textRenderer, Text.literal("Selected Item:"), startX, resultY + 28, 0xCCCCCC, false);
             if (hasSelectedItem && !selectedItemStack.isEmpty()) {
-                context.drawText(this.textRenderer, Text.literal(selectedItemStack.getItem().getName().getString() + " x" + selectedItemStack.getCount()), startX + 5, resultY + 40, hasUniqueSelected ? 0x55FF55 : 0xFF6666, false);
+                String selectedName = selectedItemStack.getItem().getName().getString();
+                String selectedText = selectedName + " x" + selectedItemStack.getCount();
+                if (!itemNotDamaged) {
+                    selectedText += " §c(Damaged!)";
+                }
+                context.drawText(this.textRenderer, Text.literal(selectedText), startX + 5, resultY + 40, hasUniqueSelected ? 0x55FF55 : 0xFF6666, false);
             } else {
                 context.drawText(this.textRenderer, Text.literal("None (RMB click on item)"), startX + 5, resultY + 40, 0xFF6666, false);
             }
@@ -354,13 +387,13 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         }
 
         int buttonX = startX;
-        context.fill(buttonX, buttonY, buttonX + 60, buttonY + 20, hasAllIngredients ? 0xFF444444 : 0xFF333333);
-        context.fill(buttonX + 1, buttonY + 1, buttonX + 59, buttonY + 19, hasAllIngredients ? 0xFF666666 : 0xFF444444);
-        context.drawText(this.textRenderer, Text.literal("Craft"), buttonX + 15, buttonY + 6, hasAllIngredients ? 0xFFFFFF : 0x888888, false);
-        craftEnabled = hasAllIngredients;
+        context.fill(buttonX, buttonY, buttonX + 60, buttonY + 20, canCraft ? 0xFF444444 : 0xFF333333);
+        context.fill(buttonX + 1, buttonY + 1, buttonX + 59, buttonY + 19, canCraft ? 0xFF666666 : 0xFF444444);
+        context.drawText(this.textRenderer, Text.literal("Craft"), buttonX + 15, buttonY + 6, canCraft ? 0xFFFFFF : 0x888888, false);
+
+        craftButtonBounds = new net.minecraft.client.util.math.Rect2i(buttonX, buttonY, 60, 20);
     }
 
-    // Исправленный render():
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         if (currentTab == TabType.TRADE) {
@@ -386,6 +419,13 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                 context.fill(panelX + 2, panelY + 18, panelX + recipesPanelWidth - 2, panelY + 19, 0xFF666666);
             }
 
+            if (showRecipesPanel && isFilterActive && !filteredItem.isEmpty()) {
+                int panelX = x + this.recipesX - 30;
+                int panelY = y + this.panelY - 30;
+                String filterText = "Filter: " + filteredItem.getItem().getName().getString();
+                context.drawText(this.textRenderer, Text.literal(filterText), panelX + 5, panelY + 30, 0xFFFFAA, false);
+            }
+
             super.render(context, mouseX, mouseY, delta);
             this.drawMouseoverTooltip(context, mouseX, mouseY);
 
@@ -395,8 +435,27 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
             playerCurrency.setTotalCopper(playerMoney);
             context.drawText(this.textRenderer, playerCurrency.formatMoneyVertical(), x + this.inventoryX, y + this.titleY + 12, 0xFFFFFF, true);
             drawRecipeInfo(context, x, y);
+
+            // Тултип для кнопки Craft
+            if (currentRecipe != null && craftButtonBounds != null &&
+                    mouseX >= craftButtonBounds.getX() && mouseX <= craftButtonBounds.getX() + craftButtonBounds.getWidth() &&
+                    mouseY >= craftButtonBounds.getY() && mouseY <= craftButtonBounds.getY() + craftButtonBounds.getHeight()) {
+
+                if (isSelectedItemDamaged()) {
+                    List<Text> tooltip = new ArrayList<>();
+                    tooltip.add(Text.literal(getDamageWarning()));
+                    context.drawTooltip(this.textRenderer, tooltip, mouseX, mouseY);
+                } else if (!craftEnabled && currentRecipe != null) {
+                    List<Text> tooltip = new ArrayList<>();
+                    if (currentRecipe.getUniqueIngredientIndex() >= 0 && !hasSelectedItem) {
+                        tooltip.add(Text.literal("§eSelect a unique item (RMB click)"));
+                    } else {
+                        tooltip.add(Text.literal("§cMissing ingredients or insufficient funds"));
+                    }
+                    context.drawTooltip(this.textRenderer, tooltip, mouseX, mouseY);
+                }
+            }
         }
-        // DISASSEMBLE пока пусто
     }
 
     @Override
@@ -414,6 +473,10 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         context.fill(x + this.backgroundWidth - 3, y + 3, x + this.backgroundWidth - 2, y + this.backgroundHeight - 2, 0xFF404040);
         context.fill(x + 3, y + this.backgroundHeight - 3, x + this.backgroundWidth - 3, y + this.backgroundHeight - 2, 0xFF404040);
 
+        drawSlotBackgrounds(context, x, y);
+    }
+
+    private void drawSlotBackgrounds(DrawContext context, int x, int y) {
         int armorXabs = x + this.armorX;
         for (int i = 0; i < ARMOR_SLOT_COUNT; i++) {
             int slotX = armorXabs;
@@ -429,6 +492,23 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                 int slotY = y + this.panelY + row * SLOT_STEP - 1;
                 context.fill(slotX, slotY, slotX + SLOT_SIZE, slotY + SLOT_SIZE, 0x8B8B8B8B);
                 context.fill(slotX + 1, slotY + 1, slotX + SLOT_SIZE - 2, slotY + SLOT_SIZE - 2, 0xFF303030);
+            }
+        }
+
+        // Подсветка выбранного фильтрованного предмета
+        if (isFilterActive && filteredSlot >= 0) {
+            for (int i = 0; i < this.handler.slots.size(); i++) {
+                var slotObj = this.handler.slots.get(i);
+                if (i < VillagerCraftingScreenHandler.FIRST_MAIN_GRID_SLOT_INDEX) {
+                    continue;
+                }
+                int realSlot = getRealInventoryIndex(i);
+                if (realSlot == filteredSlot) {
+                    int slotX = x + slotObj.x - 1;
+                    int slotY = y + slotObj.y - 1;
+                    context.drawBorder(slotX, slotY, SLOT_SIZE + 2, SLOT_SIZE + 2, 0xFFD4AF37);
+                    break;
+                }
             }
         }
     }
@@ -485,20 +565,35 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (currentTab == TabType.TRADE && tradeScreen != null) {
-            return tradeScreen.mouseClicked(mouseX, mouseY, button);
-        }
-        // Обработка клика по полю поиска - не сбрасываем выбранный рецепт
-        if (searchField != null && mouseX >= searchField.getX() && mouseX <= searchField.getX() + searchField.getWidth() &&
-                mouseY >= searchField.getY() && mouseY <= searchField.getY() + searchField.getHeight()) {
-            searchField.setFocused(true);
-            return searchField.mouseClicked(mouseX, mouseY, button);
-        } else if (searchField != null) {
-            searchField.setFocused(false);
-        }
-
-        // Сброс выбранного рецепта только при клике в пустую область (не по полю поиска, не по кнопке крафта, не по слотам)
         if (button == 0) {
+            if (searchField != null && mouseX >= searchField.getX() && mouseX <= searchField.getX() + searchField.getWidth() &&
+                    mouseY >= searchField.getY() && mouseY <= searchField.getY() + searchField.getHeight()) {
+                searchField.setFocused(true);
+                return searchField.mouseClicked(mouseX, mouseY, button);
+            } else if (searchField != null) {
+                searchField.setFocused(false);
+            }
+
+            if (currentRecipe != null && isPointOverCraftButton(mouseX, mouseY)) {
+                if (!craftEnabled) {
+                    if (isSelectedItemDamaged() && this.client.player != null) {
+                        this.client.player.sendMessage(Text.literal(getDamageWarning()), false);
+                    }
+                    return true;
+                }
+                int slotToSend = currentRecipe.getUniqueIngredientIndex() < 0 ? -1 : selectedInventoryIndex;
+                com.unnameduser.tradeoverhaul.common.network.CraftRequestC2SPacket packet = new com.unnameduser.tradeoverhaul.common.network.CraftRequestC2SPacket(
+                        handler.syncId, currentRecipe.getId(), slotToSend);
+                PacketByteBuf buf = PacketByteBufs.create();
+                com.unnameduser.tradeoverhaul.common.network.CraftRequestC2SPacket.encode(packet, buf);
+                ClientPlayNetworking.send(new Identifier(TradeOverhaulMod.MOD_ID, "craft_request"), buf);
+
+                // Полный сброс после крафта
+                resetAllFilters();
+
+                return true;
+            }
+
             boolean clickedOnRecipePanel = isPointOverRecipePanel(mouseX, mouseY);
             boolean clickedOnCraftButton = isPointOverCraftButton(mouseX, mouseY);
             boolean clickedOnSlot = getSlotAt(mouseX, mouseY) != null;
@@ -506,6 +601,9 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                     mouseY >= searchField.getY() && mouseY <= searchField.getY() + searchField.getHeight();
 
             if (!clickedOnRecipePanel && !clickedOnCraftButton && !clickedOnSlot && !clickedOnSearchField) {
+                if (isFilterActive) {
+                    resetFilter();
+                }
                 if (currentRecipe != null) {
                     currentRecipe = null;
                     selectedRecipeIndex = -1;
@@ -514,35 +612,41 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                     }
                 }
             }
+
+            return super.mouseClicked(mouseX, mouseY, button);
         }
 
-        if (button == 1 && currentRecipe != null && currentRecipe.getUniqueIngredientIndex() >= 0) {
+        if (button == 1) {
             Slot hoveredSlot = getSlotAt(mouseX, mouseY);
             if (hoveredSlot != null) {
                 int slotIndex = hoveredSlot.id;
                 if (slotIndex >= VillagerCraftingScreenHandler.FIRST_MAIN_GRID_SLOT_INDEX) {
                     ItemStack stack = hoveredSlot.getStack();
                     if (!stack.isEmpty()) {
-                        this.selectedItemSlot = slotIndex;
-                        this.selectedItemStack = stack.copy();
-                        this.hasSelectedItem = true;
-                        this.selectedInventoryIndex = getRealInventoryIndex(slotIndex);
+                        // Если есть выбранный рецепт и предмет подходит как уникальный
+                        if (currentRecipe != null && currentRecipe.getUniqueIngredientIndex() >= 0) {
+                            int uniqueIdx = currentRecipe.getUniqueIngredientIndex();
+                            if (uniqueIdx < currentRecipe.getIngredients().size()) {
+                                Ingredient uniqueIng = currentRecipe.getIngredients().get(uniqueIdx);
+                                if (ItemStack.areItemsEqual(stack, uniqueIng.getItem())) {
+                                    this.selectedItemSlot = slotIndex;
+                                    this.selectedItemStack = stack.copy();
+                                    this.hasSelectedItem = true;
+                                    this.selectedInventoryIndex = getRealInventoryIndex(slotIndex);
+                                    System.out.println("[TradeOverhaul] Selected unique item for craft: " + stack.getItem().getName().getString());
+                                    return true;
+                                }
+                            }
+                        }
+                        // Иначе — фильтруем
+                        filterRecipesByItem(stack, slotIndex);
                         return true;
                     }
                 }
             }
-        }
-
-        if (button == 0 && currentRecipe != null && isPointOverCraftButton(mouseX, mouseY)) {
-            if (!craftEnabled) return true;
-            int slotToSend = currentRecipe.getUniqueIngredientIndex() < 0 ? -1 : selectedInventoryIndex;
-            com.unnameduser.tradeoverhaul.common.network.CraftRequestC2SPacket packet = new com.unnameduser.tradeoverhaul.common.network.CraftRequestC2SPacket(
-                    handler.syncId, currentRecipe.getId(), slotToSend);
-            PacketByteBuf buf = PacketByteBufs.create();
-            com.unnameduser.tradeoverhaul.common.network.CraftRequestC2SPacket.encode(packet, buf);
-            ClientPlayNetworking.send(new Identifier(TradeOverhaulMod.MOD_ID, "craft_request"), buf);
             return true;
         }
+
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
@@ -578,8 +682,8 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (searchField != null && searchField.isFocused()) {
-            if (keyCode == 69) { // E
-                return true; // блокируем закрытие окна
+            if (keyCode == 69) {
+                return true;
             }
             if (searchField.keyPressed(keyCode, scanCode, modifiers)) {
                 return true;
@@ -621,7 +725,6 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     private void initTradeScreen() {
         if (tradeScreen != null) return;
 
-        // Получаем жителя из мира по ID
         VillagerEntity villager = handler.getVillagerFromWorld(client);
         if (villager != null) {
             tradeHandler = new VillagerTradeScreenHandler(handler.syncId, this.client.player.getInventory(), villager);
@@ -629,5 +732,130 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         } else {
             System.err.println("[TradeOverhaul] Could not find villager with ID " + handler.getVillagerEntityId());
         }
+    }
+
+    private void filterRecipesByItem(ItemStack item, int slotIndex) {
+        if (item.isEmpty()) return;
+
+        this.filteredItem = item.copy();
+        this.filteredSlot = slotIndex;
+        this.isFilterActive = true;
+
+        List<CraftRecipe> filtered = new ArrayList<>();
+        for (CraftRecipe recipe : allRecipes) {
+            for (Ingredient ing : recipe.getIngredients()) {
+                if (ItemStack.areItemsEqual(ing.getItem(), item)) {
+                    filtered.add(recipe);
+                    break;
+                }
+            }
+        }
+
+        availableRecipes.clear();
+        availableRecipes.addAll(filtered);
+
+        if (recipeListPanel != null) {
+            recipeListPanel.updateRecipes(availableRecipes);
+        }
+
+        currentRecipe = null;
+        selectedRecipeIndex = -1;
+        hasSelectedItem = false;
+        selectedItemStack = ItemStack.EMPTY;
+        selectedItemSlot = -1;
+        selectedInventoryIndex = -1;
+
+        // Если после фильтрации остался 1 рецепт, выбираем его
+        if (availableRecipes.size() == 1) {
+            onRecipeSelected(availableRecipes.get(0));
+            int uniqueIdx = currentRecipe.getUniqueIngredientIndex();
+            if (uniqueIdx >= 0 && uniqueIdx < currentRecipe.getIngredients().size()) {
+                Ingredient uniqueIng = currentRecipe.getIngredients().get(uniqueIdx);
+                if (ItemStack.areItemsEqual(uniqueIng.getItem(), item)) {
+                    this.selectedItemSlot = slotIndex;
+                    this.selectedItemStack = item.copy();
+                    this.hasSelectedItem = true;
+                    this.selectedInventoryIndex = getRealInventoryIndex(slotIndex);
+                    System.out.println("[TradeOverhaul] Auto-selected item as unique for recipe: " + currentRecipe.getId());
+                }
+            }
+        }
+
+        System.out.println("[TradeOverhaul] Filtered recipes by item: " + item.getItem().getName().getString() + " (" + availableRecipes.size() + " recipes)");
+    }
+
+    private void resetFilter() {
+        this.isFilterActive = false;
+        this.filteredItem = ItemStack.EMPTY;
+        this.filteredSlot = -1;
+
+        availableRecipes.clear();
+        availableRecipes.addAll(allRecipes);
+
+        if (recipeListPanel != null) {
+            recipeListPanel.updateRecipes(availableRecipes);
+        }
+
+        System.out.println("[TradeOverhaul] Filter reset");
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        if (button == 0) {
+            return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (button == 0) {
+            return super.mouseReleased(mouseX, mouseY, button);
+        }
+        return true;
+    }
+
+    private void resetAllFilters() {
+        isFilterActive = false;
+        filteredItem = ItemStack.EMPTY;
+        filteredSlot = -1;
+
+        availableRecipes.clear();
+        availableRecipes.addAll(allRecipes);
+        if (recipeListPanel != null) {
+            recipeListPanel.updateRecipes(availableRecipes);
+        }
+
+        currentRecipe = null;
+        selectedRecipeIndex = -1;
+        if (recipeListPanel != null) {
+            recipeListPanel.setSelectedIndex(-1);
+        }
+
+        hasSelectedItem = false;
+        selectedItemStack = ItemStack.EMPTY;
+        selectedItemSlot = -1;
+        selectedInventoryIndex = -1;
+
+        if (searchField != null) {
+            searchField.setText("");
+        }
+
+        System.out.println("[TradeOverhaul] All filters reset");
+    }
+
+    private boolean isSelectedItemDamaged() {
+        if (!hasSelectedItem || selectedItemStack.isEmpty()) return false;
+        if (!selectedItemStack.isDamageable()) return false;
+        return selectedItemStack.getDamage() > 0;
+    }
+
+    private String getDamageWarning() {
+        if (!hasSelectedItem || selectedItemStack.isEmpty()) return "";
+        if (!selectedItemStack.isDamageable()) return "";
+        int damage = selectedItemStack.getDamage();
+        int maxDamage = selectedItemStack.getMaxDamage();
+        int percent = (int) ((1.0 - (double) damage / maxDamage) * 100);
+        return "§cCannot craft with damaged item! (" + percent + "% durability remaining)";
     }
 }
