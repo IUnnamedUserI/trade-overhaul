@@ -170,10 +170,15 @@ public class RecipeManager {
             int cost = json.get("cost").getAsInt();
             boolean copyNbt = json.has("copy_nbt") && json.get("copy_nbt").getAsBoolean();
 
-            // Читаем unique_ingredient_index (по умолчанию -1, если нет индекса)
             int uniqueIndex = -1;
             if (json.has("unique_ingredient_index")) {
                 uniqueIndex = json.get("unique_ingredient_index").getAsInt();
+            }
+
+            // НОВОЕ: читаем профессию (может отсутствовать)
+            String profession = null;
+            if (json.has("profession")) {
+                profession = json.get("profession").getAsString();
             }
 
             // Парсим ингредиенты
@@ -187,10 +192,10 @@ public class RecipeManager {
 
             ItemStack result = parseItemStack(json.get("result").getAsString());
 
-            System.out.println("[TradeOverhaul] Parsed recipe " + id + " with unique_index=" + uniqueIndex);
+            System.out.println("[TradeOverhaul] Parsed recipe " + id + " with unique_index=" + uniqueIndex +
+                    ", profession=" + (profession != null ? profession : "any"));
 
-            // Используем конструктор с unique_ingredient_index
-            return new CraftRecipe(id, requiredLevel, ingredients, result, cost, copyNbt, uniqueIndex);
+            return new CraftRecipe(id, requiredLevel, ingredients, result, cost, copyNbt, uniqueIndex, profession);
         } catch (Exception e) {
             System.err.println("[TradeOverhaul] Error parsing craft recipe " + path.getFileName() + ": " + e.getMessage());
             return null;
@@ -282,8 +287,15 @@ public class RecipeManager {
     }
 
     public List<CraftRecipe> getCraftRecipesForProfession(String professionId, int villagerLevel) {
-        // Пока возвращаем все рецепты (без фильтрации по профессии)
-        return new ArrayList<>(craftRecipes.values());
+        List<CraftRecipe> result = new ArrayList<>();
+        for (CraftRecipe recipe : craftRecipes.values()) {
+            // Проверяем профессию: если у рецепта нет профессии (null) или она совпадает с профессией жителя
+            String recipeProfession = recipe.getProfession();
+            if (recipeProfession == null || recipeProfession.equals(professionId)) {
+                result.add(recipe);
+            }
+        }
+        return result;
     }
 
     public CraftRecipe getCraftRecipeById(String id) {

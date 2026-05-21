@@ -1,10 +1,14 @@
 package com.unnameduser.tradeoverhaul.screen;
 
 import com.unnameduser.tradeoverhaul.TradeOverhaulMod;
+import com.unnameduser.tradeoverhaul.common.network.RepairAllSyncS2CPacket;
+import com.unnameduser.tradeoverhaul.common.network.RepairSyncS2CPacket;
 import com.unnameduser.tradeoverhaul.dto.CraftRecipe;
 import com.unnameduser.tradeoverhaul.dto.Ingredient;
 import com.unnameduser.tradeoverhaul.common.RecipeManager;
 import com.unnameduser.tradeoverhaul.common.numismatic.NumismaticHelper;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
@@ -18,6 +22,10 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class VillagerCraftingScreenHandler extends ScreenHandler {
 
@@ -227,5 +235,74 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
                 }
             }
         }
+    }
+
+    public void handleRepairRequest(ServerPlayerEntity player, int slotIndex) {
+        PlayerInventory inv = player.getInventory();
+        if (slotIndex < 0 || slotIndex >= inv.size()) return;
+
+        ItemStack stack = inv.getStack(slotIndex);
+        if (stack.isEmpty() || !stack.isDamageable()) return;
+
+        int currentDamage = stack.getDamage();
+        if (currentDamage <= 0) return;
+
+        int maxDamage = stack.getMaxDamage();
+        int repairCost = currentDamage * 2;
+
+        long playerMoney = NumismaticHelper.getTotalMoney(player);
+        if (playerMoney < repairCost) return;
+
+        NumismaticHelper.removeMoney(player, repairCost);
+        stack.setDamage(0);
+
+        player.currentScreenHandler.sendContentUpdates();
+
+        // Отправляем ответ клиенту, что предмет починен
+        RepairSyncS2CPacket response = new RepairSyncS2CPacket(this.syncId, slotIndex);
+        PacketByteBuf buf = PacketByteBufs.create();
+        RepairSyncS2CPacket.encode(response, buf);
+        ServerPlayNetworking.send(player, new Identifier(TradeOverhaulMod.MOD_ID, "repair_sync"), buf);
+
+        System.out.println("[TradeOverhaul] Repaired item at slot " + slotIndex + " for " + repairCost + " copper");
+    }
+
+    public void handleRepairAllRequest(ServerPlayerEntity player) {
+        PlayerInventory inv = player.getInventory();
+        List<Integer> slotsToRepair = new ArrayList<>();
+        int totalCost = 0;
+
+        for (int i = 0; i < inv.size(); i++) {
+            ItemStack stack = inv.getStack(i);
+            if (!stack.isEmpty() && stack.isDamageable() && stack.getDamage() > 0) {
+                int repairCost = stack.getDamage() * 2;
+                totalCost += repairCost;
+                slotsToRepair.add(i);
+            }
+        }
+
+        if (slotsToRepair.isEmpty()) return;
+
+        long playerMoney = NumismaticHelper.getTotalMoney(player);
+        if (playerMoney < totalCost) return;
+
+        NumismaticHelper.removeMoney(player, totalCost);
+
+        for (int slot : slotsToRepair) {
+            ItemStack stack = inv.getStack(slot);
+            if (!stack.isEmpty() && stack.isDamageable()) {
+                stack.setDamage(0);
+            }
+        }
+
+        player.currentScreenHandler.sendContentUpdates();
+
+        // Отправляем ответ клиенту, что все предметы починены
+        RepairAllSyncS2CPacket response = new RepairAllSyncS2CPacket(this.syncId);
+        PacketByteBuf buf = PacketByteBufs.create();
+        RepairAllSyncS2CPacket.encode(response, buf);
+        ServerPlayNetworking.send(player, new Identifier(TradeOverhaulMod.MOD_ID, "repair_all_sync"), buf);
+
+        System.out.println("[TradeOverhaul] Repaired all items for " + totalCost + " copper");
     }
 }

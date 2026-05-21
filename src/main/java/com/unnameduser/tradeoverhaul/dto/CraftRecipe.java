@@ -10,11 +10,12 @@ public class CraftRecipe {
     private ItemStack result;
     private int cost;
     private boolean copy_nbt;
-    private int unique_ingredient_index;  // НОВОЕ: индекс уникального ингредиента (0 = первый)
+    private int unique_ingredient_index;
+    private String profession;  // НОВОЕ: профессия жителя (null = доступно всем)
 
-    // Конструктор с unique_ingredient_index
+    // Полный конструктор
     public CraftRecipe(String id, int required_level, List<Ingredient> ingredients,
-                       ItemStack result, int cost, boolean copy_nbt, int unique_ingredient_index) {
+                       ItemStack result, int cost, boolean copy_nbt, int unique_ingredient_index, String profession) {
         this.id = id;
         this.required_level = required_level;
         this.ingredients = ingredients;
@@ -22,12 +23,13 @@ public class CraftRecipe {
         this.cost = cost;
         this.copy_nbt = copy_nbt;
         this.unique_ingredient_index = unique_ingredient_index;
+        this.profession = profession;
     }
 
-    // Старый конструктор для обратной совместимости (unique = 0)
+    // Конструктор для обратной совместимости (без профессии)
     public CraftRecipe(String id, int required_level, List<Ingredient> ingredients,
-                       ItemStack result, int cost, boolean copy_nbt) {
-        this(id, required_level, ingredients, result, cost, copy_nbt, 0);
+                       ItemStack result, int cost, boolean copy_nbt, int unique_ingredient_index) {
+        this(id, required_level, ingredients, result, cost, copy_nbt, unique_ingredient_index, null);
     }
 
     // Геттеры
@@ -38,4 +40,5 @@ public class CraftRecipe {
     public int getCost() { return cost; }
     public boolean shouldCopyNbt() { return copy_nbt; }
     public int getUniqueIngredientIndex() { return unique_ingredient_index; }
+    public String getProfession() { return profession; }
 }

@@ -38,6 +38,30 @@ public class ModNetworking {
 					});
 				}
 		);
+
+		ServerPlayNetworking.registerGlobalReceiver(
+				new Identifier(TradeOverhaulMod.MOD_ID, "repair_request"),
+				(server, player, handler, buf, responseSender) -> {
+					RepairRequestC2SPacket packet = RepairRequestC2SPacket.decode(buf);
+					server.execute(() -> {
+						if (player.currentScreenHandler instanceof VillagerCraftingScreenHandler craftingHandler) {
+							craftingHandler.handleRepairRequest(player, packet.getSlotIndex());
+						}
+					});
+				}
+		);
+
+		ServerPlayNetworking.registerGlobalReceiver(
+				new Identifier(TradeOverhaulMod.MOD_ID, "repair_all_request"),
+				(server, player, handler, buf, responseSender) -> {
+					RepairAllRequestC2SPacket packet = RepairAllRequestC2SPacket.decode(buf);
+					server.execute(() -> {
+						if (player.currentScreenHandler instanceof VillagerCraftingScreenHandler craftingHandler) {
+							craftingHandler.handleRepairAllRequest(player);
+						}
+					});
+				}
+		);
 	}
 
 	/**

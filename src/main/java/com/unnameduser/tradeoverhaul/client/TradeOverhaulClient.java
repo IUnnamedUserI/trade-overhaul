@@ -6,10 +6,8 @@ import com.unnameduser.tradeoverhaul.client.gui.VillagerTradeScreenHandler;
 import com.unnameduser.tradeoverhaul.common.config.ProfessionTradeFile;
 import com.unnameduser.tradeoverhaul.common.config.TradeConfigLoader;
 import com.unnameduser.tradeoverhaul.common.config.TradeOverhaulSettings;
-import com.unnameduser.tradeoverhaul.common.network.ConfigSyncPayload;
-import com.unnameduser.tradeoverhaul.common.network.DamageReputationSyncPayload;
-import com.unnameduser.tradeoverhaul.common.network.ProfessionLevelSyncPayload;
-import com.unnameduser.tradeoverhaul.common.network.VillagerInventorySyncPayload;
+import com.unnameduser.tradeoverhaul.common.network.*;
+import com.unnameduser.tradeoverhaul.screen.VillagerCraftingScreenHandler;
 import com.unnameduser.tradeoverhaul.screen.VillagerInteractionScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
@@ -159,6 +157,33 @@ public class TradeOverhaulClient implements ClientModInitializer {
                     TradeOverhaulMod.LOGGER.info("TradeOverhaul: restored local configs");
                 });
             }
+        });
+
+        // В методе onInitializeClient() добавим обработчики ответов от сервера
+
+        ClientPlayNetworking.registerGlobalReceiver(new Identifier(TradeOverhaulMod.MOD_ID, "repair_sync"), (client, handler, buf, responseSender) -> {
+            RepairSyncS2CPacket packet = RepairSyncS2CPacket.decode(buf);
+            client.execute(() -> {
+                if (client.player != null && client.player.currentScreenHandler instanceof VillagerCraftingScreenHandler craftingHandler
+                        && craftingHandler.syncId == packet.getSyncId()) {
+                    // Обновляем список повреждённых предметов
+                    if (client.currentScreen instanceof VillagerInteractionScreen interactionScreen) {
+                        interactionScreen.refreshDamagedItems();
+                    }
+                }
+            });
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(new Identifier(TradeOverhaulMod.MOD_ID, "repair_all_sync"), (client, handler, buf, responseSender) -> {
+            RepairAllSyncS2CPacket packet = RepairAllSyncS2CPacket.decode(buf);
+            client.execute(() -> {
+                if (client.player != null && client.player.currentScreenHandler instanceof VillagerCraftingScreenHandler craftingHandler
+                        && craftingHandler.syncId == packet.getSyncId()) {
+                    if (client.currentScreen instanceof VillagerInteractionScreen interactionScreen) {
+                        interactionScreen.refreshDamagedItems();
+                    }
+                }
+            });
         });
     }
 }

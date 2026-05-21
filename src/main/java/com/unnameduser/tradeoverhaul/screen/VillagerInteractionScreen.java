@@ -2,9 +2,12 @@ package com.unnameduser.tradeoverhaul.screen;
 
 import com.unnameduser.tradeoverhaul.TradeOverhaulMod;
 import com.unnameduser.tradeoverhaul.client.gui.VillagerTradeScreen;
+import com.unnameduser.tradeoverhaul.common.network.RepairAllRequestC2SPacket;
+import com.unnameduser.tradeoverhaul.common.network.RepairRequestC2SPacket;
 import com.unnameduser.tradeoverhaul.common.numismatic.NumismaticHelper;
 import com.unnameduser.tradeoverhaul.common.RecipeManager;
 import com.unnameduser.tradeoverhaul.dto.CraftRecipe;
+import com.unnameduser.tradeoverhaul.dto.DamagedItem;
 import com.unnameduser.tradeoverhaul.dto.Ingredient;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
@@ -88,6 +91,18 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
 
     private net.minecraft.client.util.math.Rect2i craftButtonBounds;
 
+    private RepairPanel repairPanel;
+    private List<DamagedItem> damagedItems = new ArrayList<>();
+    private boolean showRepairPanel = true;
+    private boolean repairEnabled = false;
+    private boolean repairAllEnabled = false;
+    private net.minecraft.client.util.math.Rect2i repairButtonBounds;
+    private net.minecraft.client.util.math.Rect2i repairAllButtonBounds;
+    private DamagedItem currentRepairItem;
+    private ButtonWidget repairTabButton;
+
+    private boolean renderSlots = true;
+
     public VillagerInteractionScreen(VillagerCraftingScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
     }
@@ -146,16 +161,22 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                 .dimensions(tabStartX + tabWidth + 5, tabStartY, tabWidth, tabHeight).build();
         disassembleTabButton = ButtonWidget.builder(Text.literal("Disassemble"), button -> onTabSelected(TabType.DISASSEMBLE))
                 .dimensions(tabStartX + (tabWidth + 5) * 2, tabStartY, tabWidth, tabHeight).build();
+        repairTabButton = ButtonWidget.builder(Text.literal("Repair"), button -> onTabSelected(TabType.REPAIR))
+                .dimensions(tabStartX + (tabWidth + 5) * 3, tabStartY, tabWidth, tabHeight).build();
 
         addDrawableChild(tradeTabButton);
         addDrawableChild(craftTabButton);
         addDrawableChild(disassembleTabButton);
+        addDrawableChild(repairTabButton);
 
         updateTabButtons();
         loadRecipes();
 
         createSearchField();
         initTradeScreen();
+
+        refreshDamagedItems();
+        createRepairPanel();
     }
 
     private void createSearchField() {
@@ -182,6 +203,13 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
 
         for (int i = 0; i < this.handler.slots.size(); i++) {
             var slotObj = this.handler.slots.get(i);
+
+            // Для вкладки REPAIR перемещаем слоты за пределы экрана
+            if (currentTab == TabType.REPAIR) {
+                slotObj.x = -1000;
+                slotObj.y = -1000;
+                continue;
+            }
 
             if (i < VillagerCraftingScreenHandler.FIRST_MAIN_GRID_SLOT_INDEX) {
                 slotObj.x = armorX + 1;
@@ -272,8 +300,18 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         if (currentTab == tab) return;
         currentTab = tab;
 
+        // Перепозиционируем слоты при смене вкладки
+        positionSlots();
+
         if (tab == TabType.TRADE && tradeScreen == null) {
             initTradeScreen();
+        }
+
+        if (tab == TabType.REPAIR) {
+            refreshDamagedItems();
+            if (repairPanel != null) {
+                repairPanel.updateItems(damagedItems);
+            }
         }
 
         updateTabButtons();
@@ -284,15 +322,21 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         tradeTabButton.active = currentTab != TabType.TRADE;
         craftTabButton.active = currentTab != TabType.CRAFT;
         disassembleTabButton.active = currentTab != TabType.DISASSEMBLE;
+        repairTabButton.active = currentTab != TabType.REPAIR;
     }
 
     private void updatePanelVisibility() {
         showRecipesPanel = (currentTab == TabType.CRAFT);
+        showRepairPanel = (currentTab == TabType.REPAIR);
+
         if (recipeListPanel != null) {
             recipeListPanel.setVisible(showRecipesPanel);
         }
         if (searchField != null) {
             searchField.setVisible(showRecipesPanel);
+        }
+        if (repairPanel != null) {
+            repairPanel.setVisible(showRepairPanel);
         }
     }
 
@@ -455,6 +499,114 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                     context.drawTooltip(this.textRenderer, tooltip, mouseX, mouseY);
                 }
             }
+        } else if (currentTab == TabType.DISASSEMBLE) {
+            // Пока пусто
+            this.renderBackground(context);
+            super.render(context, mouseX, mouseY, delta);
+            this.drawMouseoverTooltip(context, mouseX, mouseY);
+        } else if (currentTab == TabType.REPAIR) {
+            this.renderBackground(context);
+
+            int x = (this.width - this.backgroundWidth) / 2;
+            int y = (this.height - this.backgroundHeight) / 2;
+
+            // Отрисовка панели повреждённых предметов
+            if (repairPanel != null) {
+                repairPanel.render(context, mouseX, mouseY, delta);
+            }
+
+            super.render(context, mouseX, mouseY, delta);
+            this.drawMouseoverTooltip(context, mouseX, mouseY);
+
+            // Правая панель информации
+            int rightPanelX = x + this.inventoryX + (GRID_COLS * SLOT_STEP) + 120;
+            int rightPanelY = y + this.panelY - 20;
+            int rightPanelWidth = 180;
+            int rightPanelHeight = 200;
+
+            context.fill(rightPanelX, rightPanelY, rightPanelX + rightPanelWidth, rightPanelY + rightPanelHeight, 0xCC000000);
+            context.fill(rightPanelX + 1, rightPanelY + 1, rightPanelX + rightPanelWidth - 1, rightPanelY + rightPanelHeight - 1, 0xCC333333);
+            context.drawBorder(rightPanelX, rightPanelY, rightPanelWidth, rightPanelHeight, 0xFF666666);
+
+            // Кнопки между панелями
+            int buttonX = rightPanelX - 85;
+            int buttonY = rightPanelY + 70;
+            int buttonWidth = 60;
+            int buttonHeight = 20;
+
+            // Кнопка Repair
+            context.fill(buttonX, buttonY, buttonX + buttonWidth, buttonY + buttonHeight, repairEnabled ? 0xFF444444 : 0xFF333333);
+            context.fill(buttonX + 1, buttonY + 1, buttonX + buttonWidth - 1, buttonY + buttonHeight - 1, repairEnabled ? 0xFF666666 : 0xFF444444);
+            context.drawText(this.textRenderer, Text.literal("Repair"), buttonX + (buttonWidth / 2) - (this.textRenderer.getWidth("Repair") / 2), buttonY + 6, repairEnabled ? 0xFFFFFF : 0x888888, false);
+            repairButtonBounds = new net.minecraft.client.util.math.Rect2i(buttonX, buttonY, buttonWidth, buttonHeight);
+
+            // Кнопка Repair All
+            int repairAllButtonY = buttonY + buttonHeight + 5;
+            int totalCost = getTotalRepairCost();
+            repairAllEnabled = NumismaticHelper.getTotalMoney(this.client.player) >= totalCost && !damagedItems.isEmpty();
+
+            context.fill(buttonX, repairAllButtonY, buttonX + buttonWidth, repairAllButtonY + buttonHeight, repairAllEnabled ? 0xFF444444 : 0xFF333333);
+            context.fill(buttonX + 1, repairAllButtonY + 1, buttonX + buttonWidth - 1, repairAllButtonY + buttonHeight - 1, repairAllEnabled ? 0xFF666666 : 0xFF444444);
+            context.drawText(this.textRenderer, Text.literal("Repair All"), buttonX + (buttonWidth / 2) - (this.textRenderer.getWidth("Repair All") / 2), repairAllButtonY + 6, repairAllEnabled ? 0xFFFFFF : 0x888888, false);
+            repairAllButtonBounds = new net.minecraft.client.util.math.Rect2i(buttonX, repairAllButtonY, buttonWidth, buttonHeight);
+
+            // Информация о выбранном предмете
+            if (repairPanel != null && repairPanel.getSelectedItem() != null) {
+                DamagedItem selected = repairPanel.getSelectedItem();
+                int startX = rightPanelX + rightPanelWidth / 2;
+                int startY = rightPanelY + 10;
+
+                // Увеличенная иконка (32x32)
+                context.getMatrices().push();
+                context.getMatrices().scale(2.0f, 2.0f, 1.0f);
+                context.drawItem(selected.getStack(), (startX) / 2 - 8, (startY) / 2 + 10);
+                context.getMatrices().pop();
+
+                String itemName = selected.getStack().getName().getString();
+                int itemNameWidth = this.textRenderer.getWidth(itemName);
+                int centerX = startX;  // ← здесь укажи нужную X координату центра
+                int centeredX = centerX - (itemNameWidth / 2);
+                context.drawText(this.textRenderer, itemName, centeredX, startY, 0xFFFFFF, false);
+
+                int durabilityPercent = (int) ((1.0 - (double) selected.getCurrentDamage() / selected.getMaxDamage()) * 100);
+                String durabilityText = String.format("Durability", durabilityPercent);
+                context.drawText(this.textRenderer, Text.literal(durabilityText), centerX - (this.textRenderer.getWidth(durabilityText) / 2), startY + 55, 0xCCCCCC, false);
+                String durabilityPercentText = String.format("%d%%", durabilityPercent);
+                context.drawText(this.textRenderer, Text.literal(durabilityPercentText), centerX - (this.textRenderer.getWidth(durabilityPercentText) / 2), startY + 65, 0xCCCCCC, false);
+
+                String costText = String.format("Cost: %d copper", selected.getCurrentDamage() * 2);
+                context.drawText(this.textRenderer, Text.literal(costText), centerX - (this.textRenderer.getWidth(costText) / 2), startY + 85, 0xFFFFAA, false);
+
+                // Тултип для Repair
+                if (!repairEnabled && repairButtonBounds != null &&
+                        mouseX >= repairButtonBounds.getX() && mouseX <= repairButtonBounds.getX() + repairButtonBounds.getWidth() &&
+                        mouseY >= repairButtonBounds.getY() && mouseY <= repairButtonBounds.getY() + repairButtonBounds.getHeight()) {
+                    List<Text> tooltip = new ArrayList<>();
+                    tooltip.add(Text.literal("§cNeed " + selected.getRepairCost() + " copper"));
+                    context.drawTooltip(this.textRenderer, tooltip, mouseX, mouseY);
+                }
+            } else {
+                int startX = rightPanelX + 10;
+                int startY = rightPanelY + 10;
+                context.drawText(this.textRenderer, Text.literal("No item selected"), startX, startY, 0xCCCCCC, false);
+                context.drawText(this.textRenderer, Text.literal("Click on a damaged item"), startX, startY + 15, 0x888888, false);
+            }
+
+            // Тултип для Repair All
+            if (!repairAllEnabled && repairAllButtonBounds != null && !damagedItems.isEmpty() &&
+                    mouseX >= repairAllButtonBounds.getX() && mouseX <= repairAllButtonBounds.getX() + repairAllButtonBounds.getWidth() &&
+                    mouseY >= repairAllButtonBounds.getY() && mouseY <= repairAllButtonBounds.getY() + repairAllButtonBounds.getHeight()) {
+                List<Text> tooltip = new ArrayList<>();
+                tooltip.add(Text.literal("§cNeed " + totalCost + " copper to repair all"));
+                context.drawTooltip(this.textRenderer, tooltip, mouseX, mouseY);
+            }
+
+            // Деньги игрока
+            context.drawText(this.textRenderer, this.playerInventoryLabel, x + this.inventoryX, y + this.titleY, 0xFFFFFF, true);
+            int playerMoney = NumismaticHelper.getTotalMoney(this.client.player);
+            var playerCurrency = new com.unnameduser.tradeoverhaul.common.component.VillagerCurrencyComponent();
+            playerCurrency.setTotalCopper(playerMoney);
+            context.drawText(this.textRenderer, playerCurrency.formatMoneyVertical(), x + this.inventoryX, y + this.titleY + 12, 0xFFFFFF, true);
         }
     }
 
@@ -473,7 +625,10 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         context.fill(x + this.backgroundWidth - 3, y + 3, x + this.backgroundWidth - 2, y + this.backgroundHeight - 2, 0xFF404040);
         context.fill(x + 3, y + this.backgroundHeight - 3, x + this.backgroundWidth - 3, y + this.backgroundHeight - 2, 0xFF404040);
 
-        drawSlotBackgrounds(context, x, y);
+        // Рисуем слоты только для CRAFT и TRADE (не для REPAIR)
+        if (currentTab != TabType.REPAIR) {
+            drawSlotBackgrounds(context, x, y);
+        }
     }
 
     private void drawSlotBackgrounds(DrawContext context, int x, int y) {
@@ -565,16 +720,21 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        // ЛКМ (button == 0)
         if (button == 0) {
-            if (searchField != null && mouseX >= searchField.getX() && mouseX <= searchField.getX() + searchField.getWidth() &&
-                    mouseY >= searchField.getY() && mouseY <= searchField.getY() + searchField.getHeight()) {
-                searchField.setFocused(true);
-                return searchField.mouseClicked(mouseX, mouseY, button);
-            } else if (searchField != null) {
-                searchField.setFocused(false);
+            // === ВКЛАДКА CRAFT: обработка поля поиска ===
+            if (currentTab == TabType.CRAFT) {
+                if (searchField != null && mouseX >= searchField.getX() && mouseX <= searchField.getX() + searchField.getWidth() &&
+                        mouseY >= searchField.getY() && mouseY <= searchField.getY() + searchField.getHeight()) {
+                    searchField.setFocused(true);
+                    return searchField.mouseClicked(mouseX, mouseY, button);
+                } else if (searchField != null) {
+                    searchField.setFocused(false);
+                }
             }
 
-            if (currentRecipe != null && isPointOverCraftButton(mouseX, mouseY)) {
+            // === ВКЛАДКА CRAFT: кнопка Craft ===
+            if (currentTab == TabType.CRAFT && currentRecipe != null && isPointOverCraftButton(mouseX, mouseY)) {
                 if (!craftEnabled) {
                     if (isSelectedItemDamaged() && this.client.player != null) {
                         this.client.player.sendMessage(Text.literal(getDamageWarning()), false);
@@ -588,62 +748,124 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                 com.unnameduser.tradeoverhaul.common.network.CraftRequestC2SPacket.encode(packet, buf);
                 ClientPlayNetworking.send(new Identifier(TradeOverhaulMod.MOD_ID, "craft_request"), buf);
 
-                // Полный сброс после крафта
                 resetAllFilters();
+                return true;
+            }
+
+            // === ВКЛАДКА REPAIR: кнопка Repair ===
+            if (currentTab == TabType.REPAIR && repairPanel != null && repairPanel.getSelectedItem() != null &&
+                    repairButtonBounds != null && mouseX >= repairButtonBounds.getX() && mouseX <= repairButtonBounds.getX() + repairButtonBounds.getWidth() &&
+                    mouseY >= repairButtonBounds.getY() && mouseY <= repairButtonBounds.getY() + repairButtonBounds.getHeight()) {
+
+                if (!repairEnabled) {
+                    return true;
+                }
+
+                DamagedItem selected = repairPanel.getSelectedItem();
+                RepairRequestC2SPacket packet = new RepairRequestC2SPacket(handler.syncId, selected.getSlotIndex());
+                PacketByteBuf buf = PacketByteBufs.create();
+                RepairRequestC2SPacket.encode(packet, buf);
+                ClientPlayNetworking.send(new Identifier(TradeOverhaulMod.MOD_ID, "repair_request"), buf);
+
+                // НЕ вызываем refreshDamagedItems() здесь — ждём ответ от сервера
 
                 return true;
             }
 
-            boolean clickedOnRecipePanel = isPointOverRecipePanel(mouseX, mouseY);
-            boolean clickedOnCraftButton = isPointOverCraftButton(mouseX, mouseY);
-            boolean clickedOnSlot = getSlotAt(mouseX, mouseY) != null;
-            boolean clickedOnSearchField = searchField != null && mouseX >= searchField.getX() && mouseX <= searchField.getX() + searchField.getWidth() &&
-                    mouseY >= searchField.getY() && mouseY <= searchField.getY() + searchField.getHeight();
+// === ВКЛАДКА REPAIR: кнопка Repair All ===
+            if (currentTab == TabType.REPAIR && repairAllButtonBounds != null && !damagedItems.isEmpty() &&
+                    mouseX >= repairAllButtonBounds.getX() && mouseX <= repairAllButtonBounds.getX() + repairAllButtonBounds.getWidth() &&
+                    mouseY >= repairAllButtonBounds.getY() && mouseY <= repairAllButtonBounds.getY() + repairAllButtonBounds.getHeight()) {
 
-            if (!clickedOnRecipePanel && !clickedOnCraftButton && !clickedOnSlot && !clickedOnSearchField) {
-                if (isFilterActive) {
-                    resetFilter();
+                if (!repairAllEnabled) {
+                    return true;
                 }
-                if (currentRecipe != null) {
-                    currentRecipe = null;
-                    selectedRecipeIndex = -1;
-                    if (recipeListPanel != null) {
-                        recipeListPanel.setSelectedIndex(-1);
-                    }
+
+                RepairAllRequestC2SPacket packet = new RepairAllRequestC2SPacket(handler.syncId);
+                PacketByteBuf buf = PacketByteBufs.create();
+                RepairAllRequestC2SPacket.encode(packet, buf);
+                ClientPlayNetworking.send(new Identifier(TradeOverhaulMod.MOD_ID, "repair_all_request"), buf);
+
+                // НЕ вызываем refreshDamagedItems() здесь — ждём ответ от сервера
+
+                return true;
+            }
+
+            // === СБРОС ФИЛЬТРОВ (для CRAFT) ===
+            if (currentTab == TabType.CRAFT) {
+                boolean clickedOnRecipePanel = isPointOverRecipePanel(mouseX, mouseY);
+                boolean clickedOnCraftButton = isPointOverCraftButton(mouseX, mouseY);
+                boolean clickedOnSlot = getSlotAt(mouseX, mouseY) != null;
+                boolean clickedOnSearchField = searchField != null && mouseX >= searchField.getX() && mouseX <= searchField.getX() + searchField.getWidth() &&
+                        mouseY >= searchField.getY() && mouseY <= searchField.getY() + searchField.getHeight();
+
+                if (!clickedOnRecipePanel && !clickedOnCraftButton && !clickedOnSlot && !clickedOnSearchField) {
+                    resetAllFilters();
                 }
             }
 
-            return super.mouseClicked(mouseX, mouseY, button);
-        }
-
-        if (button == 1) {
-            Slot hoveredSlot = getSlotAt(mouseX, mouseY);
-            if (hoveredSlot != null) {
-                int slotIndex = hoveredSlot.id;
-                if (slotIndex >= VillagerCraftingScreenHandler.FIRST_MAIN_GRID_SLOT_INDEX) {
-                    ItemStack stack = hoveredSlot.getStack();
-                    if (!stack.isEmpty()) {
-                        // Если есть выбранный рецепт и предмет подходит как уникальный
-                        if (currentRecipe != null && currentRecipe.getUniqueIngredientIndex() >= 0) {
-                            int uniqueIdx = currentRecipe.getUniqueIngredientIndex();
-                            if (uniqueIdx < currentRecipe.getIngredients().size()) {
-                                Ingredient uniqueIng = currentRecipe.getIngredients().get(uniqueIdx);
-                                if (ItemStack.areItemsEqual(stack, uniqueIng.getItem())) {
-                                    this.selectedItemSlot = slotIndex;
-                                    this.selectedItemStack = stack.copy();
-                                    this.hasSelectedItem = true;
-                                    this.selectedInventoryIndex = getRealInventoryIndex(slotIndex);
-                                    System.out.println("[TradeOverhaul] Selected unique item for craft: " + stack.getItem().getName().getString());
-                                    return true;
+            // === ВКЛАДКА REPAIR: обновление списка при клике на предмет в инвентаре (для мгновенного появления в списке) ===
+            // Этот блок позволяет обновить список повреждённых предметов при клике ЛКМ по инвентарю
+            if (currentTab == TabType.REPAIR) {
+                Slot clickedSlot = getSlotAt(mouseX, mouseY);
+                if (clickedSlot != null) {
+                    // Задержка для обновления списка (чтобы предмет успел переместиться)
+                    this.client.execute(() -> {
+                        refreshDamagedItems();
+                        if (repairPanel != null) {
+                            repairPanel.updateItems(damagedItems);
+                            // Если выбранный предмет был починен и исчез, сбрасываем выбор
+                            if (repairPanel.getSelectedItem() != null) {
+                                boolean stillExists = damagedItems.stream().anyMatch(d -> d.getSlotIndex() == repairPanel.getSelectedItem().getSlotIndex());
+                                if (!stillExists) {
+                                    repairPanel.updateItems(damagedItems);
+                                    onRepairItemSelected(null);
                                 }
                             }
                         }
-                        // Иначе — фильтруем
-                        filterRecipesByItem(stack, slotIndex);
-                        return true;
-                    }
+                    });
                 }
             }
+
+            // Передаём дальше для обычной обработки ЛКМ (перетаскивание предметов)
+            return super.mouseClicked(mouseX, mouseY, button);
+        }
+
+        // === ПКМ (button == 1) ===
+        if (button == 1) {
+            // Только для вкладки CRAFT
+            if (currentTab == TabType.CRAFT) {
+                Slot hoveredSlot = getSlotAt(mouseX, mouseY);
+                if (hoveredSlot != null) {
+                    int slotIndex = hoveredSlot.id;
+                    if (slotIndex >= VillagerCraftingScreenHandler.FIRST_MAIN_GRID_SLOT_INDEX) {
+                        ItemStack stack = hoveredSlot.getStack();
+                        if (!stack.isEmpty()) {
+                            // Если есть выбранный рецепт и предмет подходит как уникальный
+                            if (currentRecipe != null && currentRecipe.getUniqueIngredientIndex() >= 0) {
+                                int uniqueIdx = currentRecipe.getUniqueIngredientIndex();
+                                if (uniqueIdx < currentRecipe.getIngredients().size()) {
+                                    Ingredient uniqueIng = currentRecipe.getIngredients().get(uniqueIdx);
+                                    if (ItemStack.areItemsEqual(stack, uniqueIng.getItem())) {
+                                        this.selectedItemSlot = slotIndex;
+                                        this.selectedItemStack = stack.copy();
+                                        this.hasSelectedItem = true;
+                                        this.selectedInventoryIndex = getRealInventoryIndex(slotIndex);
+                                        System.out.println("[TradeOverhaul] Selected unique item for craft: " + stack.getItem().getName().getString());
+                                        return true;
+                                    }
+                                }
+                            }
+                            // Иначе — фильтруем рецепты
+                            filterRecipesByItem(stack, slotIndex);
+                            return true;
+                        }
+                    }
+                }
+                return true;
+            }
+
+            // Для вкладки REPAIR: ПКМ выбирает предмет в списке? Нет, пока не нужно
             return true;
         }
 
@@ -857,5 +1079,72 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         int maxDamage = selectedItemStack.getMaxDamage();
         int percent = (int) ((1.0 - (double) damage / maxDamage) * 100);
         return "§cCannot craft with damaged item! (" + percent + "% durability remaining)";
+    }
+
+    public void refreshDamagedItems() {
+        damagedItems.clear();
+        PlayerInventory inv = this.client.player.getInventory();
+        for (int i = 0; i < inv.size(); i++) {
+            ItemStack stack = inv.getStack(i);
+            if (!stack.isEmpty() && stack.isDamageable() && stack.getDamage() > 0) {
+                damagedItems.add(new DamagedItem(stack, i));
+            }
+        }
+
+        // Принудительно обновляем панель
+        if (repairPanel != null) {
+            repairPanel.updateItems(damagedItems);
+        }
+
+        // Сбрасываем выбранный предмет, если он был починен
+        if (currentRepairItem != null) {
+            boolean stillDamaged = damagedItems.stream().anyMatch(d -> d.getSlotIndex() == currentRepairItem.getSlotIndex());
+            if (!stillDamaged) {
+                currentRepairItem = null;
+                repairEnabled = false;
+                if (repairPanel != null) {
+                    repairPanel.updateItems(damagedItems);
+                }
+            }
+        }
+    }
+
+    private void createRepairPanel() {
+        if (repairPanel != null) {
+            remove(repairPanel);
+        }
+
+        int x = (this.width - this.backgroundWidth) / 2;
+        int y = (this.height - this.backgroundHeight) / 2;
+
+        // Левая панель с повреждёнными предметами (на месте инвентаря)
+        int panelX = x + this.inventoryX;
+        int panelY = y + this.panelY - 10;
+        int panelWidth = GRID_COLS * SLOT_STEP + 10;
+        int panelHeight = GRID_ROWS * SLOT_STEP + 35;
+
+        repairPanel = new RepairPanel(panelX, panelY, panelWidth, panelHeight, damagedItems,
+                () -> onRepairItemSelected(repairPanel.getSelectedItem()));
+
+        addDrawableChild(repairPanel);
+        updatePanelVisibility();
+    }
+
+    private void onRepairItemSelected(DamagedItem item) {
+        currentRepairItem = item;
+        if (item == null) {
+            repairEnabled = false;
+            return;
+        }
+        int playerMoney = NumismaticHelper.getTotalMoney(this.client.player);
+        repairEnabled = playerMoney >= item.getRepairCost();
+    }
+
+    private int getTotalRepairCost() {
+        int total = 0;
+        for (DamagedItem item : damagedItems) {
+            total += item.getRepairCost();
+        }
+        return total;
     }
 }
