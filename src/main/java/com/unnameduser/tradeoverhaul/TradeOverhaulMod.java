@@ -12,6 +12,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.network.PacketByteBuf;
@@ -26,6 +27,8 @@ public class TradeOverhaulMod implements ModInitializer {
 	public static final String MOD_ID = "tradeoverhaul";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
+	// ✓ ОСТАВЛЯЕМ регистрацию для совместимости со старыми файлами
+	// (но не используем эту архитектуру в новом коде)
 	public static final ScreenHandlerType<VillagerTradeScreenHandler> VILLAGER_TRADE_SCREEN_HANDLER =
 			new ExtendedScreenHandlerType<>((int syncId, PlayerInventory inv, PacketByteBuf buf) -> {
 				return new VillagerTradeScreenHandler(syncId, inv, buf);
@@ -42,11 +45,31 @@ public class TradeOverhaulMod implements ModInitializer {
 		LOGGER.info("Trade Overhaul mod initialized!");
 
 		LOGGER.info("Registering screen handlers...");
+		// ✓ Регистрируем ОБА хендлера, чтобы старый код компилировался
 		Registry.register(Registries.SCREEN_HANDLER, new Identifier(MOD_ID, "villager_trade"), VILLAGER_TRADE_SCREEN_HANDLER);
 		Registry.register(Registries.SCREEN_HANDLER, new Identifier(MOD_ID, "villager_crafting"), VILLAGER_CRAFTING_SCREEN_HANDLER);
 
 		LOGGER.info("Registering networking...");
 		ModNetworking.register();
+
+		ServerPlayNetworking.registerGlobalReceiver(new Identifier(MOD_ID, "trade_action"), (server, player, handler, buf, responseSender) -> {
+			int syncId = buf.readInt();
+			int slotIndex = buf.readInt();
+			boolean buying = buf.readBoolean();
+			boolean sellWholeStack = buf.readBoolean();
+			boolean buyWholeStack = buf.readBoolean();
+			boolean buyTen = buf.readBoolean();
+
+			server.execute(() -> {
+				if (player.currentScreenHandler instanceof VillagerCraftingScreenHandler craftingHandler && craftingHandler.syncId == syncId) {
+					if (buying) {
+						craftingHandler.handleTradePurchase(player, slotIndex, buyWholeStack, buyTen);
+					} else {
+						craftingHandler.handleTradeSell(player, slotIndex, sellWholeStack, buyTen);
+					}
+				}
+			});
+		});
 
 		LOGGER.info("Registering commands...");
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
@@ -67,6 +90,26 @@ public class TradeOverhaulMod implements ModInitializer {
 			payload.write(buf);
 			net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(handler.player, ConfigSyncPayload.ID, buf);
 			TradeOverhaulMod.LOGGER.debug("Sent config sync to player {}", handler.player.getName().getString());
+		});
+
+		// Регистрация обработчика торговли
+		ServerPlayNetworking.registerGlobalReceiver(new Identifier(MOD_ID, "trade_action"), (server, player, handler, buf, responseSender) -> {
+			int syncId = buf.readInt();
+			int slotIndex = buf.readInt();
+			boolean buying = buf.readBoolean();
+			boolean wholeStack = buf.readBoolean();
+			boolean buyWholeStack = buf.readBoolean();
+			boolean buyTen = buf.readBoolean();
+
+			server.execute(() -> {
+				if (player.currentScreenHandler instanceof VillagerCraftingScreenHandler craftingHandler && craftingHandler.syncId == syncId) {
+					if (buying) {
+						craftingHandler.handleTradePurchase(player, slotIndex, buyWholeStack, buyTen);
+					} else {
+						craftingHandler.handleTradeSell(player, slotIndex, wholeStack, buyTen);
+					}
+				}
+			});
 		});
 
 		LOGGER.info("Trade Overhaul initialization complete!");

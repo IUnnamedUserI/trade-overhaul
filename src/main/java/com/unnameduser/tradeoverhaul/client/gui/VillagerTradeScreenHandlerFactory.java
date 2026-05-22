@@ -35,10 +35,22 @@ public class VillagerTradeScreenHandlerFactory implements ExtendedScreenHandlerF
 		return handler;
 	}
 
+	// В классе VillagerTradeScreenHandlerFactory
 	@Override
 	public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
+		// ✓ Порядок ЗАПИСИ должен в точности совпадать с порядком ЧТЕНИЯ в клиентском конструкторе:
+
+		// 1. Уровень жителя (varInt)
 		buf.writeVarInt(villager.getVillagerData().getLevel());
-		buf.writeString(Registries.VILLAGER_PROFESSION.getId(villager.getVillagerData().getProfession()).toString());
+
+		// 2. ID профессии (String)
+		Identifier profId = Registries.VILLAGER_PROFESSION.getId(villager.getVillagerData().getProfession());
+		buf.writeString(profId != null ? profId.toString() : "minecraft:none");
+
+		// 3. Entity ID жителя (varInt)
 		buf.writeVarInt(villager.getId());
+
+		// ✓ БОЛЬШЕ НИЧЕГО НЕ ПИШЕМ СЮДА — расширенные данные синхронизируются отдельно
+		// через пакеты ModNetworking.sendProfessionLevelSync() после открытия экрана
 	}
 }

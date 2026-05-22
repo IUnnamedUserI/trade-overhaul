@@ -65,13 +65,22 @@ public class TradeOverhaulClient implements ClientModInitializer {
             });
         });
 
-        // Регистрируем обработчик синхронизации уровня профессии
         ClientPlayNetworking.registerGlobalReceiver(ProfessionLevelSyncPayload.ID, (client, handler, buf, responseSender) -> {
             ProfessionLevelSyncPayload payload = ProfessionLevelSyncPayload.read(buf);
             client.execute(() -> {
-                if (client.player != null && client.player.currentScreenHandler instanceof VillagerTradeScreenHandler tradeHandler
-                        && tradeHandler.syncId == payload.syncId()) {
-                    tradeHandler.updateProfessionLevel(payload.level(), payload.experience(), payload.tradesCompleted(), payload.fractionalXp(), payload.soldItemsTracker());
+                // ✓ ИСПРАВЛЕНО: проверяем VillagerCraftingScreenHandler, а не VillagerTradeScreenHandler
+                if (client.player != null && client.player.currentScreenHandler instanceof VillagerCraftingScreenHandler craftingHandler
+                        && craftingHandler.syncId == payload.syncId()) {
+
+                    // ✓ Вызываем метод обновления клиентских данных
+                    craftingHandler.updateClientProfessionData(
+                            payload.level(),
+                            payload.experience(),
+                            payload.tradesCompleted(),
+                            payload.fractionalXp(),
+                            payload.soldItemsTracker()
+                    );
+
                     TradeOverhaulMod.LOGGER.debug("Received profession level sync: level={}, exp={}, fractionalXp={}",
                             payload.level(), payload.experience(), payload.fractionalXp());
                 }

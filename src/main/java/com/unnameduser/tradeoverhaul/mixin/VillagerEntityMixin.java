@@ -8,6 +8,7 @@ import com.unnameduser.tradeoverhaul.common.component.VillagerCurrencyComponent;
 import com.unnameduser.tradeoverhaul.common.component.VillagerInventoryComponent;
 import com.unnameduser.tradeoverhaul.common.component.VillagerProfessionComponent;
 import com.unnameduser.tradeoverhaul.common.trade.TradeRestock;
+import com.unnameduser.tradeoverhaul.screen.VillagerCraftingScreenHandler;
 import com.unnameduser.tradeoverhaul.screen.VillagerCraftingScreenHandlerFactory;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -25,6 +26,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Arrays;
+import java.util.Map;
 
 @Mixin(VillagerEntity.class)
 public class VillagerEntityMixin implements VillagerTradeData {
@@ -222,9 +224,53 @@ public class VillagerEntityMixin implements VillagerTradeData {
 				if (player.isSneaking()) {
 					TradeOverhaulMod.LOGGER.info("Opening crafting GUI (Shift + RMB)");
 					player.openHandledScreen(new VillagerCraftingScreenHandlerFactory(villager.getDisplayName(), villager));
+					// После player.openHandledScreen(...) добавь:
+					if (!villager.getWorld().isClient && villager instanceof VillagerTradeData data) {
+						// Небольшая задержка, чтобы экран успел инициализироваться
+						((net.minecraft.server.world.ServerWorld) villager.getWorld()).getServer().execute(() -> {
+							if (player.currentScreenHandler instanceof VillagerCraftingScreenHandler handler) {
+								VillagerProfessionComponent prof = data.tradeOverhaul$getProfession();
+								NbtCompound soldItemsTracker = new NbtCompound();
+								for (Map.Entry<String, Integer> e : prof.soldItemsTracker.entrySet()) {
+									soldItemsTracker.putInt(e.getKey(), e.getValue());
+								}
+								com.unnameduser.tradeoverhaul.common.network.ModNetworking.sendProfessionLevelSync(
+										(net.minecraft.server.network.ServerPlayerEntity) player,
+										handler.syncId,
+										prof.getLevel(),
+										prof.getExperience(),
+										prof.getTradesCompleted(),
+										prof.getFractionalXpAccumulator(),
+										soldItemsTracker
+								);
+							}
+						});
+					}
 				} else {
 					TradeOverhaulMod.LOGGER.info("Opening trade GUI (normal RMB)");
 					player.openHandledScreen(new VillagerTradeScreenHandlerFactory(villager.getDisplayName(), villager));
+					// После player.openHandledScreen(...) добавь:
+					if (!villager.getWorld().isClient && villager instanceof VillagerTradeData data) {
+						// Небольшая задержка, чтобы экран успел инициализироваться
+						((net.minecraft.server.world.ServerWorld) villager.getWorld()).getServer().execute(() -> {
+							if (player.currentScreenHandler instanceof VillagerCraftingScreenHandler handler) {
+								VillagerProfessionComponent prof = data.tradeOverhaul$getProfession();
+								NbtCompound soldItemsTracker = new NbtCompound();
+								for (Map.Entry<String, Integer> e : prof.soldItemsTracker.entrySet()) {
+									soldItemsTracker.putInt(e.getKey(), e.getValue());
+								}
+								com.unnameduser.tradeoverhaul.common.network.ModNetworking.sendProfessionLevelSync(
+										(net.minecraft.server.network.ServerPlayerEntity) player,
+										handler.syncId,
+										prof.getLevel(),
+										prof.getExperience(),
+										prof.getTradesCompleted(),
+										prof.getFractionalXpAccumulator(),
+										soldItemsTracker
+								);
+							}
+						});
+					}
 				}
 			}
 
