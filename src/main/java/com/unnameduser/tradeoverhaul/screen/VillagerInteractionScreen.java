@@ -18,6 +18,7 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.slot.Slot;
@@ -26,7 +27,9 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScreenHandler> {
 
@@ -40,8 +43,6 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     private boolean hasSelectedItem = false;
     private boolean craftEnabled = false;
 
-    private static final int SLOT_SIZE = 18;
-    private static final int SLOT_STEP = 19;
     private static final int ARMOR_SLOT_WIDTH = 18;
     private static final int ARMOR_SLOT_COUNT = 5;
     private static final int ARMOR_STEP = 20;
@@ -50,6 +51,7 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
 
     private int armorX;
     private int inventoryX;
+    private int inventoryY;
     private int centerX;
     private int recipesX;
     private int panelY;
@@ -102,6 +104,37 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     private int disassemblyTargetSlotIndex = -1;
     private net.minecraft.client.util.math.Rect2i disassembleButtonBounds;
 
+    private static final Identifier PANEL_TEX = new Identifier(TradeOverhaulMod.MOD_ID, "textures/gui/disassemble_background.png");
+    private static final Identifier SLOT_TEX  = new Identifier(TradeOverhaulMod.MOD_ID, "textures/gui/disassemble_slot.png");
+    private static final Identifier BUTTON_TEX = new Identifier(TradeOverhaulMod.MOD_ID, "textures/gui/disassemble_button.png");
+    private static final Identifier ITEM_BG_TEX  = new Identifier(TradeOverhaulMod.MOD_ID, "textures/gui/disassemble_item.png");
+    private static final Identifier INV_BG_TEX = new Identifier(TradeOverhaulMod.MOD_ID, "textures/gui/inventory_background.png");
+
+    private static final int PANEL_TEX_W = 125;
+    private static final int PANEL_TEX_H = 190;
+    private static final int SLOT_TEX_W  = 18;
+    private static final int SLOT_TEX_H  = 18;
+    private static final int BUTTON_TEX_W = 95;
+    private static final int BUTTON_TEX_H = 60;
+    private static final int BTN_STATE_H  = 20; // Высота одного состояния
+    private static final int ITEM_BG_W = 48; // Ширина фона предмета
+    private static final int ITEM_BG_H = 48; // Высота фона предмета
+
+    private static final int INV_BG_W = 185; // 129
+    private static final int INV_BG_H = 256; // 190
+
+    private static final int INV_SLOT_START_X = 8;
+    private static final int INV_SLOT_START_Y = 20;
+    private static final int SLOT_SIZE = 18;
+    private static final int SLOT_GAP = 1;
+    private static final int SLOT_STEP = SLOT_SIZE + SLOT_GAP; // 19
+    private static final int ARMOR_Y_OFFSET = 4; // Отступ от низа сетки до брони
+
+    private static final int INV_LABEL_X = 8;
+    private static final int INV_LABEL_Y = 8;
+
+    private boolean isDisassembleButtonPressed = false;
+
     public VillagerInteractionScreen(VillagerCraftingScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
     }
@@ -129,8 +162,9 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         int totalContentWidth = armorWidth + gapArmorInventory + inventoryWidth + gapInventoryCenter + centerWidth + gapCenterRecipes + recipesWidth;
         int startX = x + (this.backgroundWidth - totalContentWidth) / 2;
 
-        this.armorX = startX;
-        this.inventoryX = armorX + armorWidth + gapArmorInventory;
+        this.armorX = startX - 20;
+        this.inventoryX = x;
+        this.inventoryY = (this.height - INV_BG_H) / 2 + 20;
         this.centerX = inventoryX + inventoryWidth + gapInventoryCenter;
         this.recipesX = centerX + centerWidth + gapCenterRecipes;
 
@@ -192,40 +226,54 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     }
 
     private void positionSlots() {
+        // Координаты панели инвентаря относительно экрана
+        int panelX = inventoryX;
+        int panelY = inventoryY;
+
+        // Слоты инвентаря 6x6
+        int invStartX = panelX + INV_SLOT_START_X;
+        int invStartY = panelY + INV_SLOT_START_Y;
+
+        // Броня: центрирование строки из 5 слотов
+        int armorRowWidth = (5 * SLOT_SIZE) + (4 * SLOT_GAP);
+        int armorStartX = panelX + (INV_BG_W - armorRowWidth) / 2;
+        int armorY = invStartY + (GRID_ROWS * SLOT_STEP) + ARMOR_Y_OFFSET;
+
         int armorSlotIndex = 0;
-        int inventorySlotIndex = 0;
+        int invSlotIndex = 0;
         int tradeSlotIndex = 0;
 
         for (int i = 0; i < this.handler.slots.size(); i++) {
             var slotObj = this.handler.slots.get(i);
 
             if (currentTab == TabType.REPAIR) {
-                slotObj.x = -1000;
-                slotObj.y = -1000;
-                continue;
+                slotObj.x = -1000; slotObj.y = -1000; continue;
             }
 
             if (i < VillagerCraftingScreenHandler.FIRST_MAIN_GRID_SLOT_INDEX) {
-                slotObj.x = armorX + 1;
-                slotObj.y = panelY + armorSlotIndex * ARMOR_STEP;
+                // 5 слотов брони
+                slotObj.x = armorStartX + armorSlotIndex * SLOT_STEP;
+                slotObj.y = armorY;
                 armorSlotIndex++;
             } else if (i < VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT) {
-                int col = inventorySlotIndex % GRID_COLS;
-                int row = inventorySlotIndex / GRID_COLS;
-                slotObj.x = inventoryX + col * SLOT_STEP + 1;
-                slotObj.y = panelY + row * SLOT_STEP;
-                inventorySlotIndex++;
+                // Инвентарь игрока 6x6
+                int col = invSlotIndex % GRID_COLS;
+                int row = invSlotIndex / GRID_COLS;
+                slotObj.x = invStartX + col * SLOT_STEP;
+                slotObj.y = invStartY + row * SLOT_STEP;
+                invSlotIndex++;
             } else {
+                // Слоты жителя (Trade)
                 if (currentTab == TabType.TRADE) {
                     int col = tradeSlotIndex % GRID_COLS;
                     int row = tradeSlotIndex / GRID_COLS;
                     slotObj.x = tradePanelX + col * SLOT_STEP + 1;
                     slotObj.y = tradePanelY + row * SLOT_STEP;
+                    tradeSlotIndex++;
                 } else {
-                    slotObj.x = -1000;
-                    slotObj.y = -1000;
+                    slotObj.x = -1000; slotObj.y = -1000;
+                    tradeSlotIndex++;
                 }
-                tradeSlotIndex++;
             }
         }
     }
@@ -538,7 +586,6 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         return 0f;
     }
 
-    // === ДИЗАССЕМБЛИ UI ===
     private void openDisassemblyPreview(ItemStack stack) {
         disassemblyTarget = stack.copy();
         disassemblyComponents.clear();
@@ -546,8 +593,7 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         isDisassemblyActive = true;
         disassemblyTargetSlotIndex = -1;
 
-        if (client.world == null) return;
-
+        // Находим индекс слота для сервера
         for (Slot slot : handler.slots) {
             if (slot.getStack() == stack) {
                 disassemblyTargetSlotIndex = slot.id;
@@ -555,15 +601,34 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
             }
         }
 
+        if (client.world == null) return;
+
         net.minecraft.recipe.CraftingRecipe recipe = findClientRecipe(stack, (net.minecraft.client.world.ClientWorld) client.world);
+
         if (recipe != null) {
+            // ✅ ГРУППИРОВКА ПРЕДМЕТОВ
+            // Используем LinkedHashMap, чтобы сохранить относительный порядок ингредиентов
+            Map<Item, Integer> itemCounts = new LinkedHashMap<>();
+            int totalParts = 0;
+
             for (net.minecraft.recipe.Ingredient ing : recipe.getIngredients()) {
-                net.minecraft.item.ItemStack[] matches = ing.getMatchingStacks();
+                ItemStack[] matches = ing.getMatchingStacks();
                 if (matches != null && matches.length > 0) {
-                    disassemblyComponents.add(matches[0].copy());
+                    Item item = matches[0].getItem();
+                    // Суммируем одинаковые предметы
+                    itemCounts.put(item, itemCounts.getOrDefault(item, 0) + 1);
+                    totalParts++;
                 }
             }
-            disassemblyCost = disassemblyComponents.size() * 5;
+
+            // Преобразуем карту обратно в список стаков с нужным количеством
+            for (Map.Entry<Item, Integer> entry : itemCounts.entrySet()) {
+                ItemStack groupStack = new ItemStack(entry.getKey(), entry.getValue());
+                disassemblyComponents.add(groupStack);
+            }
+
+            // Стоимость = (Всего компонентов) * 5
+            disassemblyCost = totalParts * 5;
         }
     }
 
@@ -803,35 +868,45 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     }
 
     private void drawSlotBackgrounds(DrawContext context, int x, int y) {
-        int armorXabs = x + this.armorX;
-        for (int i = 0; i < ARMOR_SLOT_COUNT; i++) {
-            int slotX = armorXabs;
-            int slotY = y + this.panelY + i * ARMOR_STEP - 1;
-            context.fill(slotX, slotY, slotX + SLOT_SIZE, slotY + SLOT_SIZE, 0x8B8B8B8B);
-            context.fill(slotX + 1, slotY + 1, slotX + SLOT_SIZE - 2, slotY + SLOT_SIZE - 2, 0xFF303030);
+        // Отрисовка фона и подписи инвентаря
+        int px = inventoryX;
+        int py = inventoryY;
+        context.drawTexture(INV_BG_TEX, px, py, 0, 0, INV_BG_W, INV_BG_H, INV_BG_W, INV_BG_H);
+        context.drawText(this.textRenderer, Text.literal("INVENTORY"),
+                px + INV_LABEL_X, py + INV_LABEL_Y, 0xFFFFFF, false);
+
+        // Слоты брони
+        int armorRowWidth = (5 * SLOT_SIZE) + (4 * SLOT_GAP);
+        int armorStartX = px + (INV_BG_W - armorRowWidth) / 2;
+        int armorY = py + INV_SLOT_START_Y + (GRID_ROWS * SLOT_STEP) + ARMOR_Y_OFFSET;
+
+        for (int i = 0; i < 5; i++) {
+            int slotX = armorStartX + i * SLOT_STEP;
+            context.drawTexture(SLOT_TEX, slotX, armorY, 0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_TEX_W, SLOT_TEX_H);
         }
 
-        int inventoryXabs = x + this.inventoryX;
+        // Слоты инвентаря 6x6
+        int invStartX = px + INV_SLOT_START_X;
+        int invStartY = py + INV_SLOT_START_Y;
         for (int row = 0; row < GRID_ROWS; row++) {
             for (int col = 0; col < GRID_COLS; col++) {
-                int slotX = inventoryXabs + col * SLOT_STEP;
-                int slotY = y + this.panelY + row * SLOT_STEP - 1;
-                context.fill(slotX, slotY, slotX + SLOT_SIZE, slotY + SLOT_SIZE, 0x8B8B8B8B);
-                context.fill(slotX + 1, slotY + 1, slotX + SLOT_SIZE - 2, slotY + SLOT_SIZE - 2, 0xFF303030);
+                int slotX = invStartX + col * SLOT_STEP;
+                int slotY = invStartY + row * SLOT_STEP;
+                context.drawTexture(SLOT_TEX, slotX, slotY, 0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_TEX_W, SLOT_TEX_H);
             }
         }
 
+        // Подсветка фильтра (если активна)
         if (isFilterActive && filteredSlot >= 0) {
             for (int i = 0; i < this.handler.slots.size(); i++) {
                 var slotObj = this.handler.slots.get(i);
-                if (i < VillagerCraftingScreenHandler.FIRST_MAIN_GRID_SLOT_INDEX) continue;
-                if (i >= VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT) continue;
-                int realSlot = getRealInventoryIndex(i);
-                if (realSlot == filteredSlot) {
-                    int slotX = x + slotObj.x - 1;
-                    int slotY = y + slotObj.y - 1;
-                    context.drawBorder(slotX, slotY, SLOT_SIZE + 2, SLOT_SIZE + 2, 0xFFD4AF37);
-                    break;
+                if (i >= VillagerCraftingScreenHandler.FIRST_MAIN_GRID_SLOT_INDEX &&
+                        i < VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT) {
+                    int realSlot = getRealInventoryIndex(i);
+                    if (realSlot == filteredSlot) {
+                        context.drawBorder(slotObj.x - 1, slotObj.y - 1, SLOT_SIZE + 2, SLOT_SIZE + 2, 0xFFD4AF37);
+                        break;
+                    }
                 }
             }
         }
@@ -944,6 +1019,8 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                 int btnBottom = disassembleButtonBounds.getY() + disassembleButtonBounds.getHeight();
                 if (mouseX >= disassembleButtonBounds.getX() && mouseX <= btnRight &&
                         mouseY >= disassembleButtonBounds.getY() && mouseY <= btnBottom) {
+
+                    isDisassembleButtonPressed = true;
 
                     boolean canAfford = com.unnameduser.tradeoverhaul.common.numismatic.NumismaticHelper.getTotalMoney(client.player) >= disassemblyCost;
                     if (canAfford && disassemblyTargetSlotIndex != -1) {
@@ -1176,6 +1253,7 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        isDisassembleButtonPressed = false;
         if (button == 0) return super.mouseReleased(mouseX, mouseY, button);
         return true;
     }
@@ -1267,58 +1345,86 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         if (!isDisassemblyActive || disassemblyTarget.isEmpty()) return;
 
         int cx = this.width / 2;
-        int cy = this.height / 2;
-        int panelW = 150;
+        int cy = this.height / 2; // Центр экрана по Y
+        int panelW = 125;
         int panelH = 190;
         int px = cx - panelW / 2;
         int py = cy - panelH / 2;
 
-        // Фон панели
-        context.fill(px, py, px + panelW, py + panelH, 0xD9121212);
-        context.drawBorder(px, py, panelW, panelH, 0xFF4A4A4A);
+        // Фон панели (если нужен текстурный, раскомментируй строку ниже)
+        context.drawTexture(PANEL_TEX, px, py, 0, 0, panelW, panelH, PANEL_TEX_W, PANEL_TEX_H);
 
-        // Предмет (иконка + название)
-        context.drawItem(disassemblyTarget, cx - 9, py + 12);
-        context.drawItemInSlot(this.textRenderer, disassemblyTarget, cx - 9, py + 12);
+        // === ФОН РАЗБИРАЕМОГО ПРЕДМЕТА ===
+        int itemBgX = cx - ITEM_BG_W / 2;
+        int itemBgY = py + 22;
+        context.drawTexture(ITEM_BG_TEX, itemBgX, itemBgY, 0, 0, ITEM_BG_W, ITEM_BG_H, ITEM_BG_W, ITEM_BG_H);
+
+        // === САМ ПРЕДМЕТ (поверх фона) ===
+        context.getMatrices().push();
+        context.getMatrices().translate(itemBgX + ITEM_BG_W / 2, itemBgY + ITEM_BG_H / 2, 0);
+        context.getMatrices().scale(3.0f, 3.0f, 1.0f); // 16px * 3 = 48px
+        context.drawItem(disassemblyTarget, -8, -8);
+        context.drawItemInSlot(this.textRenderer, disassemblyTarget, -8, -8);
+        context.getMatrices().pop();
+
+        // Название
         Text itemName = disassemblyTarget.getName();
-        context.drawText(this.textRenderer, itemName, cx - this.textRenderer.getWidth(itemName) / 2, py + 38, 0xFFFFFF, false);
+        context.drawText(this.textRenderer, itemName, cx - this.textRenderer.getWidth(itemName) / 2, py + 10, 0xFFFFFF, false);
 
-        // Стоимость разборки
-        Text costText = Text.literal(disassemblyCost + " copper").formatted(net.minecraft.util.Formatting.GOLD);
-        context.drawText(this.textRenderer, costText, cx - this.textRenderer.getWidth(costText) / 2, py + 58, 0xFFFFAA, false);
-        Text costLabel = Text.literal("Disassembly cost").formatted(net.minecraft.util.Formatting.GRAY);
-        context.drawText(this.textRenderer, costLabel, cx - this.textRenderer.getWidth(costLabel) / 2, py + 48, 0xAAAAAA, false);
+        // Стоимость
+        Text costLabel = Text.literal("Disassembly cost");
+        context.drawText(this.textRenderer, costLabel, cx - this.textRenderer.getWidth(costLabel) / 2, py + 78, 0x8E7D6E, false);
+        Text costText = Text.literal(disassemblyCost + " copper");
+        context.drawText(this.textRenderer, costText, cx - this.textRenderer.getWidth(costText) / 2, py + 94, 0x8E7D6E, false);
 
-        // Ингредиенты (сетка 2-3 в ряд)
-        int compStartX = px + 12;
-        int compStartY = py + 80;
-        int maxCols = 3;
-        for (int i = 0; i < disassemblyComponents.size(); i++) {
-            ItemStack comp = disassemblyComponents.get(i);
-            int col = i % maxCols;
-            int row = i / maxCols;
-            int slotX = compStartX + col * 22;
-            int slotY = compStartY + row * 24;
+        // === ИНГРЕДИЕНТЫ (Центрирование по строкам) ===
+        int compStartY = py + 115;
+        int maxPerRow = 3;
+        int totalItems = disassemblyComponents.size();
+        int slotGap = 2;
+        int slotSize = 18;
+        int currentComponentIndex = 0;
 
-            // Фон слота
-            context.fill(slotX, slotY, slotX + 18, slotY + 18, 0x8B1A1A1A);
-            context.drawBorder(slotX, slotY, 18, 18, 0xFF3A3A3A);
+        for (int row = 0; currentComponentIndex < totalItems; row++) {
+            int itemsInThisRow = Math.min(maxPerRow, totalItems - currentComponentIndex);
+            int rowWidth = (itemsInThisRow * slotSize) + ((itemsInThisRow - 1) * slotGap);
+            int rowStartX = px + (panelW - rowWidth) / 2;
 
-            // Предмет + количество
-            context.drawItem(comp, slotX + 1, slotY + 1);
-            context.drawItemInSlot(this.textRenderer, comp, slotX + 1, slotY + 1);
+            for (int i = 0; i < itemsInThisRow; i++) {
+                int slotX = rowStartX + i * (slotSize + slotGap);
+                int slotY = compStartY + row * (slotSize + slotGap + 4);
+                ItemStack comp = disassemblyComponents.get(currentComponentIndex);
+
+                context.drawTexture(SLOT_TEX, slotX, slotY, 0, 0, slotSize, slotSize, SLOT_TEX_W, SLOT_TEX_H);
+                context.drawItem(comp, slotX + 1, slotY + 1);
+                context.drawItemInSlot(this.textRenderer, comp, slotX + 1, slotY + 1);
+
+                currentComponentIndex++;
+            }
         }
 
-        // Кнопка "Disassemble"
-        int btnW = 110;
-        int btnH = 20;
+        // === КНОПКА (3 состояния: 0=Обычное, 1=Наведение, 2=Нажатие) ===
+        int btnW = 95;  // Ширина кнопки = ширине текстуры
+        int btnH = 20;  // Высота одного состояния
         int btnX = cx - btnW / 2;
-        int btnY = py + panelH - 28;
-        boolean canAfford = com.unnameduser.tradeoverhaul.common.numismatic.NumismaticHelper.getTotalMoney(this.client.player) >= disassemblyCost;
+        int btnY = py + panelH - 25;
 
-        context.fill(btnX, btnY, btnX + btnW, btnY + btnH, canAfford ? 0xFF3A3A3A : 0xFF222222);
-        context.fill(btnX + 1, btnY + 1, btnX + btnW - 1, btnY + btnH - 1, canAfford ? 0xFF555555 : 0xFF333333);
-        context.drawBorder(btnX, btnY, btnW, btnH, canAfford ? 0xFF888888 : 0xFF444444);
+        boolean canAfford = com.unnameduser.tradeoverhaul.common.numismatic.NumismaticHelper.getTotalMoney(this.client.player) >= disassemblyCost;
+        boolean isHovered = mouseX >= btnX && mouseX <= btnX + btnW && mouseY >= btnY && mouseY <= btnY + btnH;
+
+        // Выбор состояния
+        int stateIndex = 0;
+        if (!canAfford) {
+            stateIndex = 2; // Или оставь 0, если хочешь, чтобы заблокированная выглядела как обычная
+        } else if (isDisassembleButtonPressed) {
+            stateIndex = 2;
+        } else if (isHovered) {
+            stateIndex = 1;
+        }
+
+        int vOffset = stateIndex * BTN_STATE_H;
+        // ✅ КЛЮЧЕВОЙ МОМЕНТ: width/height = 95/20, textureWidth/textureHeight = 95/60
+        context.drawTexture(BUTTON_TEX, btnX, btnY, 0, vOffset, btnW, btnH, BUTTON_TEX_W, BUTTON_TEX_H);
 
         Text btnText = Text.literal("DISASSEMBLE");
         context.drawText(this.textRenderer, btnText, cx - this.textRenderer.getWidth(btnText) / 2, btnY + 6, canAfford ? 0xFFFFFF : 0x888888, false);
