@@ -557,78 +557,56 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
     public void handleDisassembleRequest(ServerPlayerEntity player, int handlerSlotIndex) {
         if (!DisassemblyConfig.isLoaded()) DisassemblyConfig.load();
 
-        // 1. Конвертация индекса слота
-        int playerInvIndex = handlerSlotIndex - FIRST_MAIN_GRID_SLOT_INDEX;
-        if (playerInvIndex < 0 || playerInvIndex >= 36) {
-            player.sendMessage(Text.literal("§c[TradeOverhaul] Invalid inventory slot!"), false);
-            return;
+        // ✅ ТОЧНАЯ КОНВЕРТАЦИЯ (исправляет инверсию брони)
+        int playerInvIndex;
+        if (handlerSlotIndex < 5) {
+            // Порядок в addPlayerInventory: {39(Head), 38(Chest), 37(Legs), 36(Feet), 40(Offhand)}
+            int[] armorMap = {39, 38, 37, 36, 40};
+            playerInvIndex = armorMap[handlerSlotIndex];
+        } else {
+            playerInvIndex = handlerSlotIndex - 5;
         }
+
+        if (playerInvIndex < 0 || playerInvIndex >= player.getInventory().size()) return;
 
         PlayerInventory inv = player.getInventory();
         ItemStack item = inv.getStack(playerInvIndex);
-        if (item.isEmpty() || !DisassemblyConfig.isDisassemblyAllowed(item.getItem())) {
-            player.sendMessage(Text.literal("§c[TradeOverhaul] Item cannot be disassembled!"), false);
-            return;
-        }
+        if (item.isEmpty()) return;
+        if (!DisassemblyConfig.isDisassemblyAllowed(item.getItem())) return; // Тихий отказ
 
-        // 2. Поиск рецепта
         CraftingRecipe recipe = findCraftingRecipe(item, player.getWorld());
-        if (recipe == null) {
-            player.sendMessage(Text.literal("§c[TradeOverhaul] No valid crafting recipe found!"), false);
-            return;
-        }
+        if (recipe == null) return;
 
-        // 3. Сбор компонентов
         List<ItemStack> components = new ArrayList<>();
         for (net.minecraft.recipe.Ingredient ing : recipe.getIngredients()) {
             ItemStack[] matches = ing.getMatchingStacks();
-            if (matches != null && matches.length > 0) {
-                components.add(matches[0].copy());
-            }
+            if (matches != null && matches.length > 0) components.add(matches[0].copy());
         }
 
-        // 4. Проверка стоимости
         int cost = components.size() * 5;
-        if (NumismaticHelper.getTotalMoney(player) < cost) {
-            player.sendMessage(Text.literal("§c[TradeOverhaul] Need " + cost + " copper to disassemble!"), false);
-            return;
-        }
+        if (NumismaticHelper.getTotalMoney(player) < cost) return;
 
-        // 5. ✅ РАСЧЁТ ШАНСА ДО УМЕНЬШЕНИЯ СТАКА!
         float dropChance = 1.0f;
         if (item.isDamageable() && item.getMaxDamage() > 0) {
             dropChance = 1.0f - ((float) item.getDamage() / item.getMaxDamage());
-            // Защитный clamp на случай浮点 ошибок
-            if (dropChance < 0.0f) dropChance = 0.0f;
-            if (dropChance > 1.0f) dropChance = 1.0f;
+            dropChance = net.minecraft.util.math.MathHelper.clamp(dropChance, 0.0f, 1.0f);
         }
 
-        TradeOverhaulMod.LOGGER.info("[Disassembly] Item: {} | Dmg: {}/{} | Chance: {}",
-                net.minecraft.registry.Registries.ITEM.getId(item.getItem()).toString(),
-                item.getDamage(), item.getMaxDamage(), dropChance);
-
-        // 6. Списание денег и предмета
         NumismaticHelper.removeMoney(player, cost);
         item.decrement(1);
 
-        // 7. Выдача компонентов с индивидуальным роллом
         for (ItemStack comp : components) {
             if (Math.random() < dropChance) {
                 ItemStack drop = comp.copy();
                 drop.setCount(1);
-                if (!player.getInventory().insertStack(drop)) {
-                    player.dropItem(drop, false);
-                }
+                if (!player.getInventory().insertStack(drop)) player.dropItem(drop, false);
             }
         }
 
-        // 8. Деньги жителю
         if (villager instanceof VillagerTradeData data) {
             data.tradeOverhaul$getCurrency().addMoney(cost);
         }
-
         sendContentUpdates();
-        player.sendMessage(Text.literal("§a[TradeOverhaul] Disassembled for " + cost + " copper!"), false);
     }
 
     private CraftingRecipe findCraftingRecipe(ItemStack item, World world) {
