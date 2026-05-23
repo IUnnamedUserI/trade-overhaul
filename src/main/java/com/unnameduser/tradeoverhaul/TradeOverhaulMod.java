@@ -2,6 +2,7 @@ package com.unnameduser.tradeoverhaul;
 
 import com.unnameduser.tradeoverhaul.client.gui.VillagerTradeScreenHandler;
 import com.unnameduser.tradeoverhaul.common.RecipeManager;
+import com.unnameduser.tradeoverhaul.common.command.DisassembleCommand;
 import com.unnameduser.tradeoverhaul.common.command.TradeOverhaulCommand;
 import com.unnameduser.tradeoverhaul.common.config.TradeConfigLoader;
 import com.unnameduser.tradeoverhaul.common.network.ConfigSyncPayload;
@@ -22,6 +23,8 @@ import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static net.minecraft.server.command.CommandManager.literal;
 
 public class TradeOverhaulMod implements ModInitializer {
 	public static final String MOD_ID = "tradeoverhaul";
@@ -52,6 +55,16 @@ public class TradeOverhaulMod implements ModInitializer {
 		LOGGER.info("Registering networking...");
 		ModNetworking.register();
 
+		ServerPlayNetworking.registerGlobalReceiver(new Identifier(MOD_ID, "disassemble_request"), (server, player, handler, buf, responseSender) -> {
+			int syncId = buf.readInt();
+			int slotIndex = buf.readInt();
+			server.execute(() -> {
+				if (player.currentScreenHandler instanceof VillagerCraftingScreenHandler c && c.syncId == syncId) {
+					c.handleDisassembleRequest(player, slotIndex);
+				}
+			});
+		});
+
 		ServerPlayNetworking.registerGlobalReceiver(new Identifier(MOD_ID, "trade_action"), (server, player, handler, buf, responseSender) -> {
 			int syncId = buf.readInt();
 			int slotIndex = buf.readInt();
@@ -72,9 +85,28 @@ public class TradeOverhaulMod implements ModInitializer {
 		});
 
 		LOGGER.info("Registering commands...");
-		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
-				TradeOverhaulCommand.register(dispatcher)
-		);
+		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+			dispatcher.register(
+					literal("tradeoverhaul")
+							.requires(src -> src.hasPermissionLevel(2))
+							.then(literal("refresh")
+									.executes(ctx -> {
+										// Твоя существующая логика refresh
+										TradeOverhaulMod.LOGGER.info("Refreshing villager trades...");
+										// ... вызов твоего GlobalRestockTimer или аналога ...
+										ctx.getSource().sendFeedback(() -> net.minecraft.text.Text.literal("§aTrade lists refreshed!"), true);
+										return 1;
+									})
+							)
+							// ✅ Новые подкоманды цепляются к тому же корневому literal
+							.then(literal("generate_disassembly_whitelist")
+									.executes(ctx -> DisassembleCommand.generateList(true, ctx.getSource()))
+							)
+							.then(literal("generate_repair_whitelist")
+									.executes(ctx -> DisassembleCommand.generateList(false, ctx.getSource()))
+							)
+			);
+		});
 
 		LOGGER.info("Registering global restock timer...");
 		GlobalRestockTimer.register();
