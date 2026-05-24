@@ -698,4 +698,76 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         }
         this.sendContentUpdates();
     }
+
+    public boolean isItemInBuyPool(ItemStack stack) {
+        if (stack.isEmpty() || professionFile == null) return false;
+        String itemId = net.minecraft.registry.Registries.ITEM.getId(stack.getItem()).toString();
+        return professionFile.isItemSoldByVillager(itemId);
+    }
+
+    public void handleCraftPanelBuyRequest(ServerPlayerEntity player, String itemId, int amount) {
+        // ✅ На сервере this.villager уже содержит ссылку на сущность (из серверного конструктора)
+        if (!(this.villager instanceof VillagerTradeData data) || professionFile == null) return;
+
+        Item item = Registries.ITEM.get(Identifier.tryParse(itemId));
+        if (item == null) return;
+
+        // Находим слот в инвентаре жителя
+        int slotIndex = -1;
+        for (int i = 0; i < villagerInventory.size(); i++) {
+            if (ItemStack.areItemsEqual(villagerInventory.getStack(i), new ItemStack(item))) {
+                slotIndex = i;
+                break;
+            }
+        }
+        if (slotIndex == -1 || villagerInventory.getStack(slotIndex).getCount() < amount) return;
+
+        ItemStack template = villagerInventory.getStack(slotIndex);
+        int price = TradePricing.getBuyPrice(template, professionFile);
+        if (price <= 0 || NumismaticHelper.getTotalMoney(player) < price) return;
+
+        // ✅ Лог для отладки
+        TradeOverhaulMod.LOGGER.info("[CraftBuy] Player {} requested {} x{} for {} copper",
+                player.getName().getString(), itemId, amount, price);
+
+        // Транзакция
+        ItemStack toGive = template.copy();
+        toGive.setCount(amount);
+        ItemTagHelper.markAsVillagerSold(toGive);
+        if (!player.getInventory().insertStack(toGive)) return;
+
+        villagerInventory.getStack(slotIndex).decrement(amount);
+        NumismaticHelper.removeMoney(player, price);
+        data.tradeOverhaul$getCurrency().addMoney(price);
+        data.tradeOverhaul$getProfession().markAsTraded();
+
+        // XP
+        boolean wasPlayerSold = ItemTagHelper.isPlayerSold(toGive);
+        if (!wasPlayerSold) {
+            data.tradeOverhaul$getProfession().applyXpFromSale(itemId, amount, professionFile);
+            int modLevel = data.tradeOverhaul$getProfession().getLevel();
+            if (modLevel > this.villager.getVillagerData().getLevel()) {
+                this.villager.setVillagerData(this.villager.getVillagerData().withLevel(modLevel));
+            }
+            com.unnameduser.tradeoverhaul.common.network.ModNetworking.sendProfessionLevelSync(
+                    player, this.syncId, data.tradeOverhaul$getProfession().getLevel(),
+                    data.tradeOverhaul$getProfession().getExperience(), data.tradeOverhaul$getProfession().getTradesCompleted(),
+                    data.tradeOverhaul$getProfession().getFractionalXpAccumulator(), null);
+        }
+
+        sendContentUpdates();
+        com.unnameduser.tradeoverhaul.common.network.ModNetworking.sendInventorySync(player, this.syncId, villagerInventory);
+    }
+
+    // Проверяет, есть ли предмет В ИНВЕНТАРЕ жителя ПРЯМО СЕЙЧАС (счётчик > 0)
+    public boolean hasItemInTradeInventory(ItemStack template) {
+        if (template.isEmpty()) return false;
+        for (int i = FIRST_VILLAGER_TRADE_SLOT; i < slots.size(); i++) {
+            Slot sl = slots.get(i);
+            if (ItemStack.areItemsEqual(sl.getStack(), template) && sl.getStack().getCount() > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

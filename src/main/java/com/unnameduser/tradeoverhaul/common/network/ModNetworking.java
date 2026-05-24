@@ -27,17 +27,18 @@ public class ModNetworking {
 				}
 		);
 
-		ServerPlayNetworking.registerGlobalReceiver(
-				new Identifier(TradeOverhaulMod.MOD_ID, "craft_request"),
-				(server, player, handler, buf, responseSender) -> {
-					CraftRequestC2SPacket packet = CraftRequestC2SPacket.decode(buf);
-					server.execute(() -> {
-						// TODO: обработка крафта на сервере
-						System.out.println("[TradeOverhaul] Server received craft request: " + packet.getRecipeId() +
-								" from slot " + packet.getSelectedSlot());
-					});
+		// Server -> Client уже есть. Добавь Client -> Server:
+		ServerPlayNetworking.registerGlobalReceiver(new Identifier(TradeOverhaulMod.MOD_ID, "craft_panel_buy_request"), (server, player, handler, buf, responseSender) -> {
+			int syncId = buf.readVarInt();
+			String itemId = buf.readString();
+			int amount = buf.readByte();
+
+			server.execute(() -> {
+				if (player.currentScreenHandler.syncId == syncId && player.currentScreenHandler instanceof VillagerCraftingScreenHandler h) {
+					h.handleCraftPanelBuyRequest(player, itemId, amount);
 				}
-		);
+			});
+		});
 
 		ServerPlayNetworking.registerGlobalReceiver(
 				new Identifier(TradeOverhaulMod.MOD_ID, "repair_request"),
