@@ -36,6 +36,8 @@ public class ModNetworking {
 		// Отправка списка рецептов при подключении игрока
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
 			List<CraftRecipe> allRecipes = new ArrayList<>(RecipeManager.getInstance().getAllCraftRecipes().values());
+
+			// Отправляем ВСЕ рецепты один раз при подключении
 			AvailableRecipesPayload payload = new AvailableRecipesPayload(allRecipes);
 			PacketByteBuf buf = PacketByteBufs.create();
 			payload.write(buf);

@@ -22,6 +22,9 @@ public class RecipeManager {
     private Map<String, List<CraftRecipe>> professionCrafts = new HashMap<>();
     private Map<String, List<DisassemblyRecipe>> professionDisassembly = new HashMap<>();
 
+    private List<CraftRecipe> allServerRecipes = new ArrayList<>();
+    private boolean serverRecipesLoaded = false;
+
     private RecipeManager() {}
 
     public static RecipeManager getInstance() {
@@ -235,29 +238,6 @@ public class RecipeManager {
         }
     }
 
-    private ItemStack parseItemStack(String itemString) {
-        // Очищаем строку от возможных пробелов
-        itemString = itemString.trim();
-
-        // Убираем NBT если есть (пока не поддерживаем)
-        if (itemString.contains("{")) {
-            itemString = itemString.substring(0, itemString.indexOf("{"));
-        }
-
-        Identifier id = Identifier.tryParse(itemString);
-        if (id == null) {
-            System.err.println("[TradeOverhaul] Invalid item identifier: " + itemString);
-            return new ItemStack(Items.AIR);
-        }
-
-        var item = Registries.ITEM.get(id);
-        if (item == Items.AIR) {
-            System.err.println("[TradeOverhaul] Unknown item: " + itemString);
-        }
-
-        return new ItemStack(item);
-    }
-
     private String extractProfessionId(Path path) {
         String filename = path.getFileName().toString();
         return filename.replace(".json", "");
@@ -350,6 +330,120 @@ public class RecipeManager {
         craftRecipes.put(recipe.getId(), recipe);
     }
 
-// И переделайте loadRecipesClient, чтобы не очищать, если есть серверные данные
-// Или просто не вызывайте loadRecipesClient() при подключении к серверу
+    private boolean hasServerRecipes = false;
+
+    public void loadRecipesFromIds(List<String> recipeIds) {
+        craftRecipes.clear();
+
+        for (String id : recipeIds) {
+            // Загружаем рецепт из конфига по ID
+            CraftRecipe recipe = loadRecipeFromConfig(id);
+            if (recipe != null) {
+                craftRecipes.put(recipe.getId(), recipe);
+                TradeOverhaulMod.LOGGER.info("[TradeOverhaul] Loaded recipe from config: {}", id);
+            } else {
+                TradeOverhaulMod.LOGGER.warn("[TradeOverhaul] Recipe not found in config: {}", id);
+            }
+        }
+    }
+
+    private CraftRecipe loadRecipeFromConfig(String recipeId) {
+        // Путь к конфигу на клиенте
+        java.nio.file.Path configPath = net.fabricmc.loader.api.FabricLoader.getInstance()
+                .getConfigDir()
+                .resolve("tradeoverhaul/crafts/" + recipeId + ".json");
+
+        if (!java.nio.file.Files.exists(configPath)) {
+            TradeOverhaulMod.LOGGER.warn("[TradeOverhaul] Config file not found: {}", configPath);
+            return null;
+        }
+
+        try (java.io.Reader reader = java.nio.file.Files.newBufferedReader(configPath)) {
+            String content = java.nio.file.Files.readString(configPath);
+            com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(content).getAsJsonObject();
+            return parseCraftRecipeFromJson(json, recipeId);
+        } catch (Exception e) {
+            TradeOverhaulMod.LOGGER.error("[TradeOverhaul] Failed to load recipe {}: {}", recipeId, e.getMessage());
+            return null;
+        }
+    }
+
+    private CraftRecipe parseCraftRecipeFromJson(com.google.gson.JsonObject json, String id) {
+        try {
+            int requiredLevel = json.get("required_level").getAsInt();
+            int cost = json.get("cost").getAsInt();
+            boolean copyNbt = json.has("copy_nbt") && json.get("copy_nbt").getAsBoolean();
+
+            int uniqueIndex = -1;
+            if (json.has("unique_ingredient_index")) {
+                uniqueIndex = json.get("unique_ingredient_index").getAsInt();
+            }
+
+            String profession = null;
+            if (json.has("profession")) {
+                profession = json.get("profession").getAsString();
+            }
+
+            List<Ingredient> ingredients = new ArrayList<>();
+            json.get("ingredients").getAsJsonArray().forEach(elem -> {
+                com.google.gson.JsonObject ingJson = elem.getAsJsonObject();
+                ItemStack item = parseItemStack(ingJson.get("item").getAsString());
+                int count = ingJson.get("count").getAsInt();
+                ingredients.add(new Ingredient(item, count));
+            });
+
+            ItemStack result = parseItemStack(json.get("result").getAsString());
+
+            return new CraftRecipe(id, requiredLevel, ingredients, result, cost, copyNbt, uniqueIndex, profession);
+        } catch (Exception e) {
+            TradeOverhaulMod.LOGGER.error("[TradeOverhaul] Error parsing recipe {}: {}", id, e.getMessage());
+            return null;
+        }
+    }
+
+    private ItemStack parseItemStack(String itemString) {
+        itemString = itemString.trim();
+        if (itemString.contains("{")) {
+            itemString = itemString.substring(0, itemString.indexOf("{"));
+        }
+        net.minecraft.util.Identifier id = net.minecraft.util.Identifier.tryParse(itemString);
+        if (id == null) {
+            return new ItemStack(net.minecraft.item.Items.AIR);
+        }
+        var item = net.minecraft.registry.Registries.ITEM.get(id);
+        return new ItemStack(item);
+    }
+
+    private List<CraftRecipe> serverRecipes = new ArrayList<>();
+
+    public void setServerRecipes(List<CraftRecipe> recipes) {
+        this.serverRecipes = new ArrayList<>(recipes);
+        this.hasServerRecipes = true;
+        TradeOverhaulMod.LOGGER.info("[TradeOverhaul] Saved {} recipes from server", recipes.size());
+    }
+
+    public List<CraftRecipe> getServerRecipes() {
+        return serverRecipes;
+    }
+
+    public boolean hasServerRecipes() {
+        boolean has = serverRecipesLoaded && !allServerRecipes.isEmpty();
+        TradeOverhaulMod.LOGGER.info("[TradeOverhaul] hasServerRecipes: {} (loaded={}, size={})", has, serverRecipesLoaded, allServerRecipes.size());
+        return has;
+    }
+
+    public void clearServerRecipes() {
+        serverRecipes.clear();
+        hasServerRecipes = false;
+    }
+
+    public void setAllServerRecipes(List<CraftRecipe> recipes) {
+        this.allServerRecipes = new ArrayList<>(recipes);
+        this.serverRecipesLoaded = true;
+        TradeOverhaulMod.LOGGER.info("[TradeOverhaul] setAllServerRecipes called, size: {}, serverRecipesLoaded: {}", recipes.size(), serverRecipesLoaded);
+    }
+
+    public List<CraftRecipe> getAllServerRecipes() {
+        return allServerRecipes;
+    }
 }

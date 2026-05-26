@@ -231,6 +231,7 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         updateTabButtons();
         loadRecipes();
         createSearchField();
+        createRecipeList();
 
         refreshDamagedItems();
         createRepairPanel();
@@ -307,22 +308,8 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     }
 
     private void loadRecipes() {
-        if (recipesReceivedFromServer && !serverRecipeIds.isEmpty()) {
-            rebuildRecipesFromServerList();
-            return;
-        }
-
-        String professionId = handler.getProfessionId();
-        int level = handler.getVillagerLevel();
-        allRecipes = RecipeManager.getInstance().getCraftRecipesForProfession(professionId, level);
-        allRecipes.sort((a, b) -> {
-            int levelCompare = Integer.compare(a.getRequiredLevel(), b.getRequiredLevel());
-            if (levelCompare != 0) return levelCompare;
-            return a.getResult().getName().getString().compareToIgnoreCase(b.getResult().getName().getString());
-        });
-        availableRecipes.clear();
-        availableRecipes.addAll(allRecipes);
-        createRecipeList();
+        System.out.println("[TradeOverhaul] loadRecipes called");
+        refreshRecipesForCurrentVillager();
     }
 
     private void createRecipeList() {
@@ -335,6 +322,7 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         int listWidth = recipesPanelWidth - 4;
         int listHeight = recipesPanelHeight - 42;
 
+        // ✅ Используем availableRecipes (уже должны быть загружены)
         recipeListPanel = new RecipeListPanel(this, panelX + 2, panelY + 40, listWidth, listHeight, availableRecipes,
                 () -> onRecipeSelected(recipeListPanel.getSelectedRecipe()));
         addDrawableChild(recipeListPanel);
@@ -796,11 +784,13 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
             int buttonWidth = 60;
             int buttonHeight = 20;
 
+            // Кнопка Repair
             context.fill(buttonX, buttonY, buttonX + buttonWidth, buttonY + buttonHeight, repairEnabled ? 0xFF444444 : 0xFF333333);
             context.fill(buttonX + 1, buttonY + 1, buttonX + buttonWidth - 1, buttonY + buttonHeight - 1, repairEnabled ? 0xFF666666 : 0xFF444444);
             context.drawText(this.textRenderer, Text.literal("Repair"), buttonX + (buttonWidth / 2) - (this.textRenderer.getWidth("Repair") / 2), buttonY + 6, repairEnabled ? 0xFFFFFF : 0x888888, false);
             repairButtonBounds = new net.minecraft.client.util.math.Rect2i(buttonX, buttonY, buttonWidth, buttonHeight);
 
+            // Кнопка Repair All
             int repairAllButtonY = buttonY + buttonHeight + 5;
             int totalCost = getTotalRepairCost();
             repairAllEnabled = NumismaticHelper.getTotalMoney(this.client.player) >= totalCost && !damagedItems.isEmpty();
@@ -810,6 +800,7 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
             context.drawText(this.textRenderer, Text.literal("Repair All"), buttonX + (buttonWidth / 2) - (this.textRenderer.getWidth("Repair All") / 2), repairAllButtonY + 6, repairAllEnabled ? 0xFFFFFF : 0x888888, false);
             repairAllButtonBounds = new net.minecraft.client.util.math.Rect2i(buttonX, repairAllButtonY, buttonWidth, buttonHeight);
 
+            // Информация о выбранном предмете
             if (repairPanel != null && repairPanel.getSelectedItem() != null) {
                 DamagedItem selected = repairPanel.getSelectedItem();
                 int startX = rightPanelX + rightPanelWidth / 2;
@@ -827,20 +818,12 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
 
                 int durabilityPercent = (int) ((1.0 - (double) selected.getCurrentDamage() / selected.getMaxDamage()) * 100);
                 String durabilityText = "Durability";
-                context.drawText(this.textRenderer, Text.literal(durabilityText), centeredX, startY + 55, 0xCCCCCC, false);
+                context.drawText(this.textRenderer, Text.literal(durabilityText), startX - (this.textRenderer.getWidth(durabilityText) / 2), startY + 55, 0xCCCCCC, false);
                 String durabilityPercentText = String.format("%d%%", durabilityPercent);
-                context.drawText(this.textRenderer, Text.literal(durabilityPercentText), centeredX, startY + 65, 0xCCCCCC, false);
+                context.drawText(this.textRenderer, Text.literal(durabilityPercentText), startX - (this.textRenderer.getWidth(durabilityPercentText) / 2), startY + 65, 0xCCCCCC, false);
 
                 String costText = String.format("Cost: %d copper", selected.getRepairCost());
-                context.drawText(this.textRenderer, Text.literal(costText), centeredX - (this.textRenderer.getWidth(costText) / 2), startY + 85, 0xFFFFAA, false);
-
-                if (!repairEnabled && repairButtonBounds != null &&
-                        mouseX >= repairButtonBounds.getX() && mouseX <= repairButtonBounds.getX() + repairButtonBounds.getWidth() &&
-                        mouseY >= repairButtonBounds.getY() && mouseY <= repairButtonBounds.getY() + repairButtonBounds.getHeight()) {
-                    List<Text> tooltip = new ArrayList<>();
-                    tooltip.add(Text.literal("§cNeed " + selected.getRepairCost() + " copper"));
-                    context.drawTooltip(this.textRenderer, tooltip, mouseX, mouseY);
-                }
+                context.drawText(this.textRenderer, Text.literal(costText), startX - (this.textRenderer.getWidth(costText) / 2), startY + 85, 0xFFFFAA, false);
             } else {
                 int startX = rightPanelX + 10;
                 int startY = rightPanelY + 10;
@@ -848,17 +831,39 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                 context.drawText(this.textRenderer, Text.literal("Click on a damaged item"), startX, startY + 15, 0x888888, false);
             }
 
-            if (!repairAllEnabled && repairAllButtonBounds != null && !damagedItems.isEmpty() &&
-                    mouseX >= repairAllButtonBounds.getX() && mouseX <= repairAllButtonBounds.getX() + repairAllButtonBounds.getWidth() &&
-                    mouseY >= repairAllButtonBounds.getY() && mouseY <= repairAllButtonBounds.getY() + repairAllButtonBounds.getHeight()) {
+            // Деньги игрока
+            int playerMoney = NumismaticHelper.getTotalMoney(this.client.player);
+            drawCurrencyWithIcons(context, playerMoney, x + this.inventoryX, inventoryY + INV_LABEL_Y - 4);
+
+            // ===== ТУЛТИПЫ ДЛЯ КНОПОК (ДОБАВЛЕНО) =====
+
+            // Тултип для кнопки Repair
+            if (repairButtonBounds != null && repairPanel != null && repairPanel.getSelectedItem() != null &&
+                    mouseX >= repairButtonBounds.getX() && mouseX <= repairButtonBounds.getX() + repairButtonBounds.getWidth() &&
+                    mouseY >= repairButtonBounds.getY() && mouseY <= repairButtonBounds.getY() + repairButtonBounds.getHeight()) {
                 List<Text> tooltip = new ArrayList<>();
-                tooltip.add(Text.literal("§cNeed " + totalCost + " copper to repair all"));
+                String formattedCost = formatMoney(repairPanel.getSelectedItem().getRepairCost());
+                if (repairEnabled) {
+                    tooltip.add(Text.literal("§aClick to repair for " + formattedCost));
+                } else {
+                    tooltip.add(Text.literal("§cNeed " + formattedCost + " to repair"));
+                }
                 context.drawTooltip(this.textRenderer, tooltip, mouseX, mouseY);
             }
 
-            //context.drawText(this.textRenderer, this.playerInventoryLabel, x + this.inventoryX, y + this.titleY, 0xFFFFFF, true);
-            int playerMoney = NumismaticHelper.getTotalMoney(this.client.player);
-            drawCurrencyWithIcons(context, playerMoney, x + this.inventoryX, inventoryY + INV_LABEL_Y - 4);
+            // Тултип для кнопки Repair All
+            if (repairAllButtonBounds != null && !damagedItems.isEmpty() &&
+                    mouseX >= repairAllButtonBounds.getX() && mouseX <= repairAllButtonBounds.getX() + repairAllButtonBounds.getWidth() &&
+                    mouseY >= repairAllButtonBounds.getY() && mouseY <= repairAllButtonBounds.getY() + repairAllButtonBounds.getHeight()) {
+                List<Text> tooltip = new ArrayList<>();
+                String formattedCost = formatMoney(totalCost);
+                if (repairAllEnabled) {
+                    tooltip.add(Text.literal("§aClick to repair all items for " + formattedCost));
+                } else {
+                    tooltip.add(Text.literal("§cNeed " + formattedCost + " to repair all items"));
+                }
+                context.drawTooltip(this.textRenderer, tooltip, mouseX, mouseY);
+            }
         }
     }
 
@@ -1299,17 +1304,30 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         isFilterActive = false;
         filteredItem = ItemStack.EMPTY;
         filteredSlot = -1;
+
         availableRecipes.clear();
-        availableRecipes.addAll(allRecipes);
-        if (recipeListPanel != null) recipeListPanel.updateRecipes(availableRecipes);
+        availableRecipes.addAll(allRecipes);  // allRecipes теперь содержит серверные рецепты
+
+        if (recipeListPanel != null) {
+            recipeListPanel.updateRecipes(availableRecipes);
+        }
+
         currentRecipe = null;
         selectedRecipeIndex = -1;
-        if (recipeListPanel != null) recipeListPanel.setSelectedIndex(-1);
+        if (recipeListPanel != null) {
+            recipeListPanel.setSelectedIndex(-1);
+        }
+
         hasSelectedItem = false;
         selectedItemStack = ItemStack.EMPTY;
         selectedItemSlot = -1;
         selectedInventoryIndex = -1;
-        if (searchField != null) searchField.setText("");
+
+        if (searchField != null) {
+            searchField.setText("");
+        }
+
+        System.out.println("[TradeOverhaul] All filters reset, available recipes: " + availableRecipes.size());
     }
 
     private boolean isSelectedItemDamaged() {
@@ -1522,37 +1540,40 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         return mouseX >= px && mouseX <= px + panelW && mouseY >= py && mouseY <= py + panelH;
     }
 
-    @Override
-    protected List<Text> getTooltipFromItem(ItemStack stack) {
-        List<Text> list = super.getTooltipFromItem(stack);
-
-        if (currentTab == TabType.TRADE && !stack.isEmpty()) {
-            // Находим слот, который сейчас под курсором
-            for (Slot slot : handler.slots) {
-                if (slot.getStack() == stack && slot.x >= 0) {
-                    int idx = slot.id;
-
-                    // Предметы жителя -> цена покупки
-                    if (idx >= VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT) {
-                        int price = handler.getClientBuyPrice(idx);
-                        if (price > 0) {
-                            list.add(Text.literal("§aBuy: " + price + " copper"));
-                        }
-                    }
-                    // Предметы игрока -> цена продажи
-                    else {
-                        if (handler.canVillagerBuyItem(stack)) {
-                            int price = handler.getClientSellPrice(stack);
-                            if (price > 0) {
-                                list.add(Text.literal("§eSell: " + price + " copper"));
-                            }
-                        }
-                    }
-                    break;
-                }
+    // Максимальное место в инвентаре игрока для стака предметов
+    private int getMaxInventorySpaceForStack(ItemStack template) {
+        int maxStack = template.getMaxCount();
+        int space = 0;
+        PlayerInventory inv = client.player.getInventory();
+        for (int i = 0; i < inv.size(); i++) {
+            ItemStack s = inv.getStack(i);
+            if (s.isEmpty()) {
+                space += maxStack;
+            } else if (ItemStack.areItemsEqual(s, template) && s.getCount() < maxStack) {
+                space += maxStack - s.getCount();
             }
+            if (space >= 64) break; // reasonable limit
         }
-        return list;
+        return space;
+    }
+
+    // Максимальное место в инвентаре жителя для стака предметов
+    private int getMaxVillagerSpaceForStack(ItemStack template) {
+        int maxStack = template.getMaxCount();
+        int space = 0;
+        var villagerInv = handler.getVillagerInventory();
+        if (villagerInv == null) return 0;
+
+        for (int i = 0; i < villagerInv.size(); i++) {
+            ItemStack s = villagerInv.getStack(i);
+            if (s.isEmpty()) {
+                space += maxStack;
+            } else if (ItemStack.areItemsEqual(s, template) && s.getCount() < maxStack) {
+                space += maxStack - s.getCount();
+            }
+            if (space >= 64) break;
+        }
+        return space;
     }
 
     private void filterRecipes(String searchText) {
@@ -1573,9 +1594,13 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     }
 
     private void drawCurrencyWithIcons(DrawContext context, int totalCopper, int x, int y) {
+        int currentX = x + 4;
+        int iconSize = 16;
+        float scale = 0.7f; // Уменьшенный шрифт
+
         if (totalCopper == 0) {
-            context.drawTexture(NUM_COPPER, x, y, 0, 0, 10, 10, 16, 16);
-            drawScaledText(context, "0", x + 12, y + 2, 0.7f);
+            context.drawTexture(NUM_COPPER, currentX, y, 0, 0, iconSize, iconSize, 16, 16);
+            drawScaledText(context, "0", currentX + iconSize, y + 6, scale);
             return;
         }
 
@@ -1584,10 +1609,8 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         int s = (totalCopper % 10000) / 100;
         int c = totalCopper % 100;
 
-        int currentX = x + 4;
-        int iconSize = 16;
+        currentX = x + 4;
         int gap = 4;
-        float scale = 0.7f; // Уменьшенный шрифт
 
         // Золото
         if (g > 0) {
@@ -1811,55 +1834,245 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
 
     // Пересборка списка рецептов на основе серверных ID
     private void rebuildRecipesFromServerList() {
+        System.out.println("[TradeOverhaul] rebuildRecipesFromServerList called");
+        System.out.println("[TradeOverhaul] recipesReceivedFromServer: " + recipesReceivedFromServer);
+        System.out.println("[TradeOverhaul] serverRecipeIds size: " + serverRecipeIds.size());
+
+        if (!recipesReceivedFromServer || serverRecipeIds.isEmpty()) {
+            return;
+        }
+
         RecipeManager manager = RecipeManager.getInstance();
         availableRecipes.clear();
 
         for (String id : serverRecipeIds) {
             CraftRecipe recipe = manager.getCraftRecipeById(id);
             if (recipe != null) {
+                System.out.println("[TradeOverhaul] Found recipe: " + id);
                 availableRecipes.add(recipe);
             } else {
-                TradeOverhaulMod.LOGGER.warn("[TradeOverhaul] Recipe {} not found on client (missing config?)", id);
+                System.out.println("[TradeOverhaul] Recipe NOT found: " + id);
             }
         }
 
-        // Сортируем как обычно
+        System.out.println("[TradeOverhaul] Total available recipes: " + availableRecipes.size());
+
         availableRecipes.sort((a, b) -> {
             int levelCompare = Integer.compare(a.getRequiredLevel(), b.getRequiredLevel());
             if (levelCompare != 0) return levelCompare;
             return a.getResult().getName().getString().compareToIgnoreCase(b.getResult().getName().getString());
         });
 
-        // Обновляем панель
         if (recipeListPanel != null) {
             recipeListPanel.updateRecipes(availableRecipes);
-        }
-
-        // Сбрасываем текущий выбор, если он больше не валиден
-        if (currentRecipe != null && !availableRecipes.contains(currentRecipe)) {
-            currentRecipe = null;
-            selectedRecipeIndex = -1;
+            System.out.println("[TradeOverhaul] Recipe panel updated");
+        } else {
+            System.out.println("[TradeOverhaul] Recipe panel is null!");
         }
     }
 
-    // ✅ Этот метод вызывается из ClientModInitializer, когда пришёл пакет с сервера
-// Он обновляет список рецептов на клиенте
+    private String formatMoney(int copper) {
+        int gold = copper / 10000;
+        int silver = (copper % 10000) / 100;
+        int remainingCopper = copper % 100;
+
+        StringBuilder sb = new StringBuilder();
+
+        if (gold > 0) {
+            sb.append(gold).append("g");
+            if (silver > 0 || remainingCopper > 0) sb.append(" ");
+        }
+        if (silver > 0) {
+            sb.append(silver).append("s");
+            if (remainingCopper > 0) sb.append(" ");
+        }
+        if (remainingCopper > 0 || (gold == 0 && silver == 0)) {
+            sb.append(remainingCopper).append("c");
+        }
+
+        return sb.toString();
+    }
+
+    // Добавьте этот метод в класс VillagerInteractionScreen
+
+    /**
+     * Вызывается при получении списка ID рецептов от сервера
+     * @param recipeIds Список ID рецептов, доступных для этого жителя
+     */
+    public void onAvailableRecipeIdsReceived(List<String> recipeIds) {
+        System.out.println("[TradeOverhaul] onAvailableRecipeIdsReceived called with " + recipeIds.size() + " ids");
+        if (recipeIds == null || recipeIds.isEmpty()) {
+            System.out.println("[TradeOverhaul] Recipe ids list is empty!");
+            return;
+        }
+
+        this.serverRecipeIds = new ArrayList<>(recipeIds);
+        this.recipesReceivedFromServer = true;
+
+        for (String id : recipeIds) {
+            System.out.println("[TradeOverhaul] Processing recipe ID: " + id);
+        }
+
+        rebuildRecipesFromServerList();
+    }
+
+    @Override
+    protected List<Text> getTooltipFromItem(ItemStack stack) {
+        List<Text> list = super.getTooltipFromItem(stack);
+
+        if (currentTab == TabType.TRADE && !stack.isEmpty()) {
+            // Находим слот, который сейчас под курсором
+            for (Slot slot : handler.slots) {
+                if (slot.getStack() == stack && slot.x >= 0) {
+                    int idx = slot.id;
+                    boolean shiftPressed = net.minecraft.client.gui.screen.Screen.hasShiftDown();
+                    boolean ctrlPressed = net.minecraft.client.gui.screen.Screen.hasControlDown();
+
+                    // Предметы жителя -> цена покупки
+                    if (idx >= VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT) {
+                        int pricePerOne = handler.getClientBuyPrice(idx);
+                        if (pricePerOne > 0) {
+                            int stackSize = stack.getCount();
+                            int playerMoney = NumismaticHelper.getTotalMoney(this.client.player);
+
+                            // Расчёт максимально возможного количества для покупки
+                            int maxCanBuy = playerMoney / pricePerOne;
+                            int maxFit = getMaxInventorySpaceForStack(stack);
+
+                            int desiredAmount = 1;
+                            if (ctrlPressed) {
+                                desiredAmount = Math.min(10, stackSize);
+                            } else if (shiftPressed) {
+                                desiredAmount = stackSize;
+                            }
+
+                            // Ограничиваем деньгами и местом в инвентаре
+                            int amount = Math.min(desiredAmount, Math.min(maxCanBuy, maxFit));
+                            if (amount <= 0) amount = 1;
+
+                            int totalPrice = pricePerOne * amount;
+                            boolean canAfford = playerMoney >= totalPrice;
+                            String color = canAfford ? "§a" : "§c";
+
+                            String amountText = "";
+                            if (amount == stackSize && (shiftPressed || (ctrlPressed && stackSize <= 10))) {
+                                amountText = " (all)";
+                            } else if (amount > 1) {
+                                amountText = " (" + amount + ")";
+                            }
+
+                            String priceText = formatMoney(totalPrice);
+                            list.add(Text.literal(color + "Buy" + amountText + ": " + priceText));
+                        }
+                    }
+                    // Предметы игрока -> цена продажи
+                    else if (idx >= VillagerCraftingScreenHandler.FIRST_MAIN_GRID_SLOT_INDEX &&
+                            idx < VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT) {
+                        if (handler.canVillagerBuyItem(stack)) {
+                            int pricePerOne = handler.getClientSellPrice(stack);
+                            if (pricePerOne > 0) {
+                                int stackSize = stack.getCount();
+                                int villagerMoney = handler.getSyncedWallet();
+
+                                // Расчёт максимально возможного количества для продажи
+                                int maxCanBuy = villagerMoney / pricePerOne;
+                                int maxFit = getMaxVillagerSpaceForStack(stack);
+
+                                int desiredAmount = 1;
+                                if (ctrlPressed) {
+                                    desiredAmount = Math.min(10, stackSize);
+                                } else if (shiftPressed) {
+                                    desiredAmount = stackSize;
+                                }
+
+                                // Ограничиваем деньгами жителя и местом в его инвентаре
+                                int amount = Math.min(desiredAmount, Math.min(maxCanBuy, maxFit));
+                                if (amount <= 0) amount = 1;
+
+                                int totalPrice = pricePerOne * amount;
+                                boolean canAfford = villagerMoney >= totalPrice;
+                                String color = canAfford ? "§a" : "§c";
+
+                                String amountText = "";
+                                if (amount == stackSize && (shiftPressed || (ctrlPressed && stackSize <= 10))) {
+                                    amountText = " (all)";
+                                } else if (amount > 1) {
+                                    amountText = " (" + amount + ")";
+                                }
+
+                                String priceText = formatMoney(totalPrice);
+                                list.add(Text.literal(color + "Sell" + amountText + ": " + priceText));
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        return list;
+    }
+
     public void onAvailableRecipesReceived(List<CraftRecipe> recipes) {
         availableRecipes.clear();
         availableRecipes.addAll(recipes);
 
-        // Сортировка
         availableRecipes.sort((a, b) -> {
             int levelCompare = Integer.compare(a.getRequiredLevel(), b.getRequiredLevel());
             if (levelCompare != 0) return levelCompare;
             return a.getResult().getName().getString().compareToIgnoreCase(b.getResult().getName().getString());
         });
 
-        // Обновляем панель рецептов
         if (recipeListPanel != null) {
             recipeListPanel.updateRecipes(availableRecipes);
         }
 
-        System.out.println("[TradeOverhaul] Received " + recipes.size() + " recipes from server");
+        TradeOverhaulMod.LOGGER.info("[TradeOverhaul] Received {} full recipes from server", recipes.size());
+    }
+
+    public void refreshRecipesForCurrentVillager() {
+        System.out.println("[TradeOverhaul] refreshRecipesForCurrentVillager called");
+
+        RecipeManager manager = RecipeManager.getInstance();
+        if (!manager.hasServerRecipes()) {
+            System.out.println("[TradeOverhaul] No server recipes yet");
+            return;
+        }
+
+        String professionId = handler.getProfessionId();
+
+        System.out.println("[TradeOverhaul] Profession: " + professionId);
+        System.out.println("[TradeOverhaul] Total server recipes: " + manager.getAllServerRecipes().size());
+
+        allRecipes.clear();
+        availableRecipes.clear();
+
+        for (CraftRecipe recipe : manager.getAllServerRecipes()) {
+            String recipeProfession = recipe.getProfession();
+            // ❌ Убрана проверка на уровень - показываем все рецепты для профессии
+            if (recipeProfession == null || recipeProfession.equals(professionId)) {
+                allRecipes.add(recipe);
+                System.out.println("[TradeOverhaul] Added recipe: " + recipe.getId() + " (level " + recipe.getRequiredLevel() + ")");
+            }
+        }
+
+        // Сортировка по уровню, затем по имени
+        allRecipes.sort((a, b) -> {
+            int levelCompare = Integer.compare(a.getRequiredLevel(), b.getRequiredLevel());
+            if (levelCompare != 0) return levelCompare;
+            return a.getResult().getName().getString().compareToIgnoreCase(b.getResult().getName().getString());
+        });
+
+        availableRecipes.clear();
+        availableRecipes.addAll(allRecipes);
+
+        // Обновляем панель, если она уже создана
+        if (recipeListPanel != null) {
+            recipeListPanel.updateRecipes(availableRecipes);
+            System.out.println("[TradeOverhaul] Updated existing recipeListPanel");
+        } else {
+            System.out.println("[TradeOverhaul] recipeListPanel is null, will be created later in createRecipeList()");
+        }
+
+        System.out.println("[TradeOverhaul] Final available recipes: " + availableRecipes.size());
     }
 }

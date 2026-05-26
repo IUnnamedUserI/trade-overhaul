@@ -69,25 +69,6 @@ public class TradeOverhaulMod implements ModInitializer {
 			});
 		});
 
-		ServerPlayNetworking.registerGlobalReceiver(new Identifier(MOD_ID, "trade_action"), (server, player, handler, buf, responseSender) -> {
-			int syncId = buf.readInt();
-			int slotIndex = buf.readInt();
-			boolean buying = buf.readBoolean();
-			boolean sellWholeStack = buf.readBoolean();
-			boolean buyWholeStack = buf.readBoolean();
-			boolean buyTen = buf.readBoolean();
-
-			server.execute(() -> {
-				if (player.currentScreenHandler instanceof VillagerCraftingScreenHandler craftingHandler && craftingHandler.syncId == syncId) {
-					if (buying) {
-						craftingHandler.handleTradePurchase(player, slotIndex, buyWholeStack, buyTen);
-					} else {
-						craftingHandler.handleTradeSell(player, slotIndex, sellWholeStack, buyTen);
-					}
-				}
-			});
-		});
-
 		LOGGER.info("Registering commands...");
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			dispatcher.register(

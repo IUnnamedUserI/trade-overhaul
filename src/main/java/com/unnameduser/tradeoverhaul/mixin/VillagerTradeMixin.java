@@ -2,6 +2,7 @@ package com.unnameduser.tradeoverhaul.mixin;
 
 import com.unnameduser.tradeoverhaul.client.gui.VillagerTradeScreenHandlerFactory;
 import com.unnameduser.tradeoverhaul.common.VillagerTradeData;
+import com.unnameduser.tradeoverhaul.screen.VillagerCraftingScreenHandlerFactory;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.village.VillagerProfession;
@@ -29,7 +30,7 @@ public abstract class VillagerTradeMixin {
                 villager.setVelocity(0, villager.getVelocity().y, 0);
 
                 // 3. Открываем наше GUI
-                player.openHandledScreen(new VillagerTradeScreenHandlerFactory(villager.getDisplayName(), villager));
+                player.openHandledScreen(new VillagerCraftingScreenHandlerFactory(villager.getDisplayName(), villager));
 
                 // 4. Отменяем ванильное/МКА торговое меню
                 ci.cancel();

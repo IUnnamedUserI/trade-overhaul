@@ -180,12 +180,12 @@ public class RecipeListPanel extends ClickableWidget {
             List<Ingredient> ingredients = recipe.getIngredients();
 
             // 1. Проверка уровня жителя
-            if (parent != null && parent.getCraftingHandler() != null) {
-                int villagerLevel = parent.getCraftingHandler().getVillagerLevel();
-                if (recipe.getRequiredLevel() > villagerLevel) {
-                    return false;
-                }
-            }
+//            if (parent != null && parent.getCraftingHandler() != null) {
+//                int villagerLevel = parent.getCraftingHandler().getVillagerLevel();
+//                if (recipe.getRequiredLevel() > villagerLevel) {
+//                    return false;
+//                }
+//            }
 
             // 2. Проверка валюты
             int cost = recipe.getCost();

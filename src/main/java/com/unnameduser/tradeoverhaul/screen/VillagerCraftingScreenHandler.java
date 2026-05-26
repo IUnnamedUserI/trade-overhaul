@@ -26,12 +26,10 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.recipe.CraftingRecipe;
 import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
@@ -40,7 +38,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class VillagerCraftingScreenHandler extends ScreenHandler {
 
@@ -74,16 +71,30 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
     private Map<String, Float> clientDamageReputation = new HashMap<>();
 
     // === Клиентский конструктор ===
+    // === Клиентский конструктор ===
     public VillagerCraftingScreenHandler(int syncId, PlayerInventory playerInventory, PacketByteBuf buf) {
         super(TradeOverhaulMod.VILLAGER_CRAFTING_SCREEN_HANDLER, syncId);
         this.playerInventory = playerInventory;
         this.villager = null;
 
-        this.villagerLevel = buf.readVarInt();
-        this.professionId = buf.readString();
-        this.villagerEntityId = buf.readVarInt();
+        System.out.println("[TradeOverhaul] Client constructor called, buffer readable bytes: " + buf.readableBytes());
 
+        this.villagerEntityId = buf.readInt();
+        System.out.println("[TradeOverhaul] Read villagerEntityId: " + villagerEntityId);
+
+        this.professionId = buf.readString();
+        System.out.println("[TradeOverhaul] Read professionId: " + professionId);
+
+        this.villagerLevel = buf.readInt();
+        System.out.println("[TradeOverhaul] Read villagerLevel: " + villagerLevel);
+
+        // ВРЕМЕННО: не читаем инвентарь
         this.villagerInventory = new VillagerInventoryComponent();
+        // int inventorySize = buf.readInt();
+        // for (int i = 0; i < inventorySize; i++) {
+        //     villagerInventory.setStack(i, buf.readItemStack());
+        // }
+
         this.clientWalletHolder[0] = 0;
         this.clientProfessionLevel = this.villagerLevel;
         this.clientProfessionExperience = 0;
@@ -98,11 +109,6 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         addPlayerInventory(playerInventory);
         addVillagerTradeSlots();
         initPropertyDelegate();
-
-        // Отправляем рецепты клиенту (только на сервере)
-        if (villager != null && playerInventory.player instanceof net.minecraft.server.network.ServerPlayerEntity serverPlayer) {
-            serverPlayer.getServer().execute(() -> sendAvailableRecipesToClient(serverPlayer));
-        }
     }
 
     // === Серверный конструктор ===
@@ -125,6 +131,7 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
             this.clientProfessionTradesCompleted = data.tradeOverhaul$getProfession().getTradesCompleted();
             this.clientFractionalXp = data.tradeOverhaul$getProfession().getFractionalXpAccumulator();
             this.clientSoldItemsTracker = new HashMap<>(data.tradeOverhaul$getProfession().soldItemsTracker);
+            this.clientDamageReputation = new HashMap<>(data.tradeOverhaul$getProfession().damageReputation);
         } else {
             this.villagerInventory = new VillagerInventoryComponent();
             this.clientWalletHolder[0] = 0;
@@ -239,6 +246,20 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         return clientProfessionExperience;
     }
 
+    public int getProfessionTradesCompleted() {
+        if (villager instanceof VillagerTradeData data) {
+            return data.tradeOverhaul$getProfession().getTradesCompleted();
+        }
+        return clientProfessionTradesCompleted;
+    }
+
+    public float getProfessionFractionalXp() {
+        if (villager instanceof VillagerTradeData data) {
+            return data.tradeOverhaul$getProfession().getFractionalXpAccumulator();
+        }
+        return clientFractionalXp;
+    }
+
     public int getXpForNextLevel() {
         int level = getProfessionLevel();
         if (level >= 5) return 0;
@@ -278,7 +299,6 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
 
     public boolean canVillagerBuyItem(ItemStack stack) {
         if (stack.isEmpty() || professionFile == null) return false;
-        // ✅ Клиентская проверка без villager
         if (villager == null) {
             String itemId = Registries.ITEM.getId(stack.getItem()).toString();
             return professionFile.isItemSoldByVillager(itemId);
@@ -455,7 +475,6 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         ItemStack villagerStack = villagerInventory.getStack(sl.getIndex());
         if (villagerStack.isEmpty()) return;
 
-        // ✅ ПОЛУЧАЕМ ID ДО ИЗМЕНЕНИЙ
         String itemId = Registries.ITEM.getId(villagerStack.getItem()).toString();
         boolean wasPlayerSold = ItemTagHelper.isPlayerSold(villagerStack);
 
@@ -482,7 +501,6 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         int totalCost = toBuy * price;
         NumismaticHelper.removeMoney(player, totalCost);
 
-        // ✅ Теперь decrement безопасен - ID уже сохранён
         villagerStack.decrement(toBuy);
 
         if (villager instanceof VillagerTradeData data) {
@@ -520,7 +538,6 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         ItemStack item = sl.getStack();
         if (item.isEmpty() || !TradePricing.canVillagerBuyItem(item, villager, professionFile)) return;
 
-        // ✅ ПОЛУЧАЕМ ID ДО ИЗМЕНЕНИЙ
         String itemId = Registries.ITEM.getId(item.getItem()).toString();
         boolean wasVillagerSold = ItemTagHelper.isVillagerSold(item);
         boolean isSoldByVillager = professionFile.isItemSoldByVillager(itemId);
@@ -539,7 +556,7 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         if (toSell <= 0) return;
 
         if (!insertItemCountIntoVillager(item, toSell)) return;
-        item.decrement(toSell);  // ✅ ТЕПЕРЬ ЭТО БЕЗОПАСНО - ID уже сохранён
+        item.decrement(toSell);
 
         int totalEarned = toSell * sellPrice;
         if (!data.tradeOverhaul$getCurrency().removeMoney(totalEarned)) return;
@@ -567,10 +584,8 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
     public void handleDisassembleRequest(ServerPlayerEntity player, int handlerSlotIndex) {
         if (!DisassemblyConfig.isLoaded()) DisassemblyConfig.load();
 
-        // ✅ ТОЧНАЯ КОНВЕРТАЦИЯ (исправляет инверсию брони)
         int playerInvIndex;
         if (handlerSlotIndex < 5) {
-            // Порядок в addPlayerInventory: {39(Head), 38(Chest), 37(Legs), 36(Feet), 40(Offhand)}
             int[] armorMap = {39, 38, 37, 36, 40};
             playerInvIndex = armorMap[handlerSlotIndex];
         } else {
@@ -582,7 +597,7 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         PlayerInventory inv = player.getInventory();
         ItemStack item = inv.getStack(playerInvIndex);
         if (item.isEmpty()) return;
-        if (!DisassemblyConfig.isDisassemblyAllowed(item.getItem())) return; // Тихий отказ
+        if (!DisassemblyConfig.isDisassemblyAllowed(item.getItem())) return;
 
         CraftingRecipe recipe = findCraftingRecipe(item, player.getWorld());
         if (recipe == null) return;
@@ -716,13 +731,11 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
     }
 
     public void handleCraftPanelBuyRequest(ServerPlayerEntity player, String itemId, int amount) {
-        // ✅ На сервере this.villager уже содержит ссылку на сущность (из серверного конструктора)
         if (!(this.villager instanceof VillagerTradeData data) || professionFile == null) return;
 
         Item item = Registries.ITEM.get(Identifier.tryParse(itemId));
         if (item == null) return;
 
-        // Находим слот в инвентаре жителя
         int slotIndex = -1;
         for (int i = 0; i < villagerInventory.size(); i++) {
             if (ItemStack.areItemsEqual(villagerInventory.getStack(i), new ItemStack(item))) {
@@ -736,11 +749,9 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         int price = TradePricing.getBuyPrice(template, professionFile);
         if (price <= 0 || NumismaticHelper.getTotalMoney(player) < price) return;
 
-        // ✅ Лог для отладки
         TradeOverhaulMod.LOGGER.info("[CraftBuy] Player {} requested {} x{} for {} copper",
                 player.getName().getString(), itemId, amount, price);
 
-        // Транзакция
         ItemStack toGive = template.copy();
         toGive.setCount(amount);
         ItemTagHelper.markAsVillagerSold(toGive);
@@ -751,7 +762,6 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         data.tradeOverhaul$getCurrency().addMoney(price);
         data.tradeOverhaul$getProfession().markAsTraded();
 
-        // XP
         boolean wasPlayerSold = ItemTagHelper.isPlayerSold(toGive);
         if (!wasPlayerSold) {
             data.tradeOverhaul$getProfession().applyXpFromSale(itemId, amount, professionFile);
@@ -769,7 +779,6 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         com.unnameduser.tradeoverhaul.common.network.ModNetworking.sendInventorySync(player, this.syncId, villagerInventory);
     }
 
-    // Проверяет, есть ли предмет В ИНВЕНТАРЕ жителя ПРЯМО СЕЙЧАС (счётчик > 0)
     public boolean hasItemInTradeInventory(ItemStack template) {
         if (template.isEmpty()) return false;
         for (int i = FIRST_VILLAGER_TRADE_SLOT; i < slots.size(); i++) {
@@ -781,37 +790,6 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         return false;
     }
 
-    // ✅ Отправляет клиенту список ID рецептов для этой профессии (ИСПРАВЛЕННЫЙ)
-    public void sendAvailableRecipesToClient(net.minecraft.server.network.ServerPlayerEntity player) {
-        if (professionFile == null) return;
-
-        RecipeManager manager = RecipeManager.getInstance();
-        java.util.List<String> validIds = new java.util.ArrayList<>();
-
-        // Фильтрация: по уровню и профессии
-        for (java.util.Map.Entry<String, CraftRecipe> entry : manager.getAllCraftRecipes().entrySet()) {
-            CraftRecipe recipe = entry.getValue();
-
-            // 1. Проверяем уровень
-            if (recipe.getRequiredLevel() <= villagerLevel) {
-                // 2. Проверяем профессию: если у рецепта нет профессии (null) или она совпадает
-                String recipeProf = recipe.getProfession(); // Используем РЕАЛЬНЫЙ метод из твоего CraftRecipe
-                if (recipeProf == null || recipeProf.equals(professionId)) {
-                    validIds.add(entry.getKey());
-                }
-            }
-        }
-
-        // Отправляем пакет (старая сеть)
-        net.minecraft.network.PacketByteBuf buf = net.fabricmc.fabric.api.networking.v1.PacketByteBufs.create();
-        buf.writeVarInt(validIds.size());
-        for (String id : validIds) {
-            buf.writeString(id);
-        }
-        net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(
-                player,
-                new Identifier("tradeoverhaul", "available_recipes"),
-                buf
-        );
-    }
+    public VillagerEntity getVillager() { return villager; }
+    public VillagerInventoryComponent getVillagerInventory() { return villagerInventory; }
 }
