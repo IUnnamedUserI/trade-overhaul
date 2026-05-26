@@ -702,8 +702,8 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
             if (showRecipesPanel && isFilterActive && !filteredItem.isEmpty()) {
                 int panelX = x + this.recipesX - 30;
                 int panelY = y + this.panelY - 30;
-                String filterText = "Filter: " + filteredItem.getItem().getName().getString();
-                context.drawText(this.textRenderer, Text.literal(filterText), panelX + 5, panelY + 30, 0xFFFFAA, false);
+                //String filterText = "Filter: " + filteredItem.getItem().getName().getString();
+                //context.drawText(this.textRenderer, Text.literal(filterText), panelX + 5, panelY + 30, 0xFFFFAA, false);
             }
 
             super.render(context, mouseX, mouseY, delta);

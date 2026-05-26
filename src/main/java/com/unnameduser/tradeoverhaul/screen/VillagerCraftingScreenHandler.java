@@ -71,37 +71,52 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
     private Map<String, Float> clientDamageReputation = new HashMap<>();
 
     // === Клиентский конструктор ===
-    // === Клиентский конструктор ===
     public VillagerCraftingScreenHandler(int syncId, PlayerInventory playerInventory, PacketByteBuf buf) {
         super(TradeOverhaulMod.VILLAGER_CRAFTING_SCREEN_HANDLER, syncId);
         this.playerInventory = playerInventory;
         this.villager = null;
 
-        System.out.println("[TradeOverhaul] Client constructor called, buffer readable bytes: " + buf.readableBytes());
-
+        // 1. ID жителя
         this.villagerEntityId = buf.readInt();
-        System.out.println("[TradeOverhaul] Read villagerEntityId: " + villagerEntityId);
 
+        // 2. Профессия
         this.professionId = buf.readString();
-        System.out.println("[TradeOverhaul] Read professionId: " + professionId);
 
+        // 3. Уровень (ванильный)
         this.villagerLevel = buf.readInt();
-        System.out.println("[TradeOverhaul] Read villagerLevel: " + villagerLevel);
 
-        // ВРЕМЕННО: не читаем инвентарь
+        // 4. Читаем данные опыта
+        this.clientProfessionLevel = buf.readInt();
+        this.clientProfessionExperience = buf.readInt();
+        this.clientProfessionTradesCompleted = buf.readInt();
+        this.clientFractionalXp = buf.readFloat();
+
+        // Читаем трекер проданных предметов
+        NbtCompound soldTracker = buf.readNbt();
+        if (soldTracker != null) {
+            this.clientSoldItemsTracker.clear();
+            for (String key : soldTracker.getKeys()) {
+                this.clientSoldItemsTracker.put(key, soldTracker.getInt(key));
+            }
+        }
+
+        // Читаем репутацию урона
+        NbtCompound damageRep = buf.readNbt();
+        if (damageRep != null) {
+            this.clientDamageReputation.clear();
+            for (String key : damageRep.getKeys()) {
+                this.clientDamageReputation.put(key, damageRep.getFloat(key));
+            }
+        }
+
+        // 5. Инвентарь жителя
         this.villagerInventory = new VillagerInventoryComponent();
-        // int inventorySize = buf.readInt();
-        // for (int i = 0; i < inventorySize; i++) {
-        //     villagerInventory.setStack(i, buf.readItemStack());
-        // }
+        int inventorySize = buf.readInt();
+        for (int i = 0; i < inventorySize; i++) {
+            villagerInventory.setStack(i, buf.readItemStack());
+        }
 
         this.clientWalletHolder[0] = 0;
-        this.clientProfessionLevel = this.villagerLevel;
-        this.clientProfessionExperience = 0;
-        this.clientProfessionTradesCompleted = 0;
-        this.clientFractionalXp = 0f;
-        this.clientSoldItemsTracker = new HashMap<>();
-        this.clientDamageReputation = new HashMap<>();
 
         Identifier pid = Identifier.tryParse(professionId);
         this.professionFile = pid != null ? TradeConfigLoader.getProfession(pid) : null;
@@ -225,7 +240,7 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         if (villager instanceof VillagerTradeData data) {
             return data.tradeOverhaul$getProfession().getLevel();
         }
-        return clientProfessionLevel;
+        return clientProfessionLevel; // ← теперь здесь правильное значение
     }
 
     public String getProfessionLevelName() {
@@ -243,7 +258,7 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         if (villager instanceof VillagerTradeData data) {
             return data.tradeOverhaul$getProfession().getExperience();
         }
-        return clientProfessionExperience;
+        return clientProfessionExperience; // ← теперь здесь правильное значение
     }
 
     public int getProfessionTradesCompleted() {
@@ -267,7 +282,12 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         return xpRequired[level];
     }
 
-    public float getClientFractionalXp() { return clientFractionalXp; }
+    public float getClientFractionalXp() {
+        if (villager instanceof VillagerTradeData data) {
+            return data.tradeOverhaul$getProfession().getFractionalXpAccumulator();
+        }
+        return clientFractionalXp;
+    }
 
     public int getClientBuyPrice(int screenSlot) {
         Slot sl = getSlot(screenSlot);
