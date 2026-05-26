@@ -14,7 +14,8 @@
 			"com.unnameduser.tradeoverhaul.TradeOverhaulMod"
 		],
 		"client": [
-			"com.unnameduser.tradeoverhaul.client.TradeOverhaulClient"
+			"com.unnameduser.tradeoverhaul.client.TradeOverhaulClient",
+			"com.unnameduser.tradeoverhaul.client.TradeOverhaulClientModInitializer"
 		]
 	},
 	"mixins": [

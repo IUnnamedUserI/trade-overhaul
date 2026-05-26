@@ -98,6 +98,11 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         addPlayerInventory(playerInventory);
         addVillagerTradeSlots();
         initPropertyDelegate();
+
+        // Отправляем рецепты клиенту (только на сервере)
+        if (villager != null && playerInventory.player instanceof net.minecraft.server.network.ServerPlayerEntity serverPlayer) {
+            serverPlayer.getServer().execute(() -> sendAvailableRecipesToClient(serverPlayer));
+        }
     }
 
     // === Серверный конструктор ===
@@ -450,6 +455,10 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         ItemStack villagerStack = villagerInventory.getStack(sl.getIndex());
         if (villagerStack.isEmpty()) return;
 
+        // ✅ ПОЛУЧАЕМ ID ДО ИЗМЕНЕНИЙ
+        String itemId = Registries.ITEM.getId(villagerStack.getItem()).toString();
+        boolean wasPlayerSold = ItemTagHelper.isPlayerSold(villagerStack);
+
         int price = TradePricing.getBuyPrice(villagerStack, professionFile);
         if (villager instanceof VillagerTradeData data) {
             price = TradePricing.applyDamageReputation(price, player.getUuidAsString(), data.tradeOverhaul$getProfession(), TradeConfigLoader.getSettings());
@@ -465,15 +474,15 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         if (maxFit <= 0) return;
         if (maxFit < toBuy) { toBuy = maxFit; }
 
-        ItemStack copy = villagerStack.copy(); copy.setCount(toBuy);
+        ItemStack copy = villagerStack.copy();
+        copy.setCount(toBuy);
         ItemTagHelper.markAsVillagerSold(copy);
         if (!player.getInventory().insertStack(copy)) return;
 
         int totalCost = toBuy * price;
         NumismaticHelper.removeMoney(player, totalCost);
 
-        String itemId = Registries.ITEM.getId(villagerStack.getItem()).toString();
-        boolean wasPlayerSold = ItemTagHelper.isPlayerSold(villagerStack);
+        // ✅ Теперь decrement безопасен - ID уже сохранён
         villagerStack.decrement(toBuy);
 
         if (villager instanceof VillagerTradeData data) {
@@ -511,6 +520,11 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         ItemStack item = sl.getStack();
         if (item.isEmpty() || !TradePricing.canVillagerBuyItem(item, villager, professionFile)) return;
 
+        // ✅ ПОЛУЧАЕМ ID ДО ИЗМЕНЕНИЙ
+        String itemId = Registries.ITEM.getId(item.getItem()).toString();
+        boolean wasVillagerSold = ItemTagHelper.isVillagerSold(item);
+        boolean isSoldByVillager = professionFile.isItemSoldByVillager(itemId);
+
         int sellPrice = TradePricing.applyDurabilityPriceModifier(TradePricing.getSellPrice(item, professionFile), item, TradeConfigLoader.getSettings());
         if (sellPrice <= 0) sellPrice = 1;
 
@@ -525,15 +539,11 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         if (toSell <= 0) return;
 
         if (!insertItemCountIntoVillager(item, toSell)) return;
-        item.decrement(toSell);
+        item.decrement(toSell);  // ✅ ТЕПЕРЬ ЭТО БЕЗОПАСНО - ID уже сохранён
 
         int totalEarned = toSell * sellPrice;
         if (!data.tradeOverhaul$getCurrency().removeMoney(totalEarned)) return;
         data.tradeOverhaul$getProfession().markAsTraded();
-
-        String itemId = Registries.ITEM.getId(item.getItem()).toString();
-        boolean wasVillagerSold = ItemTagHelper.isVillagerSold(item);
-        boolean isSoldByVillager = professionFile.isItemSoldByVillager(itemId);
 
         TradeOverhaulMod.LOGGER.info("[XP DEBUG] Sell: itemId={}, amount={}, wasVillagerSold={}, isSoldByVillager={}",
                 itemId, toSell, wasVillagerSold, isSoldByVillager);
@@ -769,5 +779,39 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
             }
         }
         return false;
+    }
+
+    // ✅ Отправляет клиенту список ID рецептов для этой профессии (ИСПРАВЛЕННЫЙ)
+    public void sendAvailableRecipesToClient(net.minecraft.server.network.ServerPlayerEntity player) {
+        if (professionFile == null) return;
+
+        RecipeManager manager = RecipeManager.getInstance();
+        java.util.List<String> validIds = new java.util.ArrayList<>();
+
+        // Фильтрация: по уровню и профессии
+        for (java.util.Map.Entry<String, CraftRecipe> entry : manager.getAllCraftRecipes().entrySet()) {
+            CraftRecipe recipe = entry.getValue();
+
+            // 1. Проверяем уровень
+            if (recipe.getRequiredLevel() <= villagerLevel) {
+                // 2. Проверяем профессию: если у рецепта нет профессии (null) или она совпадает
+                String recipeProf = recipe.getProfession(); // Используем РЕАЛЬНЫЙ метод из твоего CraftRecipe
+                if (recipeProf == null || recipeProf.equals(professionId)) {
+                    validIds.add(entry.getKey());
+                }
+            }
+        }
+
+        // Отправляем пакет (старая сеть)
+        net.minecraft.network.PacketByteBuf buf = net.fabricmc.fabric.api.networking.v1.PacketByteBufs.create();
+        buf.writeVarInt(validIds.size());
+        for (String id : validIds) {
+            buf.writeString(id);
+        }
+        net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(
+                player,
+                new Identifier("tradeoverhaul", "available_recipes"),
+                buf
+        );
     }
 }

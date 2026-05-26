@@ -1,5 +1,6 @@
 package com.unnameduser.tradeoverhaul.common;
 
+import com.unnameduser.tradeoverhaul.TradeOverhaulMod;
 import com.unnameduser.tradeoverhaul.dto.*;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -40,12 +41,12 @@ public class RecipeManager {
 
         // Загружаем рецепты крафта
         if (!Files.exists(craftConfigDir)) {
-            System.out.println("[TradeOverhaul] Crafts folder not found, creating...");
+            TradeOverhaulMod.LOGGER.info("[TradeOverhaul] Crafts folder not found on client, creating...");
             try {
                 Files.createDirectories(craftConfigDir);
                 createExampleCraftConfig(craftConfigDir);
             } catch (IOException e) {
-                e.printStackTrace();
+                TradeOverhaulMod.LOGGER.error("[TradeOverhaul] Failed to create client craft config dir", e);
             }
         } else {
             loadCraftRecipesFromDir(craftConfigDir);
@@ -305,4 +306,50 @@ public class RecipeManager {
     public DisassemblyRecipe getDisassemblyRecipeById(String id) {
         return disassemblyRecipes.get(id);
     }
+
+    // ✅ Проверка, загружен ли рецепт (для отладки)
+    public boolean hasCraftRecipe(String recipeId) {
+        return craftRecipes.containsKey(recipeId);
+    }
+
+    // ✅ Клиентская загрузка конфигов (вызывается при подключении)
+    public void loadRecipesClient() {
+        craftRecipes.clear();
+        disassemblyRecipes.clear();
+        professionCrafts.clear();
+        professionDisassembly.clear();
+
+        java.nio.file.Path craftConfigDir = net.fabricmc.loader.api.FabricLoader.getInstance()
+                .getConfigDir()
+                .resolve("tradeoverhaul/crafts");
+
+        if (!java.nio.file.Files.exists(craftConfigDir)) {
+            try {
+                java.nio.file.Files.createDirectories(craftConfigDir);
+            } catch (java.io.IOException e) {
+                TradeOverhaulMod.LOGGER.error("[TradeOverhaul] Failed to create client craft config dir", e);
+            }
+        } else {
+            loadCraftRecipesFromDir(craftConfigDir);
+        }
+
+        TradeOverhaulMod.LOGGER.info("[TradeOverhaul] Client loaded {} craft recipes", craftRecipes.size());
+    }
+
+    public java.util.Map<String, CraftRecipe> getAllCraftRecipes() {
+        return new java.util.HashMap<>(craftRecipes);
+    }
+
+    // В RecipeManager.java добавьте:
+
+    public void clearRecipes() {
+        craftRecipes.clear();
+    }
+
+    public void addCraftRecipe(CraftRecipe recipe) {
+        craftRecipes.put(recipe.getId(), recipe);
+    }
+
+// И переделайте loadRecipesClient, чтобы не очищать, если есть серверные данные
+// Или просто не вызывайте loadRecipesClient() при подключении к серверу
 }

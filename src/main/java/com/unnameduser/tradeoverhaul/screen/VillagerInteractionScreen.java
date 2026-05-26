@@ -156,6 +156,9 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     private net.minecraft.client.util.math.Rect2i craftPanelBounds;
     private final List<CraftBuySlotInfo> craftBuyableSlots = new ArrayList<>();
 
+    private List<String> serverRecipeIds = new ArrayList<>();
+    private boolean recipesReceivedFromServer = false;
+
     private static record CraftBuySlotInfo(net.minecraft.client.util.math.Rect2i bounds, ItemStack stack, int price) {}
 
     public VillagerInteractionScreen(VillagerCraftingScreenHandler handler, PlayerInventory inventory, Text title) {
@@ -304,6 +307,11 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     }
 
     private void loadRecipes() {
+        if (recipesReceivedFromServer && !serverRecipeIds.isEmpty()) {
+            rebuildRecipesFromServerList();
+            return;
+        }
+
         String professionId = handler.getProfessionId();
         int level = handler.getVillagerLevel();
         allRecipes = RecipeManager.getInstance().getCraftRecipesForProfession(professionId, level);
@@ -1799,5 +1807,59 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         // Рисуем текст с отрицательными координатами, чтобы он "прижался" к углу
         context.drawText(this.textRenderer, Text.literal(text), -this.textRenderer.getWidth(text) - 2, -8, color, false);
         context.getMatrices().pop();
+    }
+
+    // Пересборка списка рецептов на основе серверных ID
+    private void rebuildRecipesFromServerList() {
+        RecipeManager manager = RecipeManager.getInstance();
+        availableRecipes.clear();
+
+        for (String id : serverRecipeIds) {
+            CraftRecipe recipe = manager.getCraftRecipeById(id);
+            if (recipe != null) {
+                availableRecipes.add(recipe);
+            } else {
+                TradeOverhaulMod.LOGGER.warn("[TradeOverhaul] Recipe {} not found on client (missing config?)", id);
+            }
+        }
+
+        // Сортируем как обычно
+        availableRecipes.sort((a, b) -> {
+            int levelCompare = Integer.compare(a.getRequiredLevel(), b.getRequiredLevel());
+            if (levelCompare != 0) return levelCompare;
+            return a.getResult().getName().getString().compareToIgnoreCase(b.getResult().getName().getString());
+        });
+
+        // Обновляем панель
+        if (recipeListPanel != null) {
+            recipeListPanel.updateRecipes(availableRecipes);
+        }
+
+        // Сбрасываем текущий выбор, если он больше не валиден
+        if (currentRecipe != null && !availableRecipes.contains(currentRecipe)) {
+            currentRecipe = null;
+            selectedRecipeIndex = -1;
+        }
+    }
+
+    // ✅ Этот метод вызывается из ClientModInitializer, когда пришёл пакет с сервера
+// Он обновляет список рецептов на клиенте
+    public void onAvailableRecipesReceived(List<CraftRecipe> recipes) {
+        availableRecipes.clear();
+        availableRecipes.addAll(recipes);
+
+        // Сортировка
+        availableRecipes.sort((a, b) -> {
+            int levelCompare = Integer.compare(a.getRequiredLevel(), b.getRequiredLevel());
+            if (levelCompare != 0) return levelCompare;
+            return a.getResult().getName().getString().compareToIgnoreCase(b.getResult().getName().getString());
+        });
+
+        // Обновляем панель рецептов
+        if (recipeListPanel != null) {
+            recipeListPanel.updateRecipes(availableRecipes);
+        }
+
+        System.out.println("[TradeOverhaul] Received " + recipes.size() + " recipes from server");
     }
 }

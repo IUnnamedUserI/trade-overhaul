@@ -42,6 +42,10 @@ public class TradeOverhaulMod implements ModInitializer {
 					new VillagerCraftingScreenHandler(syncId, inventory, buf)
 			);
 
+	// ID для пакета синхронизации рецептов
+	public static final Identifier AVAILABLE_RECIPES_PACKET_ID =
+			new Identifier(MOD_ID, "available_recipes");
+
 	@Override
 	public void onInitialize() {
 		TradeConfigLoader.load(LOGGER);
