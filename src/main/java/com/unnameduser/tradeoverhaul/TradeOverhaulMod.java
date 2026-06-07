@@ -15,6 +15,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
+import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
@@ -76,10 +77,37 @@ public class TradeOverhaulMod implements ModInitializer {
 							.requires(src -> src.hasPermissionLevel(2))
 							.then(literal("refresh")
 									.executes(ctx -> {
-										// Твоя существующая логика refresh
-										TradeOverhaulMod.LOGGER.info("Refreshing villager trades...");
-										// ... вызов твоего GlobalRestockTimer или аналога ...
-										ctx.getSource().sendFeedback(() -> net.minecraft.text.Text.literal("§aTrade lists refreshed!"), true);
+										// Получаем сервер
+										net.minecraft.server.MinecraftServer server = ctx.getSource().getServer();
+
+										// Перебираем все миры
+										for (net.minecraft.server.world.ServerWorld world : server.getWorlds()) {
+											// Ищем всех жителей
+											for (net.minecraft.entity.Entity entity : world.iterateEntities()) {
+												if (entity instanceof VillagerEntity villager) {
+													// Проверяем, что у жителя есть профессия
+													var profession = villager.getVillagerData().getProfession();
+													if (profession != null &&
+															profession != net.minecraft.village.VillagerProfession.NONE &&
+															profession != net.minecraft.village.VillagerProfession.NITWIT) {
+
+														// Выполняем ресток
+														Identifier profId = Registries.VILLAGER_PROFESSION.getId(profession);
+														var professionFile = com.unnameduser.tradeoverhaul.common.config.TradeConfigLoader.getProfession(profId);
+														if (professionFile != null) {
+															com.unnameduser.tradeoverhaul.common.trade.TradeRestock.forceRestock(
+																	villager,
+																	professionFile,
+																	com.unnameduser.tradeoverhaul.common.config.TradeConfigLoader.getSettings()
+															);
+														}
+													}
+												}
+											}
+										}
+
+										ctx.getSource().sendFeedback(() -> net.minecraft.text.Text.literal("§aAll villagers have been restocked!"), true);
+										TradeOverhaulMod.LOGGER.info("Force restock completed for all villagers");
 										return 1;
 									})
 							)

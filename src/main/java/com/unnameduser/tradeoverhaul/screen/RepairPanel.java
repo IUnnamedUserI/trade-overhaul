@@ -7,6 +7,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
@@ -80,15 +81,6 @@ public class RepairPanel extends ClickableWidget {
         if (scrollOffset > maxScroll) scrollOffset = maxScroll;
     }
 
-    private void selectItem(int index) {
-        if (index >= 0 && index < damagedItems.size()) {
-            selectedItem = damagedItems.get(index);
-            if (onSelectionChanged != null) {
-                onSelectionChanged.run();
-            }
-        }
-    }
-
     public void scroll(int amount) {
         int newOffset = scrollOffset - amount * SLOT_STEP;
         scrollOffset = Math.max(0, Math.min(newOffset, maxScroll));
@@ -131,16 +123,6 @@ public class RepairPanel extends ClickableWidget {
         builder.put(NarrationPart.TITLE, Text.literal("Damaged Items"));
     }
 
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (!visible) return false;
-        for (RepairSlotButton btn : buttons) {
-            if (btn.visible && btn.mouseClicked(mouseX, mouseY, button)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
@@ -221,6 +203,67 @@ public class RepairPanel extends ClickableWidget {
                 return true;
             }
             return false;
+        }
+    }
+
+    public void selectItem(int index) {
+        if (index >= 0 && index < damagedItems.size()) {
+            selectedItem = damagedItems.get(index);
+            if (onSelectionChanged != null) {
+                onSelectionChanged.run();
+            }
+        }
+    }
+
+    // Добавьте этот метод для выбора предмета по DamagedItem
+    public void selectItemByDamagedItem(DamagedItem item) {
+        for (int i = 0; i < damagedItems.size(); i++) {
+            if (damagedItems.get(i).getSlotIndex() == item.getSlotIndex()) {
+                selectedItem = damagedItems.get(i);
+                if (onSelectionChanged != null) {
+                    onSelectionChanged.run();
+                }
+                break;
+            }
+        }
+    }
+
+    // Добавьте этот метод для сброса выбранного предмета
+    public void resetSelectedItem() {
+        selectedItem = null;
+        if (onSelectionChanged != null) {
+            onSelectionChanged.run();
+        }
+    }
+
+    public void selectItemByListIndex(int index) {
+        if (index >= 0 && index < damagedItems.size()) {
+            selectedItem = damagedItems.get(index);
+            if (onSelectionChanged != null) {
+                onSelectionChanged.run();
+            }
+        }
+    }
+
+    public DamagedItem getDamagedItemBySlotIndex(int slotIndex) {
+        for (DamagedItem item : damagedItems) {
+            if (item.getSlotIndex() == slotIndex) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    // Также добавьте метод для выбора по slotIndex
+    public void selectItemBySlotIndex(int slotIndex) {
+        for (int i = 0; i < damagedItems.size(); i++) {
+            if (damagedItems.get(i).getSlotIndex() == slotIndex) {
+                selectedItem = damagedItems.get(i);
+                if (onSelectionChanged != null) {
+                    onSelectionChanged.run();
+                }
+                break;
+            }
         }
     }
 }

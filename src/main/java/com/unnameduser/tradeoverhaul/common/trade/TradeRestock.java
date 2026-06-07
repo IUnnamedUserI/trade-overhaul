@@ -2,6 +2,7 @@ package com.unnameduser.tradeoverhaul.common.trade;
 
 import com.unnameduser.tradeoverhaul.TradeOverhaulMod;
 import com.unnameduser.tradeoverhaul.common.VillagerTradeData;
+import com.unnameduser.tradeoverhaul.common.component.VillagerCurrencyComponent;
 import com.unnameduser.tradeoverhaul.common.component.VillagerInventoryComponent;
 import com.unnameduser.tradeoverhaul.common.config.ProfessionTradeFile;
 import com.unnameduser.tradeoverhaul.common.config.TradeConfigLoader;
@@ -49,8 +50,43 @@ public final class TradeRestock {
 		performRestock(villager, file, settings, inv, data);
 	}
 
+	/**
+	 * Корректирует бюджет жителя после рестока.
+	 * Если у жителя >=20 серебра (2000 меди) - оставляет половину.
+	 * Если <20 серебра - устанавливает 10 серебра (1000 меди).
+	 */
+	private static void adjustVillagerBudget(VillagerEntity villager, VillagerTradeData data) {
+		VillagerCurrencyComponent currency = data.tradeOverhaul$getCurrency();
+		int currentMoney = currency.getTotalCopper();
+
+		int gold = currentMoney / 10000;
+		int silver = (currentMoney % 10000) / 100;
+		int copper = currentMoney % 100;
+
+		int newMoney;
+		if (silver >= 20 || gold > 0) {
+			// Если >= 20 серебра или есть золото, оставляем половину
+			newMoney = currentMoney / 2;
+			int newGold = newMoney / 10000;
+			int newSilver = (newMoney % 10000) / 100;
+			int newCopper = newMoney % 100;
+
+			TradeOverhaulMod.LOGGER.info("[Budget] Villager {} budget adjusted: {}g {}s {}c -> {}g {}s {}c (50%% tax)",
+					villager.getUuid().toString().substring(0, 8),
+					gold, silver, copper, newGold, newSilver, newCopper);
+		} else {
+			// Если < 20 серебра, устанавливаем 10 серебра (1000 меди)
+			newMoney = 1000;
+			TradeOverhaulMod.LOGGER.info("[Budget] Villager {} budget adjusted: {}g {}s {}c -> 0g 10s 0c (minimum set)",
+					villager.getUuid().toString().substring(0, 8),
+					gold, silver, copper);
+		}
+
+		currency.setTotalCopper(newMoney);
+	}
+
 	private static void performRestock(VillagerEntity villager, ProfessionTradeFile file, TradeOverhaulSettings settings,
-			VillagerInventoryComponent inv, VillagerTradeData data) {
+									   VillagerInventoryComponent inv, VillagerTradeData data) {
 		// Полная очистка инвентаря жителя перед новым restock
 		for (int i = 0; i < inv.size(); i++) {
 			inv.setStack(i, ItemStack.EMPTY);
@@ -66,8 +102,8 @@ public final class TradeRestock {
 		if (data.tradeOverhaul$getProfession().shouldLoseProfession()) {
 			TradeOverhaulMod.LOGGER.info("Villager {} lost profession entirely due to workstation decay", villager.getUuid());
 			villager.setVillagerData(villager.getVillagerData()
-				.withProfession(net.minecraft.village.VillagerProfession.NONE)
-				.withLevel(1));
+					.withProfession(net.minecraft.village.VillagerProfession.NONE)
+					.withLevel(1));
 			// Сбрасываем компонент профессии
 			data.tradeOverhaul$getProfession().resetProfession();
 			// Отменяем ресток — у жителя больше нет профессии
@@ -84,7 +120,7 @@ public final class TradeRestock {
 		if (villagerLevel < vanillaLevel) {
 			villager.setVillagerData(villager.getVillagerData().withLevel(villagerLevel));
 		}
-		
+
 		// Отладка: проверяем уровень
 		TradeOverhaulMod.LOGGER.info("=== RESTOCK DEBUG ===");
 		TradeOverhaulMod.LOGGER.info("villagerLevel from component: {}", villagerLevel);
@@ -97,10 +133,10 @@ public final class TradeRestock {
 
 		// Проверяем, есть ли в конфиге пулы по уровням
 		boolean hasLevelPools = (file.level1Pool != null && !file.level1Pool.isEmpty()) ||
-			(file.level2Pool != null && !file.level2Pool.isEmpty()) ||
-			(file.level3Pool != null && !file.level3Pool.isEmpty()) ||
-			(file.level4Pool != null && !file.level4Pool.isEmpty()) ||
-			(file.level5Pool != null && !file.level5Pool.isEmpty());
+				(file.level2Pool != null && !file.level2Pool.isEmpty()) ||
+				(file.level3Pool != null && !file.level3Pool.isEmpty()) ||
+				(file.level4Pool != null && !file.level4Pool.isEmpty()) ||
+				(file.level5Pool != null && !file.level5Pool.isEmpty());
 
 		if (hasLevelPools) {
 			// Используем новую систему с уровнями
@@ -162,7 +198,7 @@ public final class TradeRestock {
 
 		TradeOverhaulMod.LOGGER.info("Restock: total pool size={}", pool.size());
 		TradeOverhaulMod.LOGGER.info("=== END RESTOCK DEBUG ===");
-		
+
 		if (pool.isEmpty()) {
 			TradeOverhaulMod.LOGGER.warn("Restock: pool is empty! No items will be stocked.");
 			data.tradeOverhaul$setOfferSlots(new int[0]);
@@ -197,14 +233,14 @@ public final class TradeRestock {
 		}
 
 		data.tradeOverhaul$setOfferSlots(slots);
-		
+
 		// Пополнение кошелька жителя в зависимости от уровня
 		if (data.tradeOverhaul$getCurrency() != null) {
 			int currentCopper = data.tradeOverhaul$getCurrency().getTotalCopper();
-			
+
 			// Получаем настройки денег для текущего уровня
 			int restockMoney = getRestockMoneyForLevel(file, villagerLevel, settings);
-			
+
 			// Добавляем деньги только если у жителя меньше положенного по уровню
 			if (currentCopper < restockMoney) {
 				int moneyToAdd = restockMoney - currentCopper;
@@ -212,25 +248,28 @@ public final class TradeRestock {
 			}
 		}
 
+		// ✅ КОРРЕКТИРУЕМ БЮДЖЕТ ЖИТЕЛЯ ПОСЛЕ РЕСТОКА
+		adjustVillagerBudget(villager, data);
+
 		data.tradeOverhaul$setEmptySinceTick(-1L);
 	}
-	
+
 	/**
 	 * Возвращает количество денег для рестокa в зависимости от уровня жителя
 	 */
 	private static int getRestockMoneyForLevel(ProfessionTradeFile file, int level, TradeOverhaulSettings settings) {
 		if (file.levelMoneySettings != null) {
 			return switch (level) {
-				case 2 -> file.levelMoneySettings.level2RestockMoney != null ? 
-					file.levelMoneySettings.level2RestockMoney : 700;
-				case 3 -> file.levelMoneySettings.level3RestockMoney != null ? 
-					file.levelMoneySettings.level3RestockMoney : 1100;
-				case 4 -> file.levelMoneySettings.level4RestockMoney != null ? 
-					file.levelMoneySettings.level4RestockMoney : 1600;
-				case 5 -> file.levelMoneySettings.level5RestockMoney != null ? 
-					file.levelMoneySettings.level5RestockMoney : 2500;
-				default -> file.levelMoneySettings.level1RestockMoney != null ? 
-					file.levelMoneySettings.level1RestockMoney : 400;
+				case 2 -> file.levelMoneySettings.level2RestockMoney != null ?
+						file.levelMoneySettings.level2RestockMoney : 700;
+				case 3 -> file.levelMoneySettings.level3RestockMoney != null ?
+						file.levelMoneySettings.level3RestockMoney : 1100;
+				case 4 -> file.levelMoneySettings.level4RestockMoney != null ?
+						file.levelMoneySettings.level4RestockMoney : 1600;
+				case 5 -> file.levelMoneySettings.level5RestockMoney != null ?
+						file.levelMoneySettings.level5RestockMoney : 2500;
+				default -> file.levelMoneySettings.level1RestockMoney != null ?
+						file.levelMoneySettings.level1RestockMoney : 400;
 			};
 		}
 		// Значения по умолчанию
@@ -249,16 +288,16 @@ public final class TradeRestock {
 	 */
 	private static List<ItemStack> mergeSimilarItems(List<ItemStack> stacks) {
 		List<ItemStack> result = new ArrayList<>();
-		
+
 		for (ItemStack stack : stacks) {
 			if (stack.isEmpty()) continue;
-			
+
 			// Нестекающиеся предметы добавляем как есть
 			if (stack.getMaxCount() <= 1) {
 				result.add(stack.copy());
 				continue;
 			}
-			
+
 			// Пытаемся добавить к существующему такому же предмету
 			boolean merged = false;
 			for (ItemStack existing : result) {
@@ -271,13 +310,13 @@ public final class TradeRestock {
 					}
 				}
 			}
-			
+
 			// Если не удалось объединить, добавляем как новый слот
 			if (!merged) {
 				result.add(stack.copy());
 			}
 		}
-		
+
 		return result;
 	}
 
@@ -316,7 +355,7 @@ public final class TradeRestock {
 			// Уровень 5: могут быть максимальные уровни
 			int minLevel = entry.min_level != null ? entry.min_level : 1;
 			int maxLevel = entry.max_level != null ? entry.max_level : 1;
-			
+
 			// Ограничиваем максимальный уровень зачарования уровнем жителя
 			// Уровень 1: до 20% от maxLevel
 			// Уровень 2: до 40% от maxLevel
@@ -330,7 +369,7 @@ public final class TradeRestock {
 				case 5 -> 1.0f;
 				default -> 0.2f;
 			};
-			
+
 			int effectiveMaxLevel = Math.max(minLevel, (int) (minLevel + (maxLevel - minLevel) * levelFactor));
 			int level = minLevel == effectiveMaxLevel ? minLevel : random.nextInt(effectiveMaxLevel - minLevel + 1) + minLevel;
 
@@ -355,7 +394,7 @@ public final class TradeRestock {
 			return book;
 		}
 	}
-	
+
 	/**
 	 * Выбор из пула определённого уровня.
 	 */
@@ -586,8 +625,8 @@ public final class TradeRestock {
 
 		private boolean isWeaponItem(net.minecraft.item.Item item) {
 			return item instanceof net.minecraft.item.SwordItem ||
-				item instanceof net.minecraft.item.AxeItem ||
-				item instanceof net.minecraft.item.TridentItem;
+					item instanceof net.minecraft.item.AxeItem ||
+					item instanceof net.minecraft.item.TridentItem;
 		}
 
 		private boolean isBowItem(net.minecraft.item.Item item) {
@@ -600,17 +639,17 @@ public final class TradeRestock {
 
 		private boolean isToolItem(net.minecraft.item.Item item) {
 			return item instanceof net.minecraft.item.PickaxeItem ||
-				item instanceof net.minecraft.item.ShovelItem ||
-				item instanceof net.minecraft.item.HoeItem ||
-				item instanceof net.minecraft.item.ShearsItem ||
-				item instanceof net.minecraft.item.FishingRodItem ||
-				item instanceof net.minecraft.item.FlintAndSteelItem;
+					item instanceof net.minecraft.item.ShovelItem ||
+					item instanceof net.minecraft.item.HoeItem ||
+					item instanceof net.minecraft.item.ShearsItem ||
+					item instanceof net.minecraft.item.FishingRodItem ||
+					item instanceof net.minecraft.item.FlintAndSteelItem;
 		}
 
 		private boolean isArmorItem(net.minecraft.item.Item item) {
 			return item instanceof net.minecraft.item.ArmorItem ||
-				item instanceof net.minecraft.item.ShieldItem ||
-				item instanceof net.minecraft.item.ElytraItem;
+					item instanceof net.minecraft.item.ShieldItem ||
+					item instanceof net.minecraft.item.ElytraItem;
 		}
 	}
 
@@ -622,7 +661,7 @@ public final class TradeRestock {
 		@Override
 		public ItemStack createStack(Random random, TradeOverhaulSettings settings) {
 			net.minecraft.item.Item pick = null;
-			
+
 			// Если указан прямой ID предмета, используем его
 			if (entry.item != null) {
 				Identifier itemId = Identifier.tryParse(entry.item);
@@ -630,7 +669,7 @@ public final class TradeRestock {
 					pick = Registries.ITEM.get(itemId);
 				}
 			}
-			
+
 			// Если прямой ID не указан, пробуем найти по тегу
 			if (pick == null && entry.tag != null) {
 				Identifier tagId = Identifier.tryParse(entry.tag);
@@ -651,9 +690,9 @@ public final class TradeRestock {
 					}
 				}
 			}
-			
+
 			if (pick == null) return ItemStack.EMPTY;
-			
+
 			int min = entry.minStock != null ? entry.minStock : settings.maxStockDefault;
 			int max = entry.maxStock != null ? entry.maxStock : settings.maxStockDefault;
 			min = Math.max(1, min);
@@ -662,7 +701,7 @@ public final class TradeRestock {
 			min = Math.min(min, maxStack);
 			max = Math.min(max, maxStack);
 			int count = min == max ? min : random.nextInt(max - min + 1) + min;
-			
+
 			return new ItemStack(pick, count);
 		}
 	}
