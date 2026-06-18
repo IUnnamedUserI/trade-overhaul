@@ -41,7 +41,6 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     private int armorX;
     private int inventoryX;
     private int inventoryY;
-    private int centerX;
     private int recipesX;
     private int panelY;
     private int titleY;
@@ -181,6 +180,58 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     private static final int NAV_ARROW_H = 20;  // Высота одного состояния
     private static final int NAV_ARROW_TEX_H = 10;
 
+    private int slotSize;
+    private int slotStep;
+    private int invBgW;
+    private int invBgH;
+    private int invSlotStartX;
+    private int invSlotStartY;
+    private int invLabelX;
+    private int invLabelY;
+
+    private int playerPanelX; // Левая панель (игрок)
+    private int playerPanelY;
+    private int villagerPanelX; // Правая панель (житель)
+    private int villagerPanelY;
+
+    private int centerX;
+    private int centerY;
+
+    private static final int BASE_INV_BG_W = 129;
+    private static final int BASE_INV_BG_H = 190;
+    private static final int BASE_GRID_COLS = 6;
+    private static final int BASE_GRID_ROWS = 6;
+    private static final int BASE_SLOT_SIZE = 18;
+    private static final int BASE_SLOT_GAP = 1;
+    private static final int BASE_SLOT_STEP = BASE_SLOT_SIZE + BASE_SLOT_GAP;
+    private static final int BASE_INV_SLOT_START_X = 8;
+    private static final int BASE_INV_SLOT_START_Y = 20;
+    private static final int BASE_INV_LABEL_X = 8;
+    private static final int BASE_INV_LABEL_Y = 8;
+
+    private float scaleFactor = 1.0f;
+
+    private int panelWidth;
+    private int panelHeight;
+    private int gapBetweenPanels;
+
+    private static final int BASE_PANEL_WIDTH = 129;
+    private static final int BASE_PANEL_HEIGHT = 190;
+    private static final int BASE_GAP_BETWEEN_PANELS = 200;
+
+    // Размеры для разных GUI scale
+    private static final int PANEL_WIDTH_GUI2 = 86;   // 129 * 2/3
+    private static final int PANEL_HEIGHT_GUI2 = 127; // 190 * 2/3
+    private static final int PANEL_WIDTH_GUI3 = 129;  // Базовый
+    private static final int PANEL_HEIGHT_GUI3 = 190; // Базовый
+    private static final int PANEL_WIDTH_GUI4 = 172;  // 129 * 4/3
+    private static final int PANEL_HEIGHT_GUI4 = 253; // 190 * 4/3
+
+    // В разделе с базовыми константами (после BASE_INV_LABEL_Y)
+    private static final int BASE_ARMOR_Y_OFFSET = 4; // Отступ от низа сетки до брони
+
+    private int currentGuiScale = 3;
+
     private static record CraftBuySlotInfo(net.minecraft.client.util.math.Rect2i bounds, ItemStack stack, int price) {}
 
     public VillagerInteractionScreen(VillagerCraftingScreenHandler handler, PlayerInventory inventory, Text title) {
@@ -193,6 +244,8 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         this.backgroundHeight = (int) (this.client.getWindow().getScaledHeight() * 0.80);
 
         super.init();
+        calculateScaleFactor();
+        calculatePanelPositions();
         this.playerInventoryLabel = Text.translatable("gui.tradeoverhaul.player_inventory");
 
         int x = (this.width - this.backgroundWidth) / 2;
@@ -260,52 +313,83 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         int bgX = (this.width - this.backgroundWidth) / 2;
         int bgY = (this.height - this.backgroundHeight) / 2;
 
-        int relInvX = inventoryX - bgX;
-        int relInvY = inventoryY - bgY;
-        int relTradeX = tradePanelX - bgX;
-        int relTradeY = tradePanelY - bgY;
+        // Вычисляем масштабированные размеры для слотов с учётом GUI scale
+        float scaleFactor = currentGuiScale / 3.0f;
+        int scaledSlotSize = (int) (BASE_SLOT_SIZE * scaleFactor);
 
-        int invStartX = relInvX + INV_SLOT_START_X;
-        int invStartY = relInvY + INV_SLOT_START_Y;
+        // ✅ РАЗНЫЙ ГАП ДЛЯ РАЗНЫХ РАЗМЕРОВ GUI
+        int scaledSlotGap;
+        switch (currentGuiScale) {
+            case 2:
+                scaledSlotGap = 8;  // Увеличенный гап для размера 2
+                break;
+            case 3:
+                scaledSlotGap = 1;  // Стандартный гап для размера 3
+                break;
+            case 4:
+                scaledSlotGap = -5;  // Уменьшенный гап для размера 4 (почти вплотную)
+                break;
+            default:
+                scaledSlotGap = Math.max(0, (int) (BASE_SLOT_GAP * scaleFactor));
+                break;
+        }
 
-        int armorRowWidth = (5 * SLOT_SIZE) + (4 * SLOT_GAP);
-        int armorStartX = relInvX + (INV_BG_W - armorRowWidth) / 2;
-        int armorY = invStartY + (GRID_ROWS * SLOT_STEP) + ARMOR_Y_OFFSET;
+        int scaledSlotStep = scaledSlotSize + scaledSlotGap;
+        int scaledInvSlotStartX = (int) (BASE_INV_SLOT_START_X * scaleFactor);
+        int scaledInvSlotStartY = (int) (BASE_INV_SLOT_START_Y * scaleFactor);
+        int scaledInvBgW = panelWidth;
+        int scaledArmorYOffset = (int) (BASE_ARMOR_Y_OFFSET * scaleFactor);
+
+        int relPlayerX = playerPanelX - bgX;
+        int relPlayerY = playerPanelY - bgY;
+        int relVillagerX = villagerPanelX - bgX;
+        int relVillagerY = villagerPanelY - bgY;
+
+        int playerStartX = relPlayerX + scaledInvSlotStartX;
+        int playerStartY = relPlayerY + scaledInvSlotStartY;
+        int villagerStartX = relVillagerX + scaledInvSlotStartX;
+        int villagerStartY = relVillagerY + scaledInvSlotStartY;
 
         int armorSlotIndex = 0;
-        int invSlotIndex = 0;
-        int tradeSlotIndex = 0;
+        int playerSlotIndex = 0;
+        int villagerSlotIndex = 0;
 
         for (int i = 0; i < this.handler.slots.size(); i++) {
             var slotObj = this.handler.slots.get(i);
 
             if (currentTab == TabType.REPAIR) {
-                slotObj.x = -1000; slotObj.y = -1000; continue;
+                slotObj.x = -1000;
+                slotObj.y = -1000;
+                continue;
             }
 
             if (i < VillagerCraftingScreenHandler.FIRST_MAIN_GRID_SLOT_INDEX) {
-                // Броня +1/+1
-                slotObj.x = armorStartX + armorSlotIndex * SLOT_STEP + 1;
+                int armorRowWidth = (5 * scaledSlotSize) + (4 * (scaledSlotStep - scaledSlotSize));
+                int armorStartX = relPlayerX + (scaledInvBgW - armorRowWidth) / 2;
+                int armorY = relPlayerY + scaledInvSlotStartY + (BASE_GRID_ROWS * scaledSlotStep) + scaledArmorYOffset;
+
+                slotObj.x = armorStartX + armorSlotIndex * scaledSlotStep + 1;
                 slotObj.y = armorY + 1;
                 armorSlotIndex++;
-            } else if (i < VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT) {
-                // Инвентарь игрока +1/+1
-                int col = invSlotIndex % GRID_COLS;
-                int row = invSlotIndex / GRID_COLS;
-                slotObj.x = invStartX + col * SLOT_STEP + 1;
-                slotObj.y = invStartY + row * SLOT_STEP + 1;
-                invSlotIndex++;
-            } else {
+            }
+            else if (i < VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT) {
+                int col = playerSlotIndex % BASE_GRID_COLS;
+                int row = playerSlotIndex / BASE_GRID_COLS;
+                slotObj.x = playerStartX + col * scaledSlotStep + 1;
+                slotObj.y = playerStartY + row * scaledSlotStep + 1;
+                playerSlotIndex++;
+            }
+            else {
                 if (currentTab == TabType.TRADE) {
-                    int col = tradeSlotIndex % GRID_COLS;
-                    int row = tradeSlotIndex / GRID_COLS;
-                    // ✅ +1 к X и Y, чтобы кликабельная зона совпала со сдвигом текстур
-                    slotObj.x = relTradeX + INV_SLOT_START_X + col * SLOT_STEP + 1;
-                    slotObj.y = relTradeY + INV_SLOT_START_Y + row * SLOT_STEP + 1;
-                    tradeSlotIndex++;
+                    int col = villagerSlotIndex % BASE_GRID_COLS;
+                    int row = villagerSlotIndex / BASE_GRID_COLS;
+                    slotObj.x = villagerStartX + col * scaledSlotStep + 1;
+                    slotObj.y = villagerStartY + row * scaledSlotStep + 1;
+                    villagerSlotIndex++;
                 } else {
-                    slotObj.x = -1000; slotObj.y = -1000;
-                    tradeSlotIndex++;
+                    slotObj.x = -1000;
+                    slotObj.y = -1000;
+                    villagerSlotIndex++;
                 }
             }
         }
@@ -668,6 +752,12 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        int currentScale = (int)client.getWindow().getScaleFactor();
+        if (currentScale != (int)(scaleFactor * 3)) {
+            calculateScaleFactor();
+            calculatePanelPositions();
+            positionSlots();
+        }
         // === ОБЩИЕ ПЕРЕМЕННЫЕ ===
         int x = (this.width - this.backgroundWidth) / 2;
         int y = (this.height - this.backgroundHeight) / 2;
@@ -675,19 +765,64 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         // === БАЗОВЫЙ ФОН ===
         this.renderBackground(context);
 
+        drawPanels(context);
+
         // ✅ НАВИГАЦИЯ: рисуется поверх фона для ВСЕХ вкладок
         renderTabNavigation(context, mouseX, mouseY, delta);
 
         // === ВКЛАДКА: ТОРГОВЛЯ ===
         if (currentTab == TabType.TRADE) {
-            // Рисуем слоты и предметы
+            drawPanels(context);
+            // Рисуем стандартные слоты и предметы
             super.render(context, mouseX, mouseY, delta);
             this.drawMouseoverTooltip(context, mouseX, mouseY);
 
+            // === РИСУЕМ ФОНЫ ПАНЕЛЕЙ ===
+            // Панель игрока (всегда)
+            context.drawTexture(INV_BG_TEX,
+                    playerPanelX, playerPanelY,
+                    0, 0,
+                    panelWidth, panelHeight,           // Размер на экране (масштабируемый)
+                    BASE_PANEL_WIDTH, BASE_PANEL_HEIGHT // Реальный размер текстуры (всегда базовый)
+            );
+
+            // Надпись "INVENTORY"
+            context.getMatrices().push();
+            context.getMatrices().translate(
+                    playerPanelX + (int)(BASE_INV_LABEL_X * scaleFactor),
+                    playerPanelY + (int)(BASE_INV_LABEL_Y * scaleFactor),
+                    0
+            );
+            float textScale = 0.8f * scaleFactor;
+            context.getMatrices().scale(textScale, textScale, 1.0f);
+            context.drawText(this.textRenderer, Text.literal("INVENTORY"), 0, 0, 0xFFFFFF, false);
+            context.getMatrices().pop();
+
+            // Панель жителя
+            context.drawTexture(INV_BG_TEX,
+                    villagerPanelX, villagerPanelY,
+                    0, 0,
+                    panelWidth, panelHeight,
+                    BASE_PANEL_WIDTH, BASE_PANEL_HEIGHT
+            );
+
+            String debugText = String.format("P: %d,%d | V: %d,%d | Scale: %.2f | Gap: %d",
+                    playerPanelX, playerPanelY, villagerPanelX, villagerPanelY,
+                    scaleFactor, (int)(BASE_GAP_BETWEEN_PANELS * scaleFactor));
+            context.drawText(this.textRenderer, Text.literal(debugText),
+                    10, 10, 0xFFFFFF, false);
+
             // Интерфейс торговли
             drawTradePanel(context, mouseX, mouseY, delta);
+
+            // Валюта игрока
             int playerMoney = NumismaticHelper.getTotalMoney(this.client.player);
-            drawCurrencyWithIcons(context, playerMoney, x + this.inventoryX, inventoryY + INV_LABEL_Y - 4);
+            drawCurrencyWithIcons(context, playerMoney,
+                    playerPanelX + (int)(4 * scaleFactor),
+                    playerPanelY + (int)(BASE_INV_LABEL_Y * scaleFactor) - (int)(4 * scaleFactor)
+            );
+
+            drawBackground(context, delta, mouseX, mouseY);
         }
 
         // === ВКЛАДКА: КРАФТ ===
@@ -910,61 +1045,103 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     }
 
     private void drawSlotBackgrounds(DrawContext context, int x, int y) {
-        // x, y — это координаты левого-верхнего угла GUI-фона (передаются из drawBackground)
+        float scaleFactor = currentGuiScale / 3.0f;
+        int scaledSlotSize = (int) (BASE_SLOT_SIZE * scaleFactor);
 
-        // === ФОН ПАНЕЛИ ИГРОКА ===
-        int px = inventoryX;
-        int py = inventoryY;
-        context.drawTexture(INV_BG_TEX, px, py, 0, 0, INV_BG_W, INV_BG_H, INV_BG_W, INV_BG_H);
+        // ✅ РАЗНЫЙ ГАП ДЛЯ РАЗНЫХ РАЗМЕРОВ GUI
+        int scaledSlotGap;
+        switch (currentGuiScale) {
+            case 2:
+                scaledSlotGap = 8;
+                break;
+            case 3:
+                scaledSlotGap = 1;
+                break;
+            case 4:
+                scaledSlotGap = -5;
+                break;
+            default:
+                scaledSlotGap = Math.max(0, (int) (BASE_SLOT_GAP * scaleFactor));
+                break;
+        }
 
-        // Надпись "INVENTORY" (уменьшенная)
+        int scaledSlotStep = scaledSlotSize + scaledSlotGap;
+        int scaledInvSlotStartX = (int) (BASE_INV_SLOT_START_X * scaleFactor);
+        int scaledInvSlotStartY = (int) (BASE_INV_SLOT_START_Y * scaleFactor);
+        int scaledInvBgW = panelWidth;
+        int scaledInvBgH = panelHeight;
+        int scaledArmorYOffset = (int) (BASE_ARMOR_Y_OFFSET * scaleFactor);
+        int scaledInvLabelX = (int) (BASE_INV_LABEL_X * scaleFactor);
+        int scaledInvLabelY = (int) (BASE_INV_LABEL_Y * scaleFactor);
+
+        // === 1. ФОН ПАНЕЛИ ИГРОКА ===
+        context.drawTexture(INV_BG_TEX,
+                playerPanelX, playerPanelY,
+                0, 0, panelWidth, panelHeight,
+                BASE_PANEL_WIDTH, BASE_PANEL_HEIGHT);
+
+        // === 2. НАДПИСЬ "INVENTORY" ===
         context.getMatrices().push();
-        context.getMatrices().translate(px + INV_LABEL_X, py + INV_LABEL_Y, 0);
-        context.getMatrices().scale(0.8f, 0.8f, 1.0f);
+        context.getMatrices().translate(
+                playerPanelX + scaledInvLabelX,
+                playerPanelY + scaledInvLabelY,
+                0
+        );
+        float textScale = 0.8f * scaleFactor;
+        context.getMatrices().scale(textScale, textScale, 1.0f);
         context.drawText(this.textRenderer, Text.literal("INVENTORY"), 0, 0, 0xFFFFFF, false);
         context.getMatrices().pop();
 
-        // === ФОН ПАНЕЛИ ЖИТЕЛЯ (ТОЛЬКО для вкладки TRADE) ===
+        // === 3. ФОН ПАНЕЛИ ЖИТЕЛЯ (только для TRADE) ===
         if (currentTab == TabType.TRADE) {
-            context.drawTexture(INV_BG_TEX, tradePanelX, tradePanelY, 0, 0, INV_BG_W, INV_BG_H, INV_BG_W, INV_BG_H);
+            context.drawTexture(INV_BG_TEX,
+                    villagerPanelX, villagerPanelY,
+                    0, 0, panelWidth, panelHeight,
+                    BASE_PANEL_WIDTH, BASE_PANEL_HEIGHT);
+        }
 
-            int tradeStartX = tradePanelX + INV_SLOT_START_X;
-            int tradeStartY = tradePanelY + INV_SLOT_START_Y;
-            for (int row = 0; row < GRID_ROWS; row++) {
-                for (int col = 0; col < GRID_COLS; col++) {
-                    int slotX = tradeStartX + col * SLOT_STEP;
-                    int slotY = tradeStartY + row * SLOT_STEP;
-                    context.drawTexture(SLOT_TEX, slotX, slotY, 0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_TEX_W, SLOT_TEX_H);
+        // === 4. СЛОТЫ ИГРОКА ===
+        int playerStartX = playerPanelX + scaledInvSlotStartX;
+        int playerStartY = playerPanelY + scaledInvSlotStartY;
+
+        // Броня (5 слотов)
+        int armorRowWidth = (5 * scaledSlotSize) + (4 * (scaledSlotStep - scaledSlotSize));
+        int armorStartX = playerPanelX + (panelWidth - armorRowWidth) / 2;
+        int armorY = playerStartY + (BASE_GRID_ROWS * scaledSlotStep) + scaledArmorYOffset;
+        for (int i = 0; i < 5; i++) {
+            int slotX = armorStartX + i * scaledSlotStep;
+            context.drawTexture(SLOT_TEX, slotX, armorY, 0, 0,
+                    SLOT_TEX_W, SLOT_TEX_H, SLOT_TEX_W, SLOT_TEX_H);
+        }
+
+        // Инвентарь (6x6)
+        for (int row = 0; row < BASE_GRID_ROWS; row++) {
+            for (int col = 0; col < BASE_GRID_COLS; col++) {
+                int slotX = playerStartX + col * scaledSlotStep;
+                int slotY = playerStartY + row * scaledSlotStep;
+                context.drawTexture(SLOT_TEX, slotX, slotY, 0, 0,
+                        SLOT_TEX_W, SLOT_TEX_H, SLOT_TEX_W, SLOT_TEX_H);
+            }
+        }
+
+        // === 5. СЛОТЫ ЖИТЕЛЯ (только для TRADE) ===
+        if (currentTab == TabType.TRADE) {
+            int villagerStartX = villagerPanelX + scaledInvSlotStartX;
+            int villagerStartY = villagerPanelY + scaledInvSlotStartY;
+            for (int row = 0; row < BASE_GRID_ROWS; row++) {
+                for (int col = 0; col < BASE_GRID_COLS; col++) {
+                    int slotX = villagerStartX + col * scaledSlotStep;
+                    int slotY = villagerStartY + row * scaledSlotStep;
+                    context.drawTexture(SLOT_TEX, slotX, slotY, 0, 0,
+                            scaledSlotSize, scaledSlotSize, SLOT_TEX_W, SLOT_TEX_H);
                 }
             }
         }
-        // Если currentTab != TRADE — блок выше пропускается, и слоты жителя не рисуются вообще.
 
-        // === БАЗОВЫЕ ТЕКСТУРЫ СЛОТОВ ИГРОКА (всегда) ===
-
-        // 1. Броня (5 слотов, центрированы)
-        int armorRowWidth = (5 * SLOT_SIZE) + (4 * SLOT_GAP);
-        int armorStartX = px + (INV_BG_W - armorRowWidth) / 2;
-        int armorY = py + INV_SLOT_START_Y + (GRID_ROWS * SLOT_STEP) + ARMOR_Y_OFFSET;
-        for (int i = 0; i < 5; i++) {
-            int slotX = armorStartX + i * SLOT_STEP;
-            context.drawTexture(SLOT_TEX, slotX, armorY, 0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_TEX_W, SLOT_TEX_H);
-        }
-
-        // 2. Инвентарь игрока (6×6)
-        int invStartX = px + INV_SLOT_START_X;
-        int invStartY = py + INV_SLOT_START_Y;
-        for (int row = 0; row < GRID_ROWS; row++) {
-            for (int col = 0; col < GRID_COLS; col++) {
-                int slotX = invStartX + col * SLOT_STEP;
-                int slotY = invStartY + row * SLOT_STEP;
-                context.drawTexture(SLOT_TEX, slotX, slotY, 0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_TEX_W, SLOT_TEX_H);
-            }
-        }
-
-        // === СТАТУСНЫЕ ОВЕРЛЕИ (ACTIVE/LOCKED) — только для слотов игрока ===
+        // === 6. СТАТУСНЫЕ ОВЕРЛЕИ (ACTIVE/LOCKED) - только для слотов игрока ===
+        // Рисуются ПОВЕРХ всех слотов
         for (Slot slot : handler.slots) {
-            // Пропускаем слоты жителя (они имеют id >= FIRST_VILLAGER_TRADE_SLOT)
+            // Пропускаем слоты жителя
             if (slot.id >= VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT) continue;
             if (slot.x < 0) continue; // Пропускаем скрытые слоты
 
@@ -972,7 +1149,13 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
             if (state == SlotState.DEFAULT) continue;
 
             Identifier tex = (state == SlotState.ACTIVE) ? ACTIVE_SLOT_TEX : LOCKED_SLOT_TEX;
-            context.drawTexture(tex, x + slot.x - 1, y + slot.y - 1, 0, 0, STATE_SLOT_W, STATE_SLOT_H, STATE_SLOT_W, STATE_SLOT_H);
+
+            float guiScaleTexture = 1.0f;
+            if (currentGuiScale == 2) guiScaleTexture = 1.5f;
+            // Оверлей рисуется поверх слота с небольшим смещением
+            context.drawTexture(tex, x + slot.x - 1, y + slot.y - 1, 0, 0,
+                    STATE_SLOT_W, STATE_SLOT_H,
+                    STATE_SLOT_W, STATE_SLOT_H);
         }
     }
 
@@ -998,7 +1181,10 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         int y = (this.height - this.backgroundHeight) / 2;
         int slotX = x + slot.x;
         int slotY = y + slot.y;
-        return mouseX >= slotX && mouseX < slotX + SLOT_SIZE && mouseY >= slotY && mouseY < slotY + SLOT_SIZE;
+        float scaleFactor = currentGuiScale / 3.0f;
+        int scaledSlotSize = (int) (BASE_SLOT_SIZE * scaleFactor);
+        return mouseX >= slotX && mouseX < slotX + scaledSlotSize &&
+                mouseY >= slotY && mouseY < slotY + scaledSlotSize;
     }
 
     private boolean isPointOverCraftButton(double mouseX, double mouseY) {
@@ -1340,6 +1526,8 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     @Override
     public void resize(MinecraftClient client, int width, int height) {
         super.resize(client, width, height);
+        calculateScaleFactor();
+        calculatePanelPositions();
     }
 
     private void resetFilter() {
@@ -2265,7 +2453,7 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         rightTabName = tabNavigationOrder.get(rightIndex).name();
 
         // ✅ ФИКСИРОВАННОЕ РАССТОЯНИЕ ОТ ЦЕНТРА ДО СТРЕЛОК
-        int centerX = this.width / 2;
+        //int centerX = this.width / 2;
         int leftArrowX = centerX - NAV_ARROW_X_OFFSET;
         int rightArrowX = centerX + NAV_ARROW_X_OFFSET - 10;
 
@@ -2404,5 +2592,159 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     // === Хелпер: проверка попадания мыши в прямоугольник ===
     private boolean isOver(double mx, double my, net.minecraft.client.util.math.Rect2i r) {
         return mx >= r.getX() && mx < r.getX() + r.getWidth() && my >= r.getY() && my < r.getY() + r.getHeight();
+    }
+
+    private void calculateScaleFactor() {
+        currentGuiScale = (int) client.getWindow().getScaleFactor();
+
+        // Базовый размер для GUI scale 3
+        int baseWidth = BASE_PANEL_WIDTH;
+        int baseHeight = BASE_PANEL_HEIGHT;
+
+        // Коэффициенты для разных GUI scale (относительно scale 3)
+        float sizeMultiplier;
+        float gapMultiplier;
+
+        switch (currentGuiScale) {
+            case 2:
+                // На scale 2 делаем панели чуть меньше, чем пропорционально
+                sizeMultiplier = 1.0f;  // 129 * 0.6 = 77
+                gapMultiplier = 0.8f;   // 200 * 0.6 = 120
+                break;
+            case 3:
+                sizeMultiplier = 1.0f;  // 129 * 1.0 = 129
+                gapMultiplier = 1.0f;   // 200 * 1.0 = 200
+                break;
+            case 4:
+                // На scale 4 делаем панели меньше, чем пропорционально (чтобы не занимали весь экран)
+                sizeMultiplier = 1.0f;  // 129 * 0.8 = 103
+                gapMultiplier = 0.8f;   // 200 * 0.7 = 140
+                break;
+            default:
+                // Для других масштабов используем линейную интерполяцию
+                float scaleFactor = currentGuiScale / 3.0f;
+                sizeMultiplier = Math.min(1.2f, Math.max(0.5f, scaleFactor * 0.8f));
+                gapMultiplier = Math.min(1.2f, Math.max(0.5f, scaleFactor * 0.7f));
+                break;
+        }
+
+        panelWidth = (int) (baseWidth * sizeMultiplier);
+        panelHeight = (int) (baseHeight * sizeMultiplier);
+        gapBetweenPanels = (int) (BASE_GAP_BETWEEN_PANELS * gapMultiplier);
+
+        // Минимальные и максимальные размеры (чтобы не было слишком маленько или слишком большо)
+        panelWidth = Math.max(70, Math.min(180, panelWidth));
+        panelHeight = Math.max(100, Math.min(260, panelHeight));
+        gapBetweenPanels = Math.max(60, Math.min(250, gapBetweenPanels));
+
+        // Отладочный вывод
+        System.out.println("=== GUI Scale: " + currentGuiScale + " ===");
+        System.out.println("Panel size: " + panelWidth + "x" + panelHeight);
+        System.out.println("Gap between panels: " + gapBetweenPanels);
+    }
+
+    private void calculatePanelPositions() {
+        centerX = this.width / 2;
+        centerY = this.height / 2;
+
+        // Левая панель (игрок)
+        playerPanelX = centerX - panelWidth - gapBetweenPanels / 2;
+        playerPanelY = centerY - panelHeight / 2;
+
+        // Правая панель (житель)
+        villagerPanelX = centerX + gapBetweenPanels / 2;
+        villagerPanelY = centerY - panelHeight / 2;
+
+        // Отладочный вывод
+        System.out.println("Player panel: " + playerPanelX + ", " + playerPanelY);
+        System.out.println("Villager panel: " + villagerPanelX + ", " + villagerPanelY);
+    }
+
+    private void drawPanelBackgrounds(DrawContext context) {
+        // Панель игрока
+        context.drawTexture(INV_BG_TEX,
+                playerPanelX, playerPanelY,
+                0, 0, invBgW, invBgH, invBgW, invBgH);
+
+        // Надпись "INVENTORY" на панели игрока
+        context.getMatrices().push();
+        context.getMatrices().translate(playerPanelX + invLabelX, playerPanelY + invLabelY, 0);
+        float textScale = 0.8f * scaleFactor;
+        context.getMatrices().scale(textScale, textScale, 1.0f);
+        context.drawText(this.textRenderer, Text.literal("INVENTORY"), 0, 0, 0xFFFFFF, false);
+        context.getMatrices().pop();
+
+        // Панель жителя (только для вкладки TRADE)
+        if (currentTab == TabType.TRADE) {
+            context.drawTexture(INV_BG_TEX,
+                    villagerPanelX, villagerPanelY,
+                    0, 0, invBgW, invBgH, invBgW, invBgH);
+
+            // Рисуем слоты жителя
+            int villagerStartX = villagerPanelX + invSlotStartX;
+            int villagerStartY = villagerPanelY + invSlotStartY;
+            for (int row = 0; row < BASE_GRID_ROWS; row++) {
+                for (int col = 0; col < BASE_GRID_COLS; col++) {
+                    int slotX = villagerStartX + col * slotStep;
+                    int slotY = villagerStartY + row * slotStep;
+                    context.drawTexture(SLOT_TEX, slotX, slotY, 0, 0,
+                            slotSize, slotSize, SLOT_TEX_W, SLOT_TEX_H);
+                }
+            }
+        }
+
+        // Рисуем слоты игрока (всегда)
+        int playerStartX = playerPanelX + invSlotStartX;
+        int playerStartY = playerPanelY + invSlotStartY;
+
+        // Броня
+        int armorRowWidth = (5 * slotSize) + (4 * (slotStep - slotSize));
+        int armorStartX = playerPanelX + (invBgW - armorRowWidth) / 2;
+        int armorY = playerStartY + (BASE_GRID_ROWS * slotStep) + (int) (4 * scaleFactor);
+        for (int i = 0; i < 5; i++) {
+            int slotX = armorStartX + i * slotStep;
+            context.drawTexture(SLOT_TEX, slotX, armorY, 0, 0,
+                    slotSize, slotSize, SLOT_TEX_W, SLOT_TEX_H);
+        }
+
+        // Инвентарь
+        for (int row = 0; row < BASE_GRID_ROWS; row++) {
+            for (int col = 0; col < BASE_GRID_COLS; col++) {
+                int slotX = playerStartX + col * slotStep;
+                int slotY = playerStartY + row * slotStep;
+                context.drawTexture(SLOT_TEX, slotX, slotY, 0, 0,
+                        slotSize, slotSize, SLOT_TEX_W, SLOT_TEX_H);
+            }
+        }
+    }
+
+    private void drawPanels(DrawContext context) {
+        // ТОЛЬКО ФОНЫ ПАНЕЛЕЙ, БЕЗ СЛОТОВ!
+
+        // Панель игрока
+        context.drawTexture(INV_BG_TEX,
+                playerPanelX, playerPanelY,
+                0, 0, panelWidth, panelHeight,
+                BASE_PANEL_WIDTH, BASE_PANEL_HEIGHT);
+
+        // Надпись "INVENTORY"
+        context.getMatrices().push();
+        context.getMatrices().translate(
+                playerPanelX + (int)(BASE_INV_LABEL_X * scaleFactor),
+                playerPanelY + (int)(BASE_INV_LABEL_Y * scaleFactor),
+                0
+        );
+        float textScale = 0.8f * scaleFactor;
+        context.getMatrices().scale(textScale, textScale, 1.0f);
+        context.drawText(this.textRenderer, Text.literal("INVENTORY"), 0, 0, 0xFFFFFF, false);
+        context.getMatrices().pop();
+
+        // Панель жителя (только для TRADE)
+        if (currentTab == TabType.TRADE) {
+            context.drawTexture(INV_BG_TEX,
+                    villagerPanelX, villagerPanelY,
+                    0, 0, panelWidth, panelHeight,
+                    BASE_PANEL_WIDTH, BASE_PANEL_HEIGHT);
+        }
     }
 }
