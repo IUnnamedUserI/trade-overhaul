@@ -70,6 +70,8 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
     private Map<String, Integer> clientSoldItemsTracker = new HashMap<>();
     private Map<String, Float> clientDamageReputation = new HashMap<>();
 
+    private int syncedWallet = 0;
+
     // === Клиентский конструктор ===
     public VillagerCraftingScreenHandler(int syncId, PlayerInventory playerInventory, PacketByteBuf buf) {
         super(TradeOverhaulMod.VILLAGER_CRAFTING_SCREEN_HANDLER, syncId);
@@ -811,5 +813,184 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
     }
 
     public VillagerEntity getVillager() { return villager; }
-    public VillagerInventoryComponent getVillagerInventory() { return villagerInventory; }
+
+    public VillagerInventoryComponent getVillagerInventory() {
+        return villagerInventory;
+    }
+
+    public void handleTradeRequest(int slotIndex, int amount, boolean buying, ServerPlayerEntity player) {
+        if (slotIndex < 0 || slotIndex >= this.slots.size()) return;
+
+        Slot slot = this.slots.get(slotIndex);
+        ItemStack stack = slot.getStack();
+        if (stack.isEmpty()) return;
+
+        if (!(villager instanceof VillagerTradeData data)) return;
+
+        String itemId = Registries.ITEM.getId(stack.getItem()).toString();
+
+        if (buying) {
+            // ============ ПОКУПКА у жителя ============
+            int price = getClientBuyPrice(slotIndex);
+            if (price <= 0) return;
+
+            int totalPrice = price * amount;
+            int playerMoney = NumismaticHelper.getTotalMoney(player);
+            if (playerMoney < totalPrice) return;
+
+            // Проверяем место в инвентаре игрока
+            ItemStack copyToInsert = stack.copyWithCount(amount);
+            if (!player.getInventory().insertStack(copyToInsert)) {
+                player.sendMessage(Text.literal("§cNo space in inventory!"), false);
+                return;
+            }
+
+            // Снимаем деньги с игрока
+            NumismaticHelper.removeMoney(player, totalPrice);
+
+            // Уменьшаем количество в слоте жителя
+            stack.decrement(amount);
+
+            // Добавляем деньги жителю
+            data.tradeOverhaul$getCurrency().addMoney(totalPrice);
+            data.tradeOverhaul$getProfession().markAsTraded();
+
+            // Начисляем опыт
+            boolean wasPlayerSold = ItemTagHelper.isPlayerSold(stack);
+            if (!wasPlayerSold) {
+                data.tradeOverhaul$getProfession().applyXpFromSale(itemId, amount, professionFile);
+            }
+
+        } else {
+            // ============ ПРОДАЖА жителю ============
+            int price = getClientSellPrice(stack);
+            if (price <= 0) {
+                return;
+            }
+
+            int totalPrice = price * amount;
+            int villagerMoney = data.tradeOverhaul$getCurrency().getTotalCopper();
+            if (villagerMoney < totalPrice) {
+                return;
+            }
+
+            // Проверяем, есть ли место в инвентаре жителя
+            if (!hasVillagerSpaceForStack(stack, amount)) {
+                return;
+            }
+
+            // ✅ Проверяем, что у игрока есть столько предметов
+            // Находим слот с этим предметом в инвентаре игрока
+            int playerSlotIndex = -1;
+            PlayerInventory inv = player.getInventory();
+            for (int i = 0; i < inv.size(); i++) {
+                ItemStack s = inv.getStack(i);
+                if (!s.isEmpty() && ItemStack.areItemsEqual(s, stack) && s.getCount() >= amount) {
+                    playerSlotIndex = i;
+                    break;
+                }
+            }
+
+            if (playerSlotIndex == -1) {
+                return;
+            }
+
+            // Убираем предметы из инвентаря игрока
+            ItemStack playerStack = inv.getStack(playerSlotIndex);
+            if (playerStack.getCount() < amount) return;
+            playerStack.decrement(amount);
+
+            // ✅ Добавляем предметы жителю с правильной NBT-меткой
+            ItemStack toAdd = stack.copyWithCount(amount);
+            ItemTagHelper.markAsPlayerSold(toAdd); // Помечаем как проданный игроком
+            addToVillagerInventory(toAdd);
+
+            // ✅ Снимаем деньги с жителя
+            data.tradeOverhaul$getCurrency().removeMoney(totalPrice);
+
+            // ✅ Добавляем деньги игроку
+            NumismaticHelper.addMoney(player, totalPrice);
+
+            data.tradeOverhaul$getProfession().markAsTraded();
+
+            // ✅ Начисляем опыт за продажу
+            boolean wasVillagerSold = ItemTagHelper.isVillagerSold(stack);
+            boolean isSoldByVillager = professionFile != null && professionFile.isItemSoldByVillager(itemId);
+            if (!wasVillagerSold && isSoldByVillager) {
+                data.tradeOverhaul$getProfession().applyXpFromSale(itemId, amount, professionFile);
+            }
+        }
+
+        // ✅ Синхронизируем уровень жителя с ванильным
+        int modLevel = data.tradeOverhaul$getProfession().getLevel();
+        if (modLevel > villager.getVillagerData().getLevel()) {
+            villager.setVillagerData(villager.getVillagerData().withLevel(modLevel));
+        }
+
+        // ✅ Синхронизируем с клиентом
+        NbtCompound soldItemsTracker = new NbtCompound();
+        for (Map.Entry<String, Integer> e : data.tradeOverhaul$getProfession().soldItemsTracker.entrySet()) {
+            soldItemsTracker.putInt(e.getKey(), e.getValue());
+        }
+
+        com.unnameduser.tradeoverhaul.common.network.ModNetworking.sendProfessionLevelSync(
+                player, this.syncId,
+                data.tradeOverhaul$getProfession().getLevel(),
+                data.tradeOverhaul$getProfession().getExperience(),
+                data.tradeOverhaul$getProfession().getTradesCompleted(),
+                data.tradeOverhaul$getProfession().getFractionalXpAccumulator(),
+                soldItemsTracker
+        );
+
+        sendContentUpdates();
+        com.unnameduser.tradeoverhaul.common.network.ModNetworking.sendInventorySync(player, this.syncId, villagerInventory);
+    }
+
+    // Проверка, есть ли место в инвентаре жителя
+    private boolean hasVillagerSpaceForStack(ItemStack stack, int amount) {
+        int remaining = amount;
+        for (int i = 0; i < villagerInventory.size(); i++) {
+            ItemStack slotStack = villagerInventory.getStack(i);
+            if (slotStack.isEmpty()) {
+                remaining -= stack.getMaxCount();
+            } else if (ItemStack.areItemsEqual(slotStack, stack) && slotStack.getCount() < slotStack.getMaxCount()) {
+                remaining -= (slotStack.getMaxCount() - slotStack.getCount());
+            }
+            if (remaining <= 0) return true;
+        }
+        return false;
+    }
+
+    // Добавление предметов в инвентарь жителя
+    private void addToVillagerInventory(ItemStack stack) {
+        if (stack.isEmpty()) return;
+
+        int remaining = stack.getCount();
+        int maxStack = stack.getMaxCount();
+
+        // Сначала пытаемся сложить с существующими стаками
+        for (int i = 0; i < villagerInventory.size() && remaining > 0; i++) {
+            ItemStack slotStack = villagerInventory.getStack(i);
+            if (!slotStack.isEmpty() && ItemStack.areItemsEqual(slotStack, stack) && slotStack.getCount() < maxStack) {
+                int space = maxStack - slotStack.getCount();
+                int add = Math.min(space, remaining);
+                slotStack.increment(add);
+                remaining -= add;
+            }
+        }
+
+        // Затем ищем пустые слоты
+        for (int i = 0; i < villagerInventory.size() && remaining > 0; i++) {
+            if (villagerInventory.getStack(i).isEmpty()) {
+                int add = Math.min(remaining, maxStack);
+                villagerInventory.setStack(i, stack.copyWithCount(add));
+                remaining -= add;
+            }
+        }
+
+        // Если остались предметы - значит нет места
+        if (remaining > 0) {
+            TradeOverhaulMod.LOGGER.warn("Not enough space in villager inventory for {}", stack.getName().getString());
+        }
+    }
 }

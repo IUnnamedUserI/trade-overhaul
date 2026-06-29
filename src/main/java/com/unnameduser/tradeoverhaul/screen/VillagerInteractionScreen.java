@@ -1,8 +1,10 @@
 package com.unnameduser.tradeoverhaul.screen;
 
 import com.unnameduser.tradeoverhaul.TradeOverhaulMod;
+import com.unnameduser.tradeoverhaul.common.component.VillagerInventoryComponent;
 import com.unnameduser.tradeoverhaul.common.network.RepairAllRequestC2SPacket;
 import com.unnameduser.tradeoverhaul.common.network.RepairRequestC2SPacket;
+import com.unnameduser.tradeoverhaul.common.network.TradeRequestC2SPacket;
 import com.unnameduser.tradeoverhaul.common.numismatic.NumismaticHelper;
 import com.unnameduser.tradeoverhaul.common.RecipeManager;
 import com.unnameduser.tradeoverhaul.common.config.DisassemblyConfig;
@@ -232,6 +234,18 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
 
     private int currentGuiScale = 3;
 
+    private TradePanel tradePanel;
+    private boolean hasSelectedTradeSlot = false;
+    private int selectedTradeSlotIndex = -1;
+    private float expectedXp = 0f;
+
+    private int tradeBarX;
+    private int tradeBarY;
+    private int tradeBarWidth;
+    private int tradeBarHeight;
+    private int professionTextX;
+    private int professionTextY;
+
     private static record CraftBuySlotInfo(net.minecraft.client.util.math.Rect2i bounds, ItemStack stack, int price) {}
 
     public VillagerInteractionScreen(VillagerCraftingScreenHandler handler, PlayerInventory inventory, Text title) {
@@ -292,6 +306,31 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         createRepairPanel();
 
         setupNavigation();
+
+        tradePanel = new TradePanel(this.textRenderer, new TradePanelCallback() {
+            @Override
+            public void onTradeConfirm(int slotIndex, int amount, boolean buying) {
+                sendTradeRequest(slotIndex, amount, buying);
+            }
+
+            @Override
+            public void onTradeCancel() {
+                hasSelectedTradeSlot = false;
+                selectedTradeSlotIndex = -1;
+                expectedXp = 0f;
+                updateExpectedXp();
+            }
+
+            @Override
+            public void onAmountChanged(int newAmount, int totalPrice) {
+                updateExpectedXp();
+            }
+
+            @Override
+            public int getVillagerMoney() {
+                return handler.getSyncedWallet();
+            }
+        });
     }
 
     private void createSearchField() {
@@ -457,6 +496,13 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     private void onTabSelected(TabType tab) {
         currentTab = tab;
 
+        if (currentTab != TabType.TRADE) {
+            expectedXp = 0f;
+            if (tradePanel != null && tradePanel.isVisible()) {
+                tradePanel.close();
+            }
+        }
+
         if (currentTab != TabType.REPAIR) {
             resetSelectedRepairItem();
         }
@@ -575,9 +621,9 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         float fractionalXp = handler.getClientFractionalXp();
         float totalXp = experience + fractionalXp;
         float progress = xpForNext > 0 ? Math.min(1.0f, totalXp / xpForNext) : 1.0f;
-        float expectedXp = getExpectedXpForCurrentHover();
 
         if (progress < 1.0f && xpForNext > 0) {
+            // ✅ Возвращаем старые координаты
             int barWidth = GRID_COLS * SLOT_STEP;
             int barHeight = 4;
             int barX = villagerX - 40;
@@ -587,15 +633,70 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
             int filledWidth = (int) (barWidth * progress);
             context.fill(barX, barY, barX + filledWidth, barY + barHeight, 0xFF40FF40);
 
-            if (expectedXp > 0) {
+            // ✅ ПРЕДВАРИТЕЛЬНЫЙ ОПЫТ (голубой) - показываем только если expectedXp > 0
+            if (expectedXp > 0 && tradePanel != null && tradePanel.isVisible()) {
                 float progressGain = Math.min(1.0f - progress, expectedXp / xpForNext);
                 int blueStartX = barX + filledWidth;
                 int blueWidth = (int) (barWidth * progressGain);
                 context.fill(blueStartX, barY, blueStartX + blueWidth, barY + barHeight, 0xFF00FFFF);
             }
-            String expectedXpText = expectedXp > 0 ? String.format(" +%.2f", expectedXp) : "";
-            Text xpText = Text.literal(String.format("%.2f", totalXp) + expectedXpText + " / " + xpForNext + " XP");
-            context.drawText(this.textRenderer, xpText, barX, barY - 9, 0x808080, true);
+
+            // ✅ ТЕКСТ ОПЫТА с голубым числом при наведении
+            context.getMatrices().push();
+            context.getMatrices().translate(barX + barWidth + 3, barY - 2, 0);
+            float textScale = 0.7f;
+            context.getMatrices().scale(textScale, textScale, 1.0f);
+
+            if (expectedXp > 0 && tradePanel != null && tradePanel.isVisible()) {
+                // Если панель открыта и есть предварительный опыт - показываем сумму голубым
+                float totalWithExpected = totalXp + expectedXp;
+                String leftPart = String.format("%.2f", totalWithExpected);
+                String rightPart = String.format(" / %d XP", xpForNext);
+
+                context.drawText(this.textRenderer, Text.literal(leftPart), 0, 0, 0x00FFFF, false);
+                context.drawText(this.textRenderer, Text.literal(rightPart),
+                        this.textRenderer.getWidth(leftPart), 0, 0x808080, false);
+            } else {
+                // Обычное отображение
+                String text = String.format("%.2f / %d XP", totalXp, xpForNext);
+                context.drawText(this.textRenderer, Text.literal(text), 0, 0, 0x808080, false);
+            }
+
+            context.getMatrices().pop();
+
+            // === ПРОФЕССИЯ И УРОВЕНЬ ЖИТЕЛЯ ===
+            VillagerEntity villager = handler.getVillagerFromWorld(this.client);
+            if (villager != null) {
+                var profession = villager.getVillagerData().getProfession();
+                var villagerLevel = villager.getVillagerData().getLevel();
+
+                Text professionName = Text.empty();
+                if (profession != null && profession != net.minecraft.village.VillagerProfession.NONE) {
+                    var profId = net.minecraft.registry.Registries.VILLAGER_PROFESSION.getId(profession);
+                    if (profId != null) {
+                        professionName = Text.translatable("entity.minecraft.villager." + profId.getPath());
+                    }
+                }
+
+                Text levelName = switch (villagerLevel) {
+                    case 1 -> Text.translatable("merchant.level.1");
+                    case 2 -> Text.translatable("merchant.level.2");
+                    case 3 -> Text.translatable("merchant.level.3");
+                    case 4 -> Text.translatable("merchant.level.4");
+                    case 5 -> Text.translatable("merchant.level.5");
+                    default -> Text.translatable("merchant.level.1");
+                };
+
+                Text fullText = Text.literal("").append(professionName).append(" - ").append(levelName);
+
+                // ✅ Возвращаем старые координаты
+                context.getMatrices().push();
+                context.getMatrices().translate(barX, barY - this.textRenderer.fontHeight - 4, 0);
+                float professionTextScale = 0.7f;
+                context.getMatrices().scale(professionTextScale, professionTextScale, 1.0f);
+                context.drawText(this.textRenderer, fullText, 0, 0, 0xFFFFFF, false);
+                context.getMatrices().pop();
+            }
         } else if (level >= 5) {
             Text maxLevelText = Text.translatable("tradeoverhaul.gui.maxlevel").formatted(net.minecraft.util.Formatting.GOLD, net.minecraft.util.Formatting.BOLD);
             context.drawText(this.textRenderer, maxLevelText, villagerX, y + this.panelY - 25, 0xFFAA00, true);
@@ -622,43 +723,17 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
             }
         }
 
+        // ✅ Lvl. X с новыми координатами (относительно villagerX)
+        context.getMatrices().push();
+        context.getMatrices().translate(villagerX - 35, y + 47, 0);
+        float levelTextScale = 0.7f;
+        context.getMatrices().scale(levelTextScale, levelTextScale, 1.0f);
         Text levelText = Text.literal("Lvl. " + level);
-        context.drawText(this.textRenderer, levelText, villagerX - 35, y + 47, 0xFFFFFF, true);
+        context.drawText(this.textRenderer, levelText, 0, 0, 0x808080, false);
+        context.getMatrices().pop();
 
         int wallet = handler.getSyncedWallet();
         drawCurrencyWithIcons(context, wallet, villagerX + 24, inventoryY + INV_LABEL_Y - 4);
-    }
-
-    private float getExpectedXpForCurrentHover() {
-        Slot focused = this.focusedSlot;
-        if (focused == null || !focused.hasStack()) return 0f;
-        int slotIndex = focused.id;
-        ItemStack stack = focused.getStack();
-        boolean shift = net.minecraft.client.gui.screen.Screen.hasShiftDown();
-        boolean ctrl = net.minecraft.client.gui.screen.Screen.hasControlDown();
-
-        if (slotIndex >= VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT) {
-            int price = handler.getClientBuyPrice(slotIndex);
-            if (price <= 0) return 0f;
-            int wantToBuy = shift ? stack.getCount() : (ctrl ? Math.min(10, stack.getCount()) : 1);
-            int playerMoney = NumismaticHelper.getTotalMoney(this.client.player);
-            int maxCanBuy = playerMoney / price;
-            int quantity = Math.min(wantToBuy, maxCanBuy);
-            int maxSpace = handler.clientHasInventorySpaceForStack(stack, wantToBuy) ? wantToBuy : 0;
-            if (maxSpace < quantity) quantity = maxSpace;
-            if (quantity <= 0) return 0f;
-            return handler.getExpectedXpForBuy(slotIndex, quantity);
-        } else if (slotIndex >= VillagerCraftingScreenHandler.FIRST_MAIN_GRID_SLOT_INDEX && slotIndex < VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT) {
-            int wantToSell = shift ? stack.getCount() : (ctrl ? Math.min(10, stack.getCount()) : 1);
-            int price = handler.getClientSellPrice(stack);
-            if (price <= 0) return 0f;
-            int villagerMoney = handler.getSyncedWallet();
-            int maxCanBuy = villagerMoney / price;
-            int quantity = Math.min(wantToSell, maxCanBuy);
-            if (quantity <= 0) quantity = 1;
-            return handler.getExpectedXpForSell(stack, quantity);
-        }
-        return 0f;
     }
 
     private void openDisassemblyPreview(ItemStack stack) {
@@ -823,6 +898,14 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
             );
 
             drawBackground(context, delta, mouseX, mouseY);
+
+            if (tradePanel != null && tradePanel.isVisible()) {
+                tradePanel.render(context, mouseX, mouseY);
+
+                if (hasSelectedTradeSlot && tradePanel.canAfford()) {
+                    // ToDo: Показать предварительный опыт
+                }
+            }
         }
 
         // === ВКЛАДКА: КРАФТ ===
@@ -1128,12 +1211,26 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         if (currentTab == TabType.TRADE) {
             int villagerStartX = villagerPanelX + scaledInvSlotStartX;
             int villagerStartY = villagerPanelY + scaledInvSlotStartY;
+
+            // ✅ Получаем актуальный инвентарь жителя из handler'а
+            VillagerInventoryComponent villagerInv = handler.getVillagerInventory();
+
             for (int row = 0; row < BASE_GRID_ROWS; row++) {
                 for (int col = 0; col < BASE_GRID_COLS; col++) {
                     int slotX = villagerStartX + col * scaledSlotStep;
                     int slotY = villagerStartY + row * scaledSlotStep;
+                    int index = row * BASE_GRID_COLS + col;
+
+                    // Фон слота
                     context.drawTexture(SLOT_TEX, slotX, slotY, 0, 0,
                             scaledSlotSize, scaledSlotSize, SLOT_TEX_W, SLOT_TEX_H);
+
+                    // ✅ Рисуем предмет, если есть
+                    ItemStack stack = villagerInv.getStack(index);
+                    if (!stack.isEmpty()) {
+                        context.drawItem(stack, slotX + 1, slotY + 1);
+                        context.drawItemInSlot(textRenderer, stack, slotX + 1, slotY + 1);
+                    }
                 }
             }
         }
@@ -1226,7 +1323,38 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
 
         // === ЛКМ (button == 0) ===
         if (button == 0) {
-            // Обработка поля поиска в CRAFT
+            // 1. СНАЧАЛА проверяем клик по слоту в TRADE (даже если панель открыта)
+            if (currentTab == TabType.TRADE) {
+                Slot clickedSlot = getSlotAt(mouseX, mouseY);
+                if (clickedSlot != null && clickedSlot.hasStack()) {
+                    int slotIndex = clickedSlot.id;
+                    ItemStack stack = clickedSlot.getStack();
+
+                    boolean buying = slotIndex >= VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT;
+                    int price = buying ? handler.getClientBuyPrice(slotIndex) : handler.getClientSellPrice(stack);
+
+                    if (price > 0) {
+                        // Открываем/обновляем панель с новым предметом
+                        openTradePanel(clickedSlot);
+                        return true;
+                    }
+                    return true;
+                }
+            }
+
+            // 2. ПОТОМ проверяем клик по панели торговли
+            if (currentTab == TabType.TRADE && tradePanel != null && tradePanel.isVisible()) {
+                if (tradePanel.mouseClicked(mouseX, mouseY, button)) {
+                    return true;
+                }
+                // Если клик вне панели И не по слоту - закрываем
+                if (!isPointOverTradePanel(mouseX, mouseY)) {
+                    tradePanel.close();
+                    return true;
+                }
+            }
+
+            // 3. Обработка поля поиска в CRAFT
             if (currentTab == TabType.CRAFT) {
                 if (searchField != null && mouseX >= searchField.getX() && mouseX <= searchField.getX() + searchField.getWidth() &&
                         mouseY >= searchField.getY() && mouseY <= searchField.getY() + searchField.getHeight()) {
@@ -1237,7 +1365,7 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                 }
             }
 
-            // Закрытие панели разборки при клике вне её
+            // 4. Закрытие панели разборки при клике вне её
             if (currentTab == TabType.DISASSEMBLE && isDisassemblyActive) {
                 boolean clickedOnPanel = isPointOverDisassemblyPanel(mouseX, mouseY);
                 boolean clickedOnSlot = getSlotAt(mouseX, mouseY) != null;
@@ -1249,7 +1377,21 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                 }
             }
 
-            // Кнопка CRAFT
+            // 5. Выбор предмета для DISASSEMBLE
+            if (currentTab == TabType.DISASSEMBLE) {
+                Slot clickedSlot = getSlotAt(mouseX, mouseY);
+                if (clickedSlot != null && clickedSlot.id < VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT) {
+                    ItemStack stack = clickedSlot.getStack();
+                    if (!stack.isEmpty()) {
+                        if (DisassemblyConfig.isDisassemblyAllowed(stack.getItem())) {
+                            openDisassemblyPreview(stack);
+                        }
+                        return true;
+                    }
+                }
+            }
+
+            // 6. Кнопка CRAFT
             if (currentTab == TabType.CRAFT && currentRecipe != null && isPointOverCraftButton(mouseX, mouseY)) {
                 if (!craftEnabled) {
                     if (isSelectedItemDamaged() && this.client.player != null) {
@@ -1267,7 +1409,7 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                 return true;
             }
 
-            // Кнопки REPAIR
+            // 7. Кнопки REPAIR
             if (currentTab == TabType.REPAIR && repairPanel != null && repairPanel.getSelectedItem() != null &&
                     repairButtonBounds != null && mouseX >= repairButtonBounds.getX() && mouseX <= repairButtonBounds.getX() + repairButtonBounds.getWidth() &&
                     mouseY >= repairButtonBounds.getY() && mouseY <= repairButtonBounds.getY() + repairButtonBounds.getHeight()) {
@@ -1291,7 +1433,7 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                 return true;
             }
 
-            // Кнопка DISASSEMBLE
+            // 8. Кнопка DISASSEMBLE
             if (isDisassemblyActive && disassembleButtonBounds != null) {
                 int btnRight = disassembleButtonBounds.getX() + disassembleButtonBounds.getWidth();
                 int btnBottom = disassembleButtonBounds.getY() + disassembleButtonBounds.getHeight();
@@ -1316,31 +1458,7 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                 }
             }
 
-            // ✅ НОВАЯ ЛОГИКА: ВЫБОР ПРЕДМЕТА НА ЛКМ В CRAFT И DISASSEMBLE
-            if (currentTab == TabType.CRAFT || currentTab == TabType.DISASSEMBLE) {
-                Slot clickedSlot = getSlotAt(mouseX, mouseY);
-                if (clickedSlot != null && clickedSlot.id < VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT) {
-                    ItemStack stack = clickedSlot.getStack();
-                    if (!stack.isEmpty()) {
-                        if (currentTab == TabType.CRAFT) {
-                            // Выбор предмета для крафта
-                            this.selectedItemSlot = clickedSlot.id;
-                            this.selectedItemStack = stack.copy();
-                            this.hasSelectedItem = true;
-                            this.selectedInventoryIndex = clickedSlot.getIndex();
-                            filterRecipesByItem(stack, clickedSlot.id);
-                        } else if (currentTab == TabType.DISASSEMBLE) {
-                            // Выбор предмета для разборки
-                            if (DisassemblyConfig.isDisassemblyAllowed(stack.getItem())) {
-                                openDisassemblyPreview(stack);
-                            }
-                        }
-                        return true;
-                    }
-                }
-            }
-
-            // Сброс фильтров в CRAFT при клике в пустоту
+            // 9. Сброс фильтров в CRAFT при клике в пустоту
             if (currentTab == TabType.CRAFT) {
                 boolean clickedOnRecipePanel = isPointOverRecipePanel(mouseX, mouseY);
                 boolean clickedOnCraftButton = isPointOverCraftButton(mouseX, mouseY);
@@ -1354,7 +1472,7 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                 }
             }
 
-            // Логика REPAIR (выбор предмета)
+            // 10. Логика REPAIR (выбор предмета)
             if (currentTab == TabType.REPAIR) {
                 List<DamagedItem> allDamaged = new ArrayList<>();
                 PlayerInventory inv = client.player.getInventory();
@@ -1399,8 +1517,7 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
 
         // === ПКМ (button == 1) ===
         if (button == 1) {
-            // ❌ УБИРАЕМ ВЫБОР ПРЕДМЕТА НА ПКМ
-            // Оставляем только покупку предметов в CRAFT панели
+            // Покупка предметов в CRAFT панели
             if (currentTab == TabType.CRAFT) {
                 for (CraftBuySlotInfo info : craftBuyableSlots) {
                     if (info.bounds().contains((int)mouseX, (int)mouseY)) {
@@ -1413,30 +1530,6 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                     }
                 }
             }
-
-            // Торговля (ПКМ для быстрой покупки/продажи)
-            if (currentTab == TabType.TRADE) {
-                Slot clickedSlot = getSlotAt(mouseX, mouseY);
-                if (clickedSlot != null) {
-                    int slotIndex = clickedSlot.id;
-                    ItemStack stack = clickedSlot.getStack();
-                    if (stack.isEmpty()) return super.mouseClicked(mouseX, mouseY, button);
-                    boolean buying = slotIndex >= VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT;
-                    if (buying && !handler.clientHasInventorySpaceForStack(stack, 1)) return true;
-                    boolean shiftPressed = net.minecraft.client.gui.screen.Screen.hasShiftDown();
-                    boolean ctrlPressed = net.minecraft.client.gui.screen.Screen.hasControlDown();
-                    var buf = PacketByteBufs.create();
-                    buf.writeInt(handler.syncId);
-                    buf.writeInt(slotIndex);
-                    buf.writeBoolean(buying);
-                    buf.writeBoolean(shiftPressed && !buying);
-                    buf.writeBoolean(shiftPressed && buying);
-                    buf.writeBoolean(ctrlPressed);
-                    ClientPlayNetworking.send(new Identifier(TradeOverhaulMod.MOD_ID, "trade_action"), buf);
-                    return true;
-                }
-            }
-
             return true;
         }
 
@@ -1541,12 +1634,26 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        // Сначала передаём событие панели торговли
+        if (currentTab == TabType.TRADE && tradePanel != null && tradePanel.isVisible()) {
+            if (tradePanel.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) {
+                return true;
+            }
+        }
+
         if (button == 0) return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
         return true;
     }
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        // Сначала передаём событие панели торговли
+        if (currentTab == TabType.TRADE && tradePanel != null && tradePanel.isVisible()) {
+            if (tradePanel.mouseReleased(mouseX, mouseY, button)) {
+                return true;
+            }
+        }
+
         isDisassembleButtonPressed = false;
         if (button == 0) return super.mouseReleased(mouseX, mouseY, button);
         return true;
@@ -2746,5 +2853,75 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                     0, 0, panelWidth, panelHeight,
                     BASE_PANEL_WIDTH, BASE_PANEL_HEIGHT);
         }
+    }
+
+    private void sendTradeRequest(int slotIndex, int amount, boolean buying) {
+        var buf = PacketByteBufs.create();
+        buf.writeInt(handler.syncId);
+        buf.writeInt(slotIndex);
+        buf.writeInt(amount);
+        buf.writeBoolean(buying);
+        ClientPlayNetworking.send(new Identifier(TradeOverhaulMod.MOD_ID, "trade_request"), buf);
+    }
+
+    // Метод для обновления предварительного опыта
+    private void updateExpectedXp() {
+        if (tradePanel != null && tradePanel.isVisible()) {
+            int slotIndex = tradePanel.getSlotIndex();
+            int amount = tradePanel.getCurrentAmount();
+            if (tradePanel.isBuying()) {
+                this.expectedXp = handler.getExpectedXpForBuy(slotIndex, amount);
+            } else {
+                ItemStack stack = handler.getSlot(slotIndex).getStack();
+                this.expectedXp = handler.getExpectedXpForSell(stack, amount);
+            }
+        } else {
+            this.expectedXp = 0f;
+        }
+    }
+
+    private boolean isPointOverTradePanel(double mouseX, double mouseY) {
+        if (tradePanel == null || !tradePanel.isVisible()) return false;
+
+        // Получаем границы панели
+        int panelX = tradePanel.getX();
+        int panelY = tradePanel.getY();
+        int panelWidth = tradePanel.getWidth();
+        int panelHeight = tradePanel.getHeight();
+
+        return mouseX >= panelX && mouseX <= panelX + panelWidth &&
+                mouseY >= panelY && mouseY <= panelY + panelHeight;
+    }
+
+    private void openTradePanel(Slot slot) {
+        if (slot == null || !slot.hasStack()) return;
+
+        int slotIndex = slot.id;
+        ItemStack stack = slot.getStack();
+
+        boolean buying = slotIndex >= VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT;
+        int price = buying ? handler.getClientBuyPrice(slotIndex) : handler.getClientSellPrice(stack);
+
+        if (price <= 0) return;
+
+        int maxAmount = stack.getCount();
+        if (buying) {
+            int playerMoney = NumismaticHelper.getTotalMoney(this.client.player);
+            maxAmount = Math.min(maxAmount, playerMoney / price);
+        } else {
+            int villagerMoney = handler.getSyncedWallet();
+            maxAmount = Math.min(maxAmount, villagerMoney / price);
+        }
+
+        hasSelectedTradeSlot = true;
+        selectedTradeSlotIndex = slotIndex;
+
+        int panelCenterX = (villagerPanelX + playerPanelX + panelWidth) / 2;
+        int panelCenterY = this.height / 2;
+
+        tradePanel.open(stack, slotIndex, price, maxAmount, buying);
+        tradePanel.setPosition(panelCenterX, panelCenterY);
+
+        updateExpectedXp();
     }
 }

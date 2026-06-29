@@ -5,6 +5,7 @@ import com.unnameduser.tradeoverhaul.client.gui.VillagerTradeScreenHandler;
 import com.unnameduser.tradeoverhaul.common.RecipeManager;
 import com.unnameduser.tradeoverhaul.dto.CraftRecipe;
 import com.unnameduser.tradeoverhaul.screen.VillagerCraftingScreenHandler;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -125,5 +126,33 @@ public class ModNetworking {
 		var buf = net.fabricmc.fabric.api.networking.v1.PacketByteBufs.create();
 		payload.write(buf);
 		ServerPlayNetworking.send(player, DamageReputationSyncPayload.ID, buf);
+	}
+
+	// В ModNetworking.java
+
+	// В ModNetworking.java, в клиентском обработчике:
+
+	public static void registerClientReceivers() {
+		// Обработчик синхронизации инвентаря жителя
+		ClientPlayNetworking.registerGlobalReceiver(
+				VillagerInventorySyncPayload.ID,
+				(client, handler, buf, responseSender) -> {
+					VillagerInventorySyncPayload payload = VillagerInventorySyncPayload.read(buf);
+					client.execute(() -> {
+						if (client.player != null &&
+								client.player.currentScreenHandler instanceof VillagerCraftingScreenHandler screenHandler) {
+							// ✅ Для record используем syncId() и inventory()
+							if (screenHandler.syncId == payload.syncId()) {
+								var villagerInv = screenHandler.getVillagerInventory();
+								ItemStack[] stacks = payload.inventory();
+								for (int i = 0; i < Math.min(stacks.length, villagerInv.size()); i++) {
+									villagerInv.setStack(i, stacks[i]);
+								}
+								screenHandler.sendContentUpdates();
+							}
+						}
+					});
+				}
+		);
 	}
 }

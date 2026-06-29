@@ -7,6 +7,7 @@ import com.unnameduser.tradeoverhaul.common.command.TradeOverhaulCommand;
 import com.unnameduser.tradeoverhaul.common.config.TradeConfigLoader;
 import com.unnameduser.tradeoverhaul.common.network.ConfigSyncPayload;
 import com.unnameduser.tradeoverhaul.common.network.ModNetworking;
+import com.unnameduser.tradeoverhaul.common.network.TradeRequestC2SPacket;
 import com.unnameduser.tradeoverhaul.common.trade.GlobalRestockTimer;
 import com.unnameduser.tradeoverhaul.screen.VillagerCraftingScreenHandler;
 import net.fabricmc.api.ModInitializer;
@@ -43,9 +44,13 @@ public class TradeOverhaulMod implements ModInitializer {
 					new VillagerCraftingScreenHandler(syncId, inventory, buf)
 			);
 
-	// ID для пакета синхронизации рецептов
+	// ID для пакетов
 	public static final Identifier AVAILABLE_RECIPES_PACKET_ID =
 			new Identifier(MOD_ID, "available_recipes");
+
+	// ✅ ID для пакета торгового запроса
+	public static final Identifier TRADE_REQUEST_ID =
+			new Identifier(MOD_ID, "trade_request");
 
 	@Override
 	public void onInitialize() {
@@ -60,12 +65,24 @@ public class TradeOverhaulMod implements ModInitializer {
 		LOGGER.info("Registering networking...");
 		ModNetworking.register();
 
+		// Обработчик разборки
 		ServerPlayNetworking.registerGlobalReceiver(new Identifier(MOD_ID, "disassemble_request"), (server, player, handler, buf, responseSender) -> {
 			int syncId = buf.readInt();
 			int slotIndex = buf.readInt();
 			server.execute(() -> {
 				if (player.currentScreenHandler instanceof VillagerCraftingScreenHandler c && c.syncId == syncId) {
 					c.handleDisassembleRequest(player, slotIndex);
+				}
+			});
+		});
+
+		// ✅ Обработчик торгового запроса
+		ServerPlayNetworking.registerGlobalReceiver(TRADE_REQUEST_ID, (server, player, handler, buf, responseSender) -> {
+			TradeRequestC2SPacket packet = TradeRequestC2SPacket.decode(buf);
+			server.execute(() -> {
+				if (player.currentScreenHandler instanceof VillagerCraftingScreenHandler screenHandler &&
+						screenHandler.syncId == packet.syncId) {
+					screenHandler.handleTradeRequest(packet.slotIndex, packet.amount, packet.buying, player);
 				}
 			});
 		});
@@ -137,7 +154,7 @@ public class TradeOverhaulMod implements ModInitializer {
 			TradeOverhaulMod.LOGGER.debug("Sent config sync to player {}", handler.player.getName().getString());
 		});
 
-		// Регистрация обработчика торговли
+		// Регистрация обработчика торговли (старый)
 		ServerPlayNetworking.registerGlobalReceiver(new Identifier(MOD_ID, "trade_action"), (server, player, handler, buf, responseSender) -> {
 			int syncId = buf.readInt();
 			int slotIndex = buf.readInt();
