@@ -18,6 +18,7 @@ import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.screen.slot.Slot;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,28 +40,67 @@ public class TradeOverhaulClient implements ClientModInitializer {
 
         HandledScreens.register(TradeOverhaulMod.VILLAGER_CRAFTING_SCREEN_HANDLER, VillagerInteractionScreen::new);
 
-        // Регистрируем обработчик синхронизации инвентаря жителя
+        // ✅ ОБРАБОТЧИК СИНХРОНИЗАЦИИ ИНВЕНТАРЯ ЖИТЕЛЯ
         ClientPlayNetworking.registerGlobalReceiver(VillagerInventorySyncPayload.ID, (client, handler, buf, responseSender) -> {
             VillagerInventorySyncPayload payload = VillagerInventorySyncPayload.read(buf);
             client.execute(() -> {
-                TradeOverhaulMod.LOGGER.info("Received inventory sync: syncId={}, inventory size={}",
-                        payload.syncId(), payload.inventory().length);
-                if (client.player != null && client.player.currentScreenHandler instanceof VillagerTradeScreenHandler tradeHandler
-                        && tradeHandler.syncId == payload.syncId()) {
-                    for (int i = 0; i < payload.inventory().length; i++) {
-                        ItemStack stack = payload.inventory()[i];
-                        if (!stack.isEmpty()) {
-                            TradeOverhaulMod.LOGGER.info("  Setting slot {}: {} x{}", i, stack.getItem().getTranslationKey(), stack.getCount());
+                TradeOverhaulMod.LOGGER.info("=== CLIENT RECEIVED INVENTORY SYNC ===");
+                TradeOverhaulMod.LOGGER.info("syncId: {}, inventory size: {}", payload.syncId(), payload.inventory().length);
+
+                if (client.player != null &&
+                        client.player.currentScreenHandler instanceof VillagerCraftingScreenHandler craftingHandler &&
+                        craftingHandler.syncId == payload.syncId()) {
+
+                    var villagerInv = craftingHandler.getVillagerInventory();
+                    ItemStack[] newStacks = payload.inventory();
+
+                    // Логируем ДО обновления
+                    TradeOverhaulMod.LOGGER.info("Client inventory BEFORE:");
+                    for (int i = 0; i < Math.min(newStacks.length, villagerInv.size()); i++) {
+                        ItemStack s = villagerInv.getStack(i);
+                        if (!s.isEmpty()) {
+                            TradeOverhaulMod.LOGGER.info("  Slot {}: {} x{}", i, s.getName().getString(), s.getCount());
                         }
-                        tradeHandler.getVillagerInventory().setStack(i, stack);
                     }
-                    TradeOverhaulMod.LOGGER.info("Inventory sync complete");
+
+                    // Обновляем инвентарь
+                    for (int i = 0; i < Math.min(newStacks.length, villagerInv.size()); i++) {
+                        villagerInv.setStack(i, newStacks[i]);
+                    }
+
+                    // Логируем ПОСЛЕ обновления
+                    TradeOverhaulMod.LOGGER.info("Client inventory AFTER:");
+                    for (int i = 0; i < Math.min(newStacks.length, villagerInv.size()); i++) {
+                        ItemStack s = villagerInv.getStack(i);
+                        if (!s.isEmpty()) {
+                            TradeOverhaulMod.LOGGER.info("  Slot {}: {} x{}", i, s.getName().getString(), s.getCount());
+                        }
+                    }
+
+                    // ✅ Обновляем слоты через setStack
+                    for (int i = 0; i < craftingHandler.slots.size(); i++) {
+                        Slot slot = craftingHandler.slots.get(i);
+                        if (i >= VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT) {
+                            int invIndex = i - VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT;
+                            if (invIndex < villagerInv.size()) {
+                                slot.setStack(villagerInv.getStack(invIndex));
+                            }
+                        }
+                    }
+
+                    // ✅ Обновляем GUI
+                    craftingHandler.sendContentUpdates();
+
+                    // ✅ Принудительно перерисовываем экран
+                    if (client.currentScreen instanceof VillagerInteractionScreen screen) {
+                        screen.refreshVillagerSlots();
+                    }
+
+                    TradeOverhaulMod.LOGGER.info("=== CLIENT SYNC COMPLETE ===");
                 } else {
-                    TradeOverhaulMod.LOGGER.warn("Inventory sync failed: player={}, handler={}, syncId match={}",
+                    TradeOverhaulMod.LOGGER.warn("Inventory sync failed: player={}, handler={}",
                             client.player != null,
-                            client.player.currentScreenHandler instanceof VillagerTradeScreenHandler,
-                            client.player != null && client.player.currentScreenHandler instanceof VillagerTradeScreenHandler ?
-                                    ((VillagerTradeScreenHandler) client.player.currentScreenHandler).syncId == payload.syncId() : "N/A");
+                            client.player != null && client.player.currentScreenHandler instanceof VillagerCraftingScreenHandler);
                 }
             });
         });

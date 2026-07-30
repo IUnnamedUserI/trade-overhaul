@@ -2924,4 +2924,14 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
 
         updateExpectedXp();
     }
+
+    // В VillagerInteractionScreen.java
+    public void refreshVillagerSlots() {
+        // Принудительно обновляем слоты жителя
+        if (handler != null) {
+            handler.sendContentUpdates();
+            // Перерисовываем слоты через positionSlots
+            positionSlots();
+        }
+    }
 }

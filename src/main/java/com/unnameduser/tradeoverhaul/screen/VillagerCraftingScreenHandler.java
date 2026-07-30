@@ -961,14 +961,15 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         return false;
     }
 
-    // Добавление предметов в инвентарь жителя
     private void addToVillagerInventory(ItemStack stack) {
         if (stack.isEmpty()) return;
+
+        TradeOverhaulMod.LOGGER.info("addToVillagerInventory called: {} x{}",
+                stack.getName().getString(), stack.getCount());
 
         int remaining = stack.getCount();
         int maxStack = stack.getMaxCount();
 
-        // Сначала пытаемся сложить с существующими стаками
         for (int i = 0; i < villagerInventory.size() && remaining > 0; i++) {
             ItemStack slotStack = villagerInventory.getStack(i);
             if (!slotStack.isEmpty() && ItemStack.areItemsEqual(slotStack, stack) && slotStack.getCount() < maxStack) {
@@ -976,19 +977,19 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
                 int add = Math.min(space, remaining);
                 slotStack.increment(add);
                 remaining -= add;
+                TradeOverhaulMod.LOGGER.info("  Added {} to existing slot {}, remaining: {}", add, i, remaining);
             }
         }
 
-        // Затем ищем пустые слоты
         for (int i = 0; i < villagerInventory.size() && remaining > 0; i++) {
             if (villagerInventory.getStack(i).isEmpty()) {
                 int add = Math.min(remaining, maxStack);
                 villagerInventory.setStack(i, stack.copyWithCount(add));
                 remaining -= add;
+                TradeOverhaulMod.LOGGER.info("  Added {} to empty slot {}, remaining: {}", add, i, remaining);
             }
         }
 
-        // Если остались предметы - значит нет места
         if (remaining > 0) {
             TradeOverhaulMod.LOGGER.warn("Not enough space in villager inventory for {}", stack.getName().getString());
         }
