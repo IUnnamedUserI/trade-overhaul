@@ -8,6 +8,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TradePanel {
     // Текстуры
     private static final Identifier PANEL_BG = new Identifier(TradeOverhaulMod.MOD_ID, "textures/gui/trade_panel_background.png");
@@ -207,7 +210,7 @@ public class TradePanel {
         context.getMatrices().pop();
 
         // 4. Текст "Amount: X" над ползунком
-        String amountStr = canAfford ? "Amount: " + currentAmount : "Amount: 0 (insufficient funds)";
+        String amountStr = canAfford ? "Amount: " + currentAmount : "Amount: 0";
         int amountWidth = textRenderer.getWidth(amountStr);
         context.drawText(textRenderer, Text.literal(amountStr), panelX + PANEL_WIDTH / 2 - amountWidth / 2, sliderY - 14, canAfford ? 0xFFFFFF : 0xFF4444, false);
 
@@ -222,16 +225,61 @@ public class TradePanel {
         // 7. Цена
         String priceStr;
         int priceColor;
+        boolean isExpensive = false; // Флаг для уменьшения шрифта
+
         if (canAfford) {
-            priceStr = "Price: " + totalPrice + " copper";
+            int price = totalPrice;
+            int gold = Math.floorDiv(price, 10000);
+            int remainder = price % 10000;
+
+            int silver = Math.floorDiv(remainder, 100);
+            int copper = remainder % 100;
+
+            List<String> parts = new ArrayList<>();
+            if (gold > 0) parts.add(String.format("%d gold", gold));
+            if (silver > 0) parts.add(String.format("%d silver", silver));
+            if (copper > 0) parts.add(String.format("%d copper", copper));
+
+            // Если цена 0, показываем хотя бы медь
+            if (parts.isEmpty()) parts.add("0c");
+
+            String totalPriceString = String.join(", ", parts);
+            priceStr = "Price: " + totalPriceString;
             priceColor = 0xFFFFAA;
+
+            if ((silver > 0 && copper > 0) || (silver > 0 && gold > 0) || (gold > 0 && copper > 0)) {
+                isExpensive = true;
+            }
+
         } else {
-            priceStr = "Price: " + pricePerUnit + " copper (need more)";
+            priceStr = "Price: " + pricePerUnit + "c";
             priceColor = 0xFF4444;
         }
-        int priceWidth = textRenderer.getWidth(priceStr);
-        context.drawText(textRenderer, Text.literal(priceStr), panelX + PANEL_WIDTH / 2 - priceWidth / 2, buttonY - 16, priceColor, false);
 
+// --- ОТРИСОВКА ---
+        int textY = buttonY - 16;
+        float scale = 1.0f;
+
+// Если текст дорогой, уменьшаем масштаб
+        if (isExpensive) {
+            scale = 0.85f; // Уменьшаем до 85%
+        }
+
+        int priceWidth = (int) (textRenderer.getWidth(priceStr) * scale);
+        int centerX = panelX + PANEL_WIDTH / 2;
+        int finalX = centerX - priceWidth / 2;
+
+// Сохраняем состояние матрицы
+        context.getMatrices().push();
+// Перемещаем точку отсчета, масштабируем и возвращаем обратно
+        context.getMatrices().translate(finalX, textY, 0);
+        context.getMatrices().scale(scale, scale, 1.0f);
+
+// Рисуем текст в точке (0, 0) относительно текущего смещения матрицы
+        context.drawText(textRenderer, Text.literal(priceStr), 0, 0, priceColor, false);
+
+// Восстанавливаем матрицу, чтобы не сломать остальной интерфейс
+        context.getMatrices().pop();
         // 8. Кнопка (3 состояния)
         boolean hovered = isMouseOverButton(mouseX, mouseY);
         boolean enabled = isEnabled();

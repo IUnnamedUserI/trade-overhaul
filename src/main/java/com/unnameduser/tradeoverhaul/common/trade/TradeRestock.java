@@ -92,6 +92,8 @@ public final class TradeRestock {
 			inv.setStack(i, ItemStack.EMPTY);
 		}
 
+		data.tradeOverhaul$getProfession().resetTradeTrackers();
+
 		// Применяем деградацию опыта, если рабочий блок потерян
 		data.tradeOverhaul$getProfession().applyWorkstationDecay();
 

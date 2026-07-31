@@ -21,6 +21,7 @@ import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.text.Text;
@@ -245,6 +246,9 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     private int tradeBarHeight;
     private int professionTextX;
     private int professionTextY;
+
+    private Map<String, Integer> clientBoughtTracker = new HashMap<>();
+    private Map<String, Integer> clientSoldTracker = new HashMap<>();
 
     private static record CraftBuySlotInfo(net.minecraft.client.util.math.Rect2i bounds, ItemStack stack, int price) {}
 
@@ -1207,13 +1211,22 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
             }
         }
 
-        // === 5. СЛОТЫ ЖИТЕЛЯ (только для TRADE) ===
+        // === 5. СЛОТЫ ЖИТЕЛЯ (ВИРТУАЛЬНОЕ ОТОБРАЖЕНИЕ) ===
         if (currentTab == TabType.TRADE) {
             int villagerStartX = villagerPanelX + scaledInvSlotStartX;
             int villagerStartY = villagerPanelY + scaledInvSlotStartY;
 
-            // ✅ Получаем актуальный инвентарь жителя из handler'а
-            VillagerInventoryComponent villagerInv = handler.getVillagerInventory();
+            // Мы хотим показать только один "суммарный" предмет, если он есть.
+            // Или можно показывать первый непустой слот, но с общим количеством.
+
+            // Находим первый непустой слот для получения шаблона предмета
+            ItemStack firstStack = ItemStack.EMPTY;
+            for (int i = 0; i < handler.getVillagerInventory().size(); i++) {
+                if (!handler.getVillagerInventory().getStack(i).isEmpty()) {
+                    firstStack = handler.getVillagerInventory().getStack(i);
+                    break;
+                }
+            }
 
             for (int row = 0; row < BASE_GRID_ROWS; row++) {
                 for (int col = 0; col < BASE_GRID_COLS; col++) {
@@ -1225,11 +1238,13 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                     context.drawTexture(SLOT_TEX, slotX, slotY, 0, 0,
                             scaledSlotSize, scaledSlotSize, SLOT_TEX_W, SLOT_TEX_H);
 
-                    // ✅ Рисуем предмет, если есть
-                    ItemStack stack = villagerInv.getStack(index);
-                    if (!stack.isEmpty()) {
-                        context.drawItem(stack, slotX + 1, slotY + 1);
-                        context.drawItemInSlot(textRenderer, stack, slotX + 1, slotY + 1);
+                    // ✅ Рисуем ВИРТУАЛЬНЫЙ стак для первого слота, остальные пустые или скрытые
+                    if (index == 0 && !firstStack.isEmpty()) {
+                        ItemStack virtualStack = handler.getVirtualTradeStack(0); // Получаем суммарный стак
+                        if (!virtualStack.isEmpty()) {
+                            context.drawItem(virtualStack, slotX + 1, slotY + 1);
+                            context.drawItemInSlot(textRenderer, virtualStack, slotX + 1, slotY + 1);
+                        }
                     }
                 }
             }
@@ -2865,19 +2880,54 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     }
 
     // Метод для обновления предварительного опыта
+    // Метод для обновления предварительного опыта
     private void updateExpectedXp() {
-        if (tradePanel != null && tradePanel.isVisible()) {
-            int slotIndex = tradePanel.getSlotIndex();
-            int amount = tradePanel.getCurrentAmount();
-            if (tradePanel.isBuying()) {
-                this.expectedXp = handler.getExpectedXpForBuy(slotIndex, amount);
+        if (tradePanel == null || !tradePanel.isVisible()) {
+            this.expectedXp = 0f;
+            return;
+        }
+
+        int slotIndex = tradePanel.getSlotIndex();
+        int amount = tradePanel.getCurrentAmount();
+        boolean buying = tradePanel.isBuying();
+
+        Slot slot = handler.getSlot(slotIndex);
+        if (slot == null || slot.getStack().isEmpty()) {
+            this.expectedXp = 0f;
+            return;
+        }
+
+        String itemId = net.minecraft.registry.Registries.ITEM.getId(slot.getStack().getItem()).toString();
+
+        // Получаем базовый множитель опыта
+        float multiplier = 1.0f;
+        var profFile = com.unnameduser.tradeoverhaul.common.config.TradeConfigLoader.getProfession(Identifier.tryParse(handler.getProfessionId()));
+        if (profFile != null) {
+            Float poolMult = profFile.findXpMultiplierForItem(itemId);
+            multiplier = (poolMult != null) ? poolMult : com.unnameduser.tradeoverhaul.common.config.VillagerXpConfig.getXpMultiplier(itemId);
+        }
+
+        int xpAmount = 0;
+
+        if (buying) {
+            // Игрок покупает. Проверяем SoldTracker (продавал ли он это ранее)
+            int soldCount = clientSoldTracker.getOrDefault(itemId, 0);
+            if (soldCount >= amount) {
+                xpAmount = 0; // Полностью покрывается предыдущими продажами
             } else {
-                ItemStack stack = handler.getSlot(slotIndex).getStack();
-                this.expectedXp = handler.getExpectedXpForSell(stack, amount);
+                xpAmount = amount - soldCount; // Опыт только за разницу
             }
         } else {
-            this.expectedXp = 0f;
+            // Игрок продает. Проверяем BoughtTracker (покупал ли он это ранее)
+            int boughtCount = clientBoughtTracker.getOrDefault(itemId, 0);
+            if (boughtCount >= amount) {
+                xpAmount = 0; // Полностью покрывается предыдущими покупками
+            } else {
+                xpAmount = amount - boughtCount; // Опыт только за разницу
+            }
         }
+
+        this.expectedXp = multiplier * Math.max(0, xpAmount);
     }
 
     private boolean isPointOverTradePanel(double mouseX, double mouseY) {
@@ -2933,5 +2983,26 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
             // Перерисовываем слоты через positionSlots
             positionSlots();
         }
+    }
+
+    // Вызывай этот метод из сетевого пакета или хендлера при получении данных
+    public void updateTradeTrackers(NbtCompound trackersNbt) {
+        if (trackersNbt != null) {
+            if (trackersNbt.contains("Bought")) {
+                NbtCompound boughtNbt = trackersNbt.getCompound("Bought");
+                clientBoughtTracker.clear();
+                for (String key : boughtNbt.getKeys()) {
+                    clientBoughtTracker.put(key, boughtNbt.getInt(key));
+                }
+            }
+            if (trackersNbt.contains("Sold")) {
+                NbtCompound soldNbt = trackersNbt.getCompound("Sold");
+                clientSoldTracker.clear();
+                for (String key : soldNbt.getKeys()) {
+                    clientSoldTracker.put(key, soldNbt.getInt(key));
+                }
+            }
+        }
+        updateExpectedXp(); // Сразу пересчитываем опыт
     }
 }

@@ -506,7 +506,16 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         }
         if (price <= 0) price = 1;
 
-        int wantToBuy = buyWholeStack ? villagerStack.getCount() : (buyTen ? Math.min(10, villagerStack.getCount()) : 1);
+        // ✅ ВАЖНО: Для виртуального отображения считаем общее количество предмета во всем инвентаре
+        int totalAvailable = 0;
+        for (int i = 0; i < villagerInventory.size(); i++) {
+            ItemStack s = villagerInventory.getStack(i);
+            if (!s.isEmpty() && ItemStack.canCombine(s, villagerStack)) {
+                totalAvailable += s.getCount();
+            }
+        }
+
+        int wantToBuy = buyWholeStack ? totalAvailable : (buyTen ? Math.min(10, totalAvailable) : 1);
         int maxCanBuy = NumismaticHelper.getTotalMoney(player) / price;
         int toBuy = Math.min(wantToBuy, maxCanBuy);
         if (toBuy <= 0) return;
@@ -523,7 +532,8 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         int totalCost = toBuy * price;
         NumismaticHelper.removeMoney(player, totalCost);
 
-        villagerStack.decrement(toBuy);
+        // ✅ ИСПРАВЛЕНО: используем villagerStack как шаблон для поиска предметов во всех стаках
+        removeItemsFromVillagerInventory(villagerStack, toBuy);
 
         if (villager instanceof VillagerTradeData data) {
             data.tradeOverhaul$getCurrency().addMoney(totalCost);
@@ -539,14 +549,25 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
                     villager.setVillagerData(villager.getVillagerData().withLevel(modLevel));
                 }
             }
-            NbtCompound soldItemsTracker = new NbtCompound();
-            for (Map.Entry<String, Integer> e : data.tradeOverhaul$getProfession().soldItemsTracker.entrySet()) {
-                soldItemsTracker.putInt(e.getKey(), e.getValue());
+
+            // Синхронизация трекеров
+            NbtCompound trackersNbt = new NbtCompound();
+            NbtCompound boughtNbt = new NbtCompound();
+            for (Map.Entry<String, Integer> e : data.tradeOverhaul$getProfession().boughtTracker.entrySet()) {
+                boughtNbt.putInt(e.getKey(), e.getValue());
             }
+            trackersNbt.put("Bought", boughtNbt);
+
+            NbtCompound soldNbt = new NbtCompound();
+            for (Map.Entry<String, Integer> e : data.tradeOverhaul$getProfession().soldTracker.entrySet()) {
+                soldNbt.putInt(e.getKey(), e.getValue());
+            }
+            trackersNbt.put("Sold", soldNbt);
+
             com.unnameduser.tradeoverhaul.common.network.ModNetworking.sendProfessionLevelSync(
                     player, this.syncId, data.tradeOverhaul$getProfession().getLevel(),
                     data.tradeOverhaul$getProfession().getExperience(), data.tradeOverhaul$getProfession().getTradesCompleted(),
-                    data.tradeOverhaul$getProfession().getFractionalXpAccumulator(), soldItemsTracker);
+                    data.tradeOverhaul$getProfession().getFractionalXpAccumulator(), trackersNbt);
         }
         sendContentUpdates();
         com.unnameduser.tradeoverhaul.common.network.ModNetworking.sendInventorySync(player, this.syncId, villagerInventory);
@@ -828,6 +849,7 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         if (!(villager instanceof VillagerTradeData data)) return;
 
         String itemId = Registries.ITEM.getId(stack.getItem()).toString();
+        var professionComp = data.tradeOverhaul$getProfession();
 
         if (buying) {
             // ============ ПОКУПКА у жителя ============
@@ -838,108 +860,103 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
             int playerMoney = NumismaticHelper.getTotalMoney(player);
             if (playerMoney < totalPrice) return;
 
-            // Проверяем место в инвентаре игрока
             ItemStack copyToInsert = stack.copyWithCount(amount);
             if (!player.getInventory().insertStack(copyToInsert)) {
                 player.sendMessage(Text.literal("§cNo space in inventory!"), false);
                 return;
             }
 
-            // Снимаем деньги с игрока
             NumismaticHelper.removeMoney(player, totalPrice);
-
-            // Уменьшаем количество в слоте жителя
             stack.decrement(amount);
-
-            // Добавляем деньги жителю
             data.tradeOverhaul$getCurrency().addMoney(totalPrice);
-            data.tradeOverhaul$getProfession().markAsTraded();
+            professionComp.markAsTraded();
 
-            // Начисляем опыт
-            boolean wasPlayerSold = ItemTagHelper.isPlayerSold(stack);
-            if (!wasPlayerSold) {
-                data.tradeOverhaul$getProfession().applyXpFromSale(itemId, amount, professionFile);
+            // === ЛОГИКА БЕЗ ТЕГОВ ===
+            // Проверяем SoldTracker (продавал ли игрок это ранее)
+            int xpAmount = professionComp.updateTrackerAndGetXpAmount(professionComp.soldTracker, itemId, amount);
+
+            if (xpAmount > 0) {
+                // Даём опыт только за "новые" предметы
+                professionComp.applyXpFromSale(itemId, xpAmount, professionFile);
+                // Добавляем в BoughtTracker
+                professionComp.boughtTracker.merge(itemId, amount, Integer::sum);
             }
 
         } else {
             // ============ ПРОДАЖА жителю ============
             int price = getClientSellPrice(stack);
-            if (price <= 0) {
-                return;
-            }
+            if (price <= 0) return;
 
             int totalPrice = price * amount;
             int villagerMoney = data.tradeOverhaul$getCurrency().getTotalCopper();
-            if (villagerMoney < totalPrice) {
-                return;
-            }
+            if (villagerMoney < totalPrice) return;
 
-            // Проверяем, есть ли место в инвентаре жителя
-            if (!hasVillagerSpaceForStack(stack, amount)) {
-                return;
-            }
+            if (!hasVillagerSpaceForStack(stack, amount)) return;
 
-            // ✅ Проверяем, что у игрока есть столько предметов
-            // Находим слот с этим предметом в инвентаре игрока
-            int playerSlotIndex = -1;
             PlayerInventory inv = player.getInventory();
+            int playerSlotIndex = -1;
             for (int i = 0; i < inv.size(); i++) {
                 ItemStack s = inv.getStack(i);
-                if (!s.isEmpty() && ItemStack.areItemsEqual(s, stack) && s.getCount() >= amount) {
+                if (!s.isEmpty() && ItemStack.canCombine(s, stack) && s.getCount() >= amount) {
                     playerSlotIndex = i;
                     break;
                 }
             }
+            if (playerSlotIndex == -1) return;
 
-            if (playerSlotIndex == -1) {
-                return;
-            }
-
-            // Убираем предметы из инвентаря игрока
             ItemStack playerStack = inv.getStack(playerSlotIndex);
             if (playerStack.getCount() < amount) return;
+
+            // Создаем копию ДО уменьшения
+            ItemStack toAdd = playerStack.copyWithCount(amount);
             playerStack.decrement(amount);
 
-            // ✅ Добавляем предметы жителю с правильной NBT-меткой
-            ItemStack toAdd = stack.copyWithCount(amount);
-            ItemTagHelper.markAsPlayerSold(toAdd); // Помечаем как проданный игроком
             addToVillagerInventory(toAdd);
 
-            // ✅ Снимаем деньги с жителя
             data.tradeOverhaul$getCurrency().removeMoney(totalPrice);
-
-            // ✅ Добавляем деньги игроку
             NumismaticHelper.addMoney(player, totalPrice);
+            professionComp.markAsTraded();
 
-            data.tradeOverhaul$getProfession().markAsTraded();
+            // === ЛОГИКА БЕЗ ТЕГОВ ===
+            // Проверяем BoughtTracker (покупал ли игрок это ранее)
+            int xpAmount = professionComp.updateTrackerAndGetXpAmount(professionComp.boughtTracker, itemId, amount);
 
-            // ✅ Начисляем опыт за продажу
-            boolean wasVillagerSold = ItemTagHelper.isVillagerSold(stack);
-            boolean isSoldByVillager = professionFile != null && professionFile.isItemSoldByVillager(itemId);
-            if (!wasVillagerSold && isSoldByVillager) {
-                data.tradeOverhaul$getProfession().applyXpFromSale(itemId, amount, professionFile);
+            if (xpAmount > 0) {
+                // Даём опыт только за "новые" предметы
+                professionComp.applyXpFromSale(itemId, xpAmount, professionFile);
+                // Добавляем в SoldTracker
+                professionComp.soldTracker.merge(itemId, amount, Integer::sum);
             }
         }
 
-        // ✅ Синхронизируем уровень жителя с ванильным
-        int modLevel = data.tradeOverhaul$getProfession().getLevel();
+        // Синхронизация уровня
+        int modLevel = professionComp.getLevel();
         if (modLevel > villager.getVillagerData().getLevel()) {
             villager.setVillagerData(villager.getVillagerData().withLevel(modLevel));
         }
 
-        // ✅ Синхронизируем с клиентом
-        NbtCompound soldItemsTracker = new NbtCompound();
-        for (Map.Entry<String, Integer> e : data.tradeOverhaul$getProfession().soldItemsTracker.entrySet()) {
-            soldItemsTracker.putInt(e.getKey(), e.getValue());
+        // Синхронизация данных с клиентом
+        NbtCompound trackersNbt = new NbtCompound();
+
+        NbtCompound boughtNbt = new NbtCompound();
+        for (Map.Entry<String, Integer> e : professionComp.boughtTracker.entrySet()) {
+            boughtNbt.putInt(e.getKey(), e.getValue());
         }
+        trackersNbt.put("Bought", boughtNbt);
+
+        NbtCompound soldNbt = new NbtCompound();
+        for (Map.Entry<String, Integer> e : professionComp.soldTracker.entrySet()) {
+            soldNbt.putInt(e.getKey(), e.getValue());
+        }
+        trackersNbt.put("Sold", soldNbt);
 
         com.unnameduser.tradeoverhaul.common.network.ModNetworking.sendProfessionLevelSync(
                 player, this.syncId,
-                data.tradeOverhaul$getProfession().getLevel(),
-                data.tradeOverhaul$getProfession().getExperience(),
-                data.tradeOverhaul$getProfession().getTradesCompleted(),
-                data.tradeOverhaul$getProfession().getFractionalXpAccumulator(),
-                soldItemsTracker
+                professionComp.getLevel(),
+                professionComp.getExperience(),
+                professionComp.getTradesCompleted(),
+                professionComp.getFractionalXpAccumulator(),
+                trackersNbt
         );
 
         sendContentUpdates();
@@ -964,34 +981,89 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
     private void addToVillagerInventory(ItemStack stack) {
         if (stack.isEmpty()) return;
 
-        TradeOverhaulMod.LOGGER.info("addToVillagerInventory called: {} x{}",
-                stack.getName().getString(), stack.getCount());
+        ItemStack toAdd = stack.copy();
+        int remaining = toAdd.getCount();
+        int maxStack = toAdd.getMaxCount();
 
-        int remaining = stack.getCount();
-        int maxStack = stack.getMaxCount();
-
+        // 1. Сначала пытаемся дополнить существующие стаки
         for (int i = 0; i < villagerInventory.size() && remaining > 0; i++) {
             ItemStack slotStack = villagerInventory.getStack(i);
-            if (!slotStack.isEmpty() && ItemStack.areItemsEqual(slotStack, stack) && slotStack.getCount() < maxStack) {
+            if (!slotStack.isEmpty() && ItemStack.canCombine(slotStack, toAdd)) {
                 int space = maxStack - slotStack.getCount();
-                int add = Math.min(space, remaining);
-                slotStack.increment(add);
-                remaining -= add;
-                TradeOverhaulMod.LOGGER.info("  Added {} to existing slot {}, remaining: {}", add, i, remaining);
+                if (space > 0) {
+                    int add = Math.min(space, remaining);
+                    // Создаем новый стак, чтобы гарантировать обновление слота
+                    ItemStack newStack = slotStack.copy();
+                    newStack.increment(add);
+                    villagerInventory.setStack(i, newStack);
+                    remaining -= add;
+                }
             }
         }
 
+        // 2. Если осталось, ищем пустые слоты
         for (int i = 0; i < villagerInventory.size() && remaining > 0; i++) {
             if (villagerInventory.getStack(i).isEmpty()) {
                 int add = Math.min(remaining, maxStack);
-                villagerInventory.setStack(i, stack.copyWithCount(add));
+                villagerInventory.setStack(i, toAdd.copyWithCount(add));
                 remaining -= add;
-                TradeOverhaulMod.LOGGER.info("  Added {} to empty slot {}, remaining: {}", add, i, remaining);
             }
         }
 
         if (remaining > 0) {
-            TradeOverhaulMod.LOGGER.warn("Not enough space in villager inventory for {}", stack.getName().getString());
+            TradeOverhaulMod.LOGGER.warn("Not enough space in villager inventory for {} x{}",
+                    stack.getName().getString(), remaining);
         }
+
+        villagerInventory.markDirty();
+    }
+
+    // === ВИРТУАЛЬНЫЕ СЛОТЫ ДЛЯ ОТОБРАЖЕНИЯ ===
+
+    /**
+     * Возвращает виртуальный стак, содержащий СУММАРНОЕ количество указанного предмета
+     * во всем инвентаре жителя.
+     */
+    public ItemStack getVirtualTradeStack(int slotIndex) {
+        if (slotIndex < 0 || slotIndex >= villagerInventory.size()) return ItemStack.EMPTY;
+
+        ItemStack template = villagerInventory.getStack(slotIndex);
+        if (template.isEmpty()) return ItemStack.EMPTY;
+
+        // Считаем общее количество таких же предметов во всем инвентаре
+        int totalCount = 0;
+        for (int i = 0; i < villagerInventory.size(); i++) {
+            ItemStack s = villagerInventory.getStack(i);
+            if (!s.isEmpty() && ItemStack.canCombine(s, template)) {
+                totalCount += s.getCount();
+            }
+        }
+
+        if (totalCount == 0) return ItemStack.EMPTY;
+
+        // Создаем копию с "невозможным" количеством для отображения
+        ItemStack virtual = template.copy();
+        virtual.setCount(totalCount);
+        return virtual;
+    }
+
+    /**
+     * Умножает удаление предмета из инвентаря жителя.
+     * Забирает 'amount' штук, распределяя удаление по реальным стакам.
+     */
+    public void removeItemsFromVillagerInventory(ItemStack template, int amount) {
+        int remainingToRemove = amount;
+        for (int i = 0; i < villagerInventory.size() && remainingToRemove > 0; i++) {
+            ItemStack slotStack = villagerInventory.getStack(i);
+            if (!slotStack.isEmpty() && ItemStack.canCombine(slotStack, template)) {
+                int take = Math.min(slotStack.getCount(), remainingToRemove);
+                slotStack.decrement(take);
+                remainingToRemove -= take;
+                if (slotStack.isEmpty()) {
+                    villagerInventory.setStack(i, ItemStack.EMPTY);
+                }
+            }
+        }
+        villagerInventory.markDirty();
     }
 }
