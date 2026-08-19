@@ -1,6 +1,7 @@
 package com.unnameduser.tradeoverhaul;
 
 import com.unnameduser.tradeoverhaul.client.gui.VillagerTradeScreenHandler;
+import com.unnameduser.tradeoverhaul.common.ModSounds;
 import com.unnameduser.tradeoverhaul.common.RecipeManager;
 import com.unnameduser.tradeoverhaul.common.command.DisassembleCommand;
 import com.unnameduser.tradeoverhaul.common.command.TradeOverhaulCommand;
@@ -64,6 +65,7 @@ public class TradeOverhaulMod implements ModInitializer {
 
 		LOGGER.info("Registering networking...");
 		ModNetworking.register();
+		ModSounds.register();
 
 		// Обработчик разборки
 		ServerPlayNetworking.registerGlobalReceiver(new Identifier(MOD_ID, "disassemble_request"), (server, player, handler, buf, responseSender) -> {

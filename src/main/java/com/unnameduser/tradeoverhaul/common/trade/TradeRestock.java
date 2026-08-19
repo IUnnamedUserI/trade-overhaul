@@ -286,7 +286,7 @@ public final class TradeRestock {
 
 	/**
 	 * Объединяет одинаковые стакающиеся предметы в одни слоты.
-	 * Нестекающиеся предметы (maxCount=1) остаются раздельными.
+	 * Нестекающиеся предметы ВСЕГДА разделяются на отдельные слоты по 1 штуке.
 	 */
 	private static List<ItemStack> mergeSimilarItems(List<ItemStack> stacks) {
 		List<ItemStack> result = new ArrayList<>();
@@ -294,26 +294,27 @@ public final class TradeRestock {
 		for (ItemStack stack : stacks) {
 			if (stack.isEmpty()) continue;
 
-			// Нестекающиеся предметы добавляем как есть
-			if (stack.getMaxCount() <= 1) {
-				result.add(stack.copy());
+			// Нестекающиеся предметы ВСЕГДА разделяем на отдельные слоты по 1 шт.
+			if (!stack.isStackable()) {
+				int count = stack.getCount();
+				for (int i = 0; i < count; i++) {
+					ItemStack single = stack.copy();
+					single.setCount(1);
+					result.add(single);
+				}
 				continue;
 			}
 
-			// Пытаемся добавить к существующему такому же предмету
+			// Стакабельные предметы объединяем как обычно
 			boolean merged = false;
 			for (ItemStack existing : result) {
-				if (ItemStack.canCombine(existing, stack)) {
-					int combined = existing.getCount() + stack.getCount();
-					if (combined <= existing.getMaxCount()) {
-						existing.setCount(combined);
-						merged = true;
-						break;
-					}
+				if (existing.isStackable() && ItemStack.canCombine(existing, stack)) {
+					existing.increment(stack.getCount());
+					merged = true;
+					break;
 				}
 			}
 
-			// Если не удалось объединить, добавляем как новый слот
 			if (!merged) {
 				result.add(stack.copy());
 			}
@@ -414,6 +415,15 @@ public final class TradeRestock {
 				int max = entry.maxStock != null ? entry.maxStock : settings.maxStockDefault;
 				min = Math.max(1, min);
 				max = Math.max(min, max);
+
+				// Для не-стакабельных предметов НЕ ограничиваем count через getMaxCount()
+				// чтобы конфиг мог задавать minStock/maxStock > 1 для инструментов/оружия
+				if (item.getMaxCount() > 1) {
+					int maxStack = item.getMaxCount();
+					min = Math.min(min, maxStack);
+					max = Math.min(max, maxStack);
+				}
+
 				int count = min == max ? min : random.nextInt(max - min + 1) + min;
 
 				ItemStack stack = new ItemStack(item, count);
@@ -469,9 +479,14 @@ public final class TradeRestock {
 				int max = entry.maxStock != null ? entry.maxStock : settings.maxStockDefault;
 				min = Math.max(1, min);
 				max = Math.max(min, max);
-				int maxStack = pick.getMaxCount();
-				min = Math.min(min, maxStack);
-				max = Math.min(max, maxStack);
+
+				// Для не-стакабельных предметов НЕ ограничиваем count через getMaxCount()
+				if (pick.getMaxCount() > 1) {
+					int maxStack = pick.getMaxCount();
+					min = Math.min(min, maxStack);
+					max = Math.min(max, maxStack);
+				}
+
 				int count = min == max ? min : random.nextInt(max - min + 1) + min;
 
 				ItemStack stack = new ItemStack(pick, count);
@@ -699,9 +714,14 @@ public final class TradeRestock {
 			int max = entry.maxStock != null ? entry.maxStock : settings.maxStockDefault;
 			min = Math.max(1, min);
 			max = Math.max(min, max);
-			int maxStack = pick.getMaxCount();
-			min = Math.min(min, maxStack);
-			max = Math.min(max, maxStack);
+
+			// Для не-стакабельных предметов НЕ ограничиваем count через getMaxCount()
+			if (pick.getMaxCount() > 1) {
+				int maxStack = pick.getMaxCount();
+				min = Math.min(min, maxStack);
+				max = Math.min(max, maxStack);
+			}
+
 			int count = min == max ? min : random.nextInt(max - min + 1) + min;
 
 			return new ItemStack(pick, count);

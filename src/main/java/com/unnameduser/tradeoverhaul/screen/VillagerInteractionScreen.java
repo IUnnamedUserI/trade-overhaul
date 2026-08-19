@@ -26,6 +26,8 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import com.unnameduser.tradeoverhaul.common.ModSounds;
+import net.minecraft.sound.SoundEvent;
 
 import java.util.*;
 
@@ -97,6 +99,7 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     private static final Identifier INV_BG_TEX = new Identifier(TradeOverhaulMod.MOD_ID, "textures/gui/inventory_background.png");
     private static final Identifier ACTIVE_SLOT_TEX = new Identifier(TradeOverhaulMod.MOD_ID, "textures/gui/active_slot.png");
     private static final Identifier LOCKED_SLOT_TEX = new Identifier(TradeOverhaulMod.MOD_ID, "textures/gui/locked_slot.png");
+    private static final Identifier CROSS_TEX = new Identifier(TradeOverhaulMod.MOD_ID, "textures/gui/cross.png");
 
     private static final int PANEL_TEX_W = 125;
     private static final int PANEL_TEX_H = 190;
@@ -250,6 +253,9 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     private Map<String, Integer> clientBoughtTracker = new HashMap<>();
     private Map<String, Integer> clientSoldTracker = new HashMap<>();
 
+    private int recipePanelX;
+    private int recipePanelY;
+
     private static record CraftBuySlotInfo(net.minecraft.client.util.math.Rect2i bounds, ItemStack stack, int price) {}
 
     public VillagerInteractionScreen(VillagerCraftingScreenHandler handler, PlayerInventory inventory, Text title) {
@@ -339,12 +345,12 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
 
     private void createSearchField() {
         if (searchField != null) remove(searchField);
-        int x = (this.width - this.backgroundWidth) / 2;
-        int y = (this.height - this.backgroundHeight) / 2;
-        int panelX = x + this.recipesX - 30;
-        int panelY = y + this.panelY - 30;
 
-        searchField = new TextFieldWidget(this.textRenderer, panelX + 5, panelY + 22, recipesPanelWidth - 10, 14, Text.literal("Search"));
+        int fieldWidth = panelWidth - 16; // Уменьшено: было -10, стало -16
+        int fieldX = recipePanelX + 8;   // Увеличен отступ слева
+        int fieldY = recipePanelY + 22;
+
+        searchField = new TextFieldWidget(this.textRenderer, fieldX, fieldY, fieldWidth, 14, Text.literal("Search"));
         searchField.setMaxLength(50);
         searchField.setDrawsBackground(true);
         searchField.setVisible(showRecipesPanel);
@@ -430,10 +436,12 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                     slotObj.y = villagerStartY + row * scaledSlotStep + 1;
                     villagerSlotIndex++;
                 } else {
-                    slotObj.x = -1000;
-                    slotObj.y = -1000;
-                    villagerSlotIndex++;
-                }
+                        // Всегда скрываем слоты жителя от стандартного рендеринга
+                        // Они рисуются кастомно в drawSlotBackgrounds
+                        slotObj.x = -1000;
+                        slotObj.y = -1000;
+                        villagerSlotIndex++;
+                    }
             }
         }
     }
@@ -446,20 +454,13 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     private void createRecipeList() {
         if (recipeListPanel != null) remove(recipeListPanel);
 
-        // Координаты для инициализации виджета
-        int x = (this.width - this.backgroundWidth) / 2;
-        int y = (this.height - this.backgroundHeight) / 2;
+        int listWidth = panelWidth - 4;
+        int listHeight = panelHeight - 42;
+        int listX = recipePanelX + 2;
+        int listY = recipePanelY + 40;
 
-        // ✅ Используем this.recipesX напрямую (абсолютная координата)
-        int panelX = x + this.recipesX - 30;
-        int panelY = y + this.panelY - 30;
-
-        int listWidth = recipesPanelWidth - 4;
-        int listHeight = recipesPanelHeight - 42;
-
-        recipeListPanel = new RecipeListPanel(this, panelX + 2, panelY + 40, listWidth, listHeight, availableRecipes,
+        recipeListPanel = new RecipeListPanel(this, listX, listY, listWidth, listHeight, availableRecipes,
                 () -> onRecipeSelected(recipeListPanel.getSelectedRecipe()));
-
         addDrawableChild(recipeListPanel);
 
         if (!availableRecipes.isEmpty()) {
@@ -467,6 +468,7 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
             currentRecipe = null;
             selectedRecipeIndex = -1;
         }
+
         updatePanelVisibility();
     }
 
@@ -851,64 +853,23 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
 
         // === ВКЛАДКА: ТОРГОВЛЯ ===
         if (currentTab == TabType.TRADE) {
-            drawPanels(context);
-            // Рисуем стандартные слоты и предметы
+            // Рисуем стандартные слоты ИГРОКА через super.render()
+            // Слоты жителя скрыты в positionSlots() и рисуются кастомно
             super.render(context, mouseX, mouseY, delta);
+            drawLockedCrosses(context);
+            drawDimmedSlots(context);
             this.drawMouseoverTooltip(context, mouseX, mouseY);
 
-            // === РИСУЕМ ФОНЫ ПАНЕЛЕЙ ===
-            // Панель игрока (всегда)
-            context.drawTexture(INV_BG_TEX,
-                    playerPanelX, playerPanelY,
-                    0, 0,
-                    panelWidth, panelHeight,           // Размер на экране (масштабируемый)
-                    BASE_PANEL_WIDTH, BASE_PANEL_HEIGHT // Реальный размер текстуры (всегда базовый)
-            );
-
-            // Надпись "INVENTORY"
-            context.getMatrices().push();
-            context.getMatrices().translate(
-                    playerPanelX + (int)(BASE_INV_LABEL_X * scaleFactor),
-                    playerPanelY + (int)(BASE_INV_LABEL_Y * scaleFactor),
-                    0
-            );
-            float textScale = 0.8f * scaleFactor;
-            context.getMatrices().scale(textScale, textScale, 1.0f);
-            context.drawText(this.textRenderer, Text.literal("INVENTORY"), 0, 0, 0xFFFFFF, false);
-            context.getMatrices().pop();
-
-            // Панель жителя
-            context.drawTexture(INV_BG_TEX,
-                    villagerPanelX, villagerPanelY,
-                    0, 0,
-                    panelWidth, panelHeight,
-                    BASE_PANEL_WIDTH, BASE_PANEL_HEIGHT
-            );
-
-            String debugText = String.format("P: %d,%d | V: %d,%d | Scale: %.2f | Gap: %d",
-                    playerPanelX, playerPanelY, villagerPanelX, villagerPanelY,
-                    scaleFactor, (int)(BASE_GAP_BETWEEN_PANELS * scaleFactor));
-            context.drawText(this.textRenderer, Text.literal(debugText),
-                    10, 10, 0xFFFFFF, false);
-
-            // Интерфейс торговли
             drawTradePanel(context, mouseX, mouseY, delta);
 
             // Валюта игрока
             int playerMoney = NumismaticHelper.getTotalMoney(this.client.player);
             drawCurrencyWithIcons(context, playerMoney,
                     playerPanelX + (int)(4 * scaleFactor),
-                    playerPanelY + (int)(BASE_INV_LABEL_Y * scaleFactor) - (int)(4 * scaleFactor)
-            );
-
-            drawBackground(context, delta, mouseX, mouseY);
+                    playerPanelY + (int)(BASE_INV_LABEL_Y * scaleFactor) - (int)(4 * scaleFactor));
 
             if (tradePanel != null && tradePanel.isVisible()) {
                 tradePanel.render(context, mouseX, mouseY);
-
-                if (hasSelectedTradeSlot && tradePanel.canAfford()) {
-                    // ToDo: Показать предварительный опыт
-                }
             }
         }
 
@@ -916,6 +877,7 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         else if (currentTab == TabType.CRAFT) {
             // 1. Рисуем стандартные слоты (инвентарь игрока)
             super.render(context, mouseX, mouseY, delta);
+            drawLockedCrosses(context);
             this.drawMouseoverTooltip(context, mouseX, mouseY);
 
             int panelX = x + this.recipesX - 30;  // ~410px от левого края экрана
@@ -923,14 +885,24 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
 
             // 3. Рисуем фон панели рецептов
             if (showRecipesPanel) {
-                context.fill(panelX, panelY, panelX + recipesPanelWidth, panelY + recipesPanelHeight, 0xCC000000);
-                context.fill(panelX + 1, panelY + 1, panelX + recipesPanelWidth - 1, panelY + recipesPanelHeight - 1, 0xCC333333);
-                context.drawBorder(panelX, panelY, recipesPanelWidth, recipesPanelHeight, 0xFFAAAAAA);
-                context.drawText(this.textRenderer, Text.literal("Recipes"), panelX + 5, panelY + 5, 0xFFFFFF, false);
+                context.drawTexture(INV_BG_TEX,
+                        recipePanelX, recipePanelY,
+                        0, 0, panelWidth, panelHeight,
+                        BASE_PANEL_WIDTH, BASE_PANEL_HEIGHT);
+
+                // Надпись "RECIPES"
+                context.getMatrices().push();
+                context.getMatrices().translate(
+                        recipePanelX + (int)(BASE_INV_LABEL_X * scaleFactor),
+                        recipePanelY + (int)(BASE_INV_LABEL_Y * scaleFactor), 0);
+                float textScale = 0.8f * scaleFactor;
+                context.getMatrices().scale(textScale, textScale, 1.0f);
+                context.drawText(this.textRenderer, Text.literal("RECIPES"), 0, 0, 0x8E7D6E, false);
+                context.getMatrices().pop();
 
                 // ✅ Принудительная отрисовка списка рецептов
                 if (recipeListPanel != null) {
-                    recipeListPanel.setPosition(panelX + 2, panelY + 40);
+                    recipeListPanel.setPosition(recipePanelX + 2, recipePanelY + 40);
                     recipeListPanel.render(context, mouseX, mouseY, delta);
                 } else {
                     context.drawText(this.textRenderer, Text.literal("Loading..."), panelX + 10, panelY + 50, 0x888888, false);
@@ -972,6 +944,7 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         else if (currentTab == TabType.DISASSEMBLE) {
             // Рисуем слоты игрока
             super.render(context, mouseX, mouseY, delta);
+            drawLockedCrosses(context);
             this.drawMouseoverTooltip(context, mouseX, mouseY);
 
             int playerMoney = NumismaticHelper.getTotalMoney(this.client.player);
@@ -983,78 +956,69 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
 
         // === ВКЛАДКА: РЕМОНТ ===
         else if (currentTab == TabType.REPAIR) {
-            // Фон инвентаря
-            context.drawTexture(INV_BG_TEX, inventoryX, inventoryY, 0, 0, INV_BG_W, INV_BG_H, INV_BG_W, INV_BG_H);
+            // Фон панели игрока — одна текстура, правильная позиция
+            drawPanels(context);
 
             // Слоты с повреждёнными предметами
             renderRepairSlots(context, mouseX, mouseY);
 
-            // Правая панель
-            int rightPanelX = x + this.inventoryX + (GRID_COLS * SLOT_STEP) + 120;
-            int rightPanelY = y + this.panelY - 30;
-            int rightPanelWidth = REPAIR_RIGHT_PANEL_W;
-            int rightPanelHeight = REPAIR_RIGHT_PANEL_H;
+            // Правая панель — симметрично playerPanelX относительно центра
+            int rightPanelX = centerX + repairPanel.getWidth() / 2 + gapBetweenPanels / 2;
+            int rightPanelY = playerPanelY;
 
-            context.drawTexture(REPAIR_RIGHT_PANEL_TEX, rightPanelX, rightPanelY, 0, 0, rightPanelWidth, rightPanelHeight, rightPanelWidth, rightPanelHeight);
+            context.drawTexture(REPAIR_RIGHT_PANEL_TEX, rightPanelX, rightPanelY, 0, 0,
+                    REPAIR_RIGHT_PANEL_W, REPAIR_RIGHT_PANEL_H, REPAIR_RIGHT_PANEL_W, REPAIR_RIGHT_PANEL_H);
 
-            // === КНОПКИ РЕМОНТА ===
-            int buttonX = rightPanelX - 85;
+            // === КНОПКИ РЕМОНТА (по центру правой панели) ===
+            int buttonX = this.width / 2 - REPAIR_BTN_W / 2;
             int buttonY = rightPanelY + 70;
-            int btnW = REPAIR_BTN_W;
-            int btnH = REPAIR_BTN_H;
 
-            // --- Кнопка Repair ---
+            // Кнопка Repair
             boolean isHoveredRepair = currentRepairItem != null && repairEnabled &&
-                    mouseX >= buttonX && mouseX <= buttonX + btnW &&
-                    mouseY >= buttonY && mouseY <= buttonY + btnH;
+                    mouseX >= buttonX && mouseX <= buttonX + REPAIR_BTN_W &&
+                    mouseY >= buttonY && mouseY <= buttonY + REPAIR_BTN_H;
             int stateIndexRepair = isHoveredRepair ? 1 : 0;
-
             context.drawTexture(REPAIR_BUTTON_TEX, buttonX, buttonY,
-                    0, stateIndexRepair * btnH, btnW, btnH, btnW, REPAIR_BTN_TEX_H);
-
+                    0, stateIndexRepair * REPAIR_BTN_H, REPAIR_BTN_W, REPAIR_BTN_H, REPAIR_BTN_W, REPAIR_BTN_TEX_H);
             context.getMatrices().push();
-            context.getMatrices().translate(buttonX + btnW / 2f, buttonY + btnH / 2f - 4f, 0);
+            context.getMatrices().translate(buttonX + REPAIR_BTN_W / 2f, buttonY + REPAIR_BTN_H / 2f - 4f, 0);
             context.getMatrices().scale(REPAIR_BTN_TEXT_SCALE, REPAIR_BTN_TEXT_SCALE, 1.0f);
             Text repairText = Text.literal("Repair");
             context.drawText(this.textRenderer, repairText,
                     -this.textRenderer.getWidth(repairText) / 2, 0,
                     repairEnabled ? 0xFFFFFF : 0x888888, false);
             context.getMatrices().pop();
-
-            repairButtonBounds = new net.minecraft.client.util.math.Rect2i(buttonX, buttonY, btnW, btnH);
+            repairButtonBounds = new net.minecraft.client.util.math.Rect2i(buttonX, buttonY, REPAIR_BTN_W, REPAIR_BTN_H);
 
             // Кнопка Repair All
-            int repairAllButtonY = buttonY + btnH + 5;
+            int repairAllButtonY = buttonY + REPAIR_BTN_H + 5;
             int totalCost = getTotalRepairCost();
             repairAllEnabled = NumismaticHelper.getTotalMoney(this.client.player) >= totalCost && !damagedItems.isEmpty();
-
             boolean isHoveredRepairAll = repairAllEnabled &&
-                    mouseX >= buttonX && mouseX <= buttonX + btnW &&
-                    mouseY >= repairAllButtonY && mouseY <= repairAllButtonY + btnH;
+                    mouseX >= buttonX && mouseX <= buttonX + REPAIR_BTN_W &&
+                    mouseY >= repairAllButtonY && mouseY <= repairAllButtonY + REPAIR_BTN_H;
             int stateIndexRepairAll = isHoveredRepairAll ? 1 : 0;
-
-            context.drawTexture(REPAIR_BUTTON_TEX, buttonX, repairAllButtonY, 0, stateIndexRepairAll * btnH, btnW, btnH, btnW, REPAIR_BTN_TEX_H);
-
+            context.drawTexture(REPAIR_BUTTON_TEX, buttonX, repairAllButtonY,
+                    0, stateIndexRepairAll * REPAIR_BTN_H, REPAIR_BTN_W, REPAIR_BTN_H, REPAIR_BTN_W, REPAIR_BTN_TEX_H);
             context.getMatrices().push();
-            context.getMatrices().translate(buttonX + btnW / 2f, repairAllButtonY + btnH / 2f - 4f, 0);
+            context.getMatrices().translate(buttonX + REPAIR_BTN_W / 2f, repairAllButtonY + REPAIR_BTN_H / 2f - 4f, 0);
             context.getMatrices().scale(REPAIR_BTN_TEXT_SCALE, REPAIR_BTN_TEXT_SCALE, 1.0f);
             Text repairAllText = Text.literal("Repair All");
-            context.drawText(this.textRenderer, repairAllText, -this.textRenderer.getWidth(repairAllText) / 2, 0, repairAllEnabled ? 0xFFFFFF : 0x888888, false);
+            context.drawText(this.textRenderer, repairAllText,
+                    -this.textRenderer.getWidth(repairAllText) / 2, 0,
+                    repairAllEnabled ? 0xFFFFFF : 0x888888, false);
             context.getMatrices().pop();
-
-            repairAllButtonBounds = new net.minecraft.client.util.math.Rect2i(buttonX, repairAllButtonY, btnW, btnH);
+            repairAllButtonBounds = new net.minecraft.client.util.math.Rect2i(buttonX, repairAllButtonY, REPAIR_BTN_W, REPAIR_BTN_H);
 
             // Информация о предмете
             if (currentRepairItem != null) {
                 DamagedItem selected = currentRepairItem;
-                int startX = rightPanelX + rightPanelWidth / 2;
+                int startX = rightPanelX + REPAIR_RIGHT_PANEL_W / 2;
                 int startY = rightPanelY + 10;
 
-                // Фон под предметом
                 int itemBgX = startX - ITEM_BG_W / 2;
                 int itemBgY = startY;
                 context.drawTexture(ITEM_BG_TEX, itemBgX, itemBgY, 0, 0, ITEM_BG_W, ITEM_BG_H, ITEM_BG_W, ITEM_BG_H);
-
                 context.getMatrices().push();
                 context.getMatrices().translate(startX, startY + ITEM_BG_H / 2f, 0);
                 context.getMatrices().scale(2.0f, 2.0f, 1.0f);
@@ -1062,35 +1026,37 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                 context.getMatrices().pop();
 
                 String itemName = selected.getStack().getName().getString();
-                int itemNameWidth = this.textRenderer.getWidth(itemName);
-                int centeredX = startX - (itemNameWidth / 2);
-                context.drawText(this.textRenderer, itemName, centeredX, startY + ITEM_BG_H + 5, 0xFFFFFF, false);
+                context.drawText(this.textRenderer, itemName,
+                        startX - this.textRenderer.getWidth(itemName) / 2,
+                        startY + ITEM_BG_H + 5, 0xFFFFFF, false);
 
                 int durabilityPercent = (int) ((1.0 - (double) selected.getCurrentDamage() / selected.getMaxDamage()) * 100);
-                String durabilityText = "Durability";
-                context.drawText(this.textRenderer, Text.literal(durabilityText), startX - this.textRenderer.getWidth(durabilityText) / 2, startY + ITEM_BG_H + 20, 0xCCCCCC, false);
-                String durabilityPercentText = String.format("%d%%", durabilityPercent);
-                context.drawText(this.textRenderer, Text.literal(durabilityPercentText), startX - this.textRenderer.getWidth(durabilityPercentText) / 2, startY + ITEM_BG_H + 30, 0xCCCCCC, false);
+                context.drawText(this.textRenderer, Text.literal("Durability"),
+                        startX - this.textRenderer.getWidth("Durability") / 2,
+                        startY + ITEM_BG_H + 20, 0xCCCCCC, false);
+                context.drawText(this.textRenderer, Text.literal(durabilityPercent + "%"),
+                        startX - this.textRenderer.getWidth(durabilityPercent + "%") / 2,
+                        startY + ITEM_BG_H + 30, 0xCCCCCC, false);
 
-                // Цвет цены
                 String costText = String.format("Cost: %d copper", selected.getRepairCost());
-                int playerMoneyCheck = NumismaticHelper.getTotalMoney(this.client.player);
-                int costColor = (playerMoneyCheck >= selected.getRepairCost()) ? 0xFFFFAA : 0x80FF0000;
-                context.drawText(this.textRenderer, Text.literal(costText), startX - (this.textRenderer.getWidth(costText) / 2), startY + ITEM_BG_H + 60, costColor, false);
+                int costColor = (NumismaticHelper.getTotalMoney(this.client.player) >= selected.getRepairCost()) ? 0xFFFFAA : 0x80FF0000;
+                context.drawText(this.textRenderer, Text.literal(costText),
+                        startX - this.textRenderer.getWidth(costText) / 2,
+                        startY + ITEM_BG_H + 60, costColor, false);
             } else {
-                int startX = rightPanelX + rightPanelWidth / 2;
-                int startY = rightPanelY + rightPanelHeight / 2;
-
-                Text noSelectedItem = Text.literal("No item selected");
-                Text clickToSelect = Text.literal("Click on a damaged item");
-
-                context.drawText(this.textRenderer, noSelectedItem, startX - this.textRenderer.getWidth(noSelectedItem) / 2, startY - 40, 0x8E7D6E, false);
-                context.drawText(this.textRenderer, clickToSelect, startX - this.textRenderer.getWidth(clickToSelect) / 2, startY - 25, 0x7E7D6E, false);
+                int startX = rightPanelX + REPAIR_RIGHT_PANEL_W / 2;
+                int startY = rightPanelY + REPAIR_RIGHT_PANEL_H / 2;
+                context.drawText(this.textRenderer, Text.literal("No item selected"),
+                        startX - this.textRenderer.getWidth("No item selected") / 2, startY - 40, 0x8E7D6E, false);
+                context.drawText(this.textRenderer, Text.literal("Click on a damaged item"),
+                        startX - this.textRenderer.getWidth("Click on a damaged item") / 2, startY - 25, 0x7E7D6E, false);
             }
 
             // Деньги игрока
             int playerMoney = NumismaticHelper.getTotalMoney(this.client.player);
-            drawCurrencyWithIcons(context, playerMoney, x + this.inventoryX, inventoryY + INV_LABEL_Y - 4);
+            drawCurrencyWithIcons(context, playerMoney,
+                    playerPanelX + (int) (4 * scaleFactor),
+                    playerPanelY + (int) (BASE_INV_LABEL_Y * scaleFactor) - (int) (4 * scaleFactor));
 
             // Тултипы кнопок
             if (repairButtonBounds != null && currentRepairItem != null &&
@@ -1098,24 +1064,15 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                     mouseY >= repairButtonBounds.getY() && mouseY <= repairButtonBounds.getY() + repairButtonBounds.getHeight()) {
                 List<Text> tooltip = new ArrayList<>();
                 String formattedCost = formatMoney(currentRepairItem.getRepairCost());
-                if (repairEnabled) {
-                    tooltip.add(Text.literal("§aClick to repair for " + formattedCost));
-                } else {
-                    tooltip.add(Text.literal("§cNeed " + formattedCost + " to repair"));
-                }
+                tooltip.add(repairEnabled ? Text.literal("§aClick to repair for " + formattedCost) : Text.literal("§cNeed " + formattedCost + " to repair"));
                 context.drawTooltip(this.textRenderer, tooltip, mouseX, mouseY);
             }
-
             if (repairAllButtonBounds != null && !damagedItems.isEmpty() &&
                     mouseX >= repairAllButtonBounds.getX() && mouseX <= repairAllButtonBounds.getX() + repairAllButtonBounds.getWidth() &&
                     mouseY >= repairAllButtonBounds.getY() && mouseY <= repairAllButtonBounds.getY() + repairAllButtonBounds.getHeight()) {
                 List<Text> tooltip = new ArrayList<>();
                 String formattedCost = formatMoney(totalCost);
-                if (repairAllEnabled) {
-                    tooltip.add(Text.literal("§aClick to repair all items for " + formattedCost));
-                } else {
-                    tooltip.add(Text.literal("§cNeed " + formattedCost + " to repair all items"));
-                }
+                tooltip.add(repairAllEnabled ? Text.literal("§aClick to repair all items for " + formattedCost) : Text.literal("§cNeed " + formattedCost + " to repair all items"));
                 context.drawTooltip(this.textRenderer, tooltip, mouseX, mouseY);
             }
         }
@@ -1211,20 +1168,11 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
             }
         }
 
-        // === 5. СЛОТЫ ЖИТЕЛЯ (ВИРТУАЛЬНОЕ ОТОБРАЖЕНИЕ) ===
+        // === 5. СЛОТЫ ЖИТЕЛЯ (только фон + предмет, количество рисуется стандартно через super.render) ===
         if (currentTab == TabType.TRADE) {
             int villagerStartX = villagerPanelX + scaledInvSlotStartX;
             int villagerStartY = villagerPanelY + scaledInvSlotStartY;
-
-            // Находим первый непустой предмет для отображения
             VillagerInventoryComponent villagerInv = handler.getVillagerInventory();
-            ItemStack firstTemplate = ItemStack.EMPTY;
-            for (int i = 0; i < villagerInv.size(); i++) {
-                if (!villagerInv.getStack(i).isEmpty()) {
-                    firstTemplate = villagerInv.getStack(i);
-                    break;
-                }
-            }
 
             for (int row = 0; row < BASE_GRID_ROWS; row++) {
                 for (int col = 0; col < BASE_GRID_COLS; col++) {
@@ -1236,21 +1184,12 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                     context.drawTexture(SLOT_TEX, slotX, slotY, 0, 0,
                             scaledSlotSize, scaledSlotSize, SLOT_TEX_W, SLOT_TEX_H);
 
-                    // Рисуем только первый слот, но показываем в нем ВСЕ предметы этого типа
-                    if (index == 0 && !firstTemplate.isEmpty()) {
-                        int totalCount = handler.getTotalItemCountInInventory(firstTemplate);
-                        if (totalCount > 0) {
-                            // Рисуем сам предмет
-                            context.drawItem(firstTemplate, slotX + 1, slotY + 1);
-
-                            // Рисуем количество вручную, чтобы обойти лимит 127
-                            String countText = String.valueOf(totalCount);
-                            context.getMatrices().push();
-                            context.getMatrices().translate(slotX + scaledSlotSize, slotY + scaledSlotSize, 0);
-                            context.getMatrices().scale(1.0f, 1.0f, 1.0f);
-                            // Рисуем текст с тенью
-                            context.drawTextWithShadow(this.textRenderer, countText, -this.textRenderer.getWidth(countText) - 1, -8, 0xFFFFFF);
-                            context.getMatrices().pop();
+                    // Предмет рисуем кастомно (чтобы обойти лимит 64 в стандартном рендере)
+                    // Количество НЕ рисуем — это делает super.render()
+                    if (index < villagerInv.size()) {
+                        ItemStack stack = villagerInv.getStack(index);
+                        if (!stack.isEmpty()) {
+                            context.drawItem(stack, slotX + 1, slotY + 1);
                         }
                     }
                 }
@@ -1261,7 +1200,6 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         // Рисуются ПОВЕРХ всех слотов
         for (Slot slot : handler.slots) {
             // Пропускаем слоты жителя
-            if (slot.id >= VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT) continue;
             if (slot.x < 0) continue; // Пропускаем скрытые слоты
 
             SlotState state = getSlotState(slot.id, slot);
@@ -1323,6 +1261,35 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        // === ЗАПРЕТ ПЕРЕТАСКИВАНИЯ ПРЕДМЕТОВ В TRADE ===
+        if (currentTab == TabType.TRADE && button == 0) {
+            Slot clickedSlot = getSlotAt(mouseX, mouseY);
+            if (clickedSlot != null) {
+                // Клик по слоту в TRADE — перехватываем клик, не передаём в super
+                // Это предотвращает перетаскивание предметов мышкой
+
+                // Если это слот игрока с предметом для продажи
+                if (clickedSlot.id < VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT && clickedSlot.hasStack()) {
+                    ItemStack stack = clickedSlot.getStack();
+                    int sellPrice = handler.getClientSellPrice(stack);
+                    if (sellPrice > 0 && handler.canVillagerBuyItem(stack)) {
+                        openTradePanel(clickedSlot);
+                        return true;
+                    }
+                }
+                // Если это слот жителя с предметом для покупки
+                else if (clickedSlot.id >= VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT && clickedSlot.hasStack()) {
+                    int buyPrice = handler.getClientBuyPrice(clickedSlot.id);
+                    if (buyPrice > 0) {
+                        openTradePanel(clickedSlot);
+                        return true;
+                    }
+                }
+                // Клик по слоту без действия — всё равно блокируем перетаскивание
+                return true;
+            }
+        }
+
         // Навигация (ЛКМ)
         if (button == 0 && navLeftBounds != null) {
             if (isOver(mouseX, mouseY, navLeftBounds)) {
@@ -1344,35 +1311,36 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         }
 
         // === ЛКМ (button == 0) ===
+        // === ЛКМ (button == 0) ===
         if (button == 0) {
-            // 1. СНАЧАЛА проверяем клик по слоту в TRADE (даже если панель открыта)
+            // 1. СНАЧАЛА проверяем клик по панели торговли (кнопка SELL/BUY, слайдер)
+            // Это критически важно: панель должна обработать клик ДО того, как мы проверим слоты
+            if (currentTab == TabType.TRADE && tradePanel != null && tradePanel.isVisible()) {
+                if (tradePanel.mouseClicked(mouseX, mouseY, button)) {
+                    return true; // Клик по кнопке/sлайдеру обработан, slotIndex не перезаписывается
+                }
+                // Клик вне панели И вне слота -> закрываем панель
+                if (!isPointOverTradePanel(mouseX, mouseY)) {
+                    Slot clickedSlot = getSlotAt(mouseX, mouseY);
+                    if (clickedSlot == null || !clickedSlot.hasStack()) {
+                        tradePanel.close();
+                        return true;
+                    }
+                }
+            }
+
+            // 2. ПОТОМ проверяем клик по слоту в TRADE (только если панель не перехватила клик)
             if (currentTab == TabType.TRADE) {
                 Slot clickedSlot = getSlotAt(mouseX, mouseY);
                 if (clickedSlot != null && clickedSlot.hasStack()) {
                     int slotIndex = clickedSlot.id;
                     ItemStack stack = clickedSlot.getStack();
-
                     boolean buying = slotIndex >= VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT;
                     int price = buying ? handler.getClientBuyPrice(slotIndex) : handler.getClientSellPrice(stack);
-
                     if (price > 0) {
-                        // Открываем/обновляем панель с новым предметом
                         openTradePanel(clickedSlot);
                         return true;
                     }
-                    return true;
-                }
-            }
-
-            // 2. ПОТОМ проверяем клик по панели торговли
-            if (currentTab == TabType.TRADE && tradePanel != null && tradePanel.isVisible()) {
-                if (tradePanel.mouseClicked(mouseX, mouseY, button)) {
-                    return true;
-                }
-                // Если клик вне панели И не по слоту - закрываем
-                if (!isPointOverTradePanel(mouseX, mouseY)) {
-                    tradePanel.close();
-                    return true;
                 }
             }
 
@@ -1421,6 +1389,11 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                     }
                     return true;
                 }
+
+                // Проигрываем случайный звук крафта (1 из 2)
+                SoundEvent craftSound = this.client.player.getRandom().nextBoolean() ? ModSounds.CRAFT_1 : ModSounds.CRAFT_2;
+                this.client.player.playSound(craftSound, 1.0f, 1.0f);
+
                 int slotToSend = currentRecipe.getUniqueIngredientIndex() < 0 ? -1 : selectedInventoryIndex;
                 com.unnameduser.tradeoverhaul.common.network.CraftRequestC2SPacket packet = new com.unnameduser.tradeoverhaul.common.network.CraftRequestC2SPacket(
                         handler.syncId, currentRecipe.getId(), slotToSend);
@@ -1443,7 +1416,6 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                 ClientPlayNetworking.send(new Identifier(TradeOverhaulMod.MOD_ID, "repair_request"), buf);
                 return true;
             }
-
             if (currentTab == TabType.REPAIR && repairAllButtonBounds != null && !damagedItems.isEmpty() &&
                     mouseX >= repairAllButtonBounds.getX() && mouseX <= repairAllButtonBounds.getX() + repairAllButtonBounds.getWidth() &&
                     mouseY >= repairAllButtonBounds.getY() && mouseY <= repairAllButtonBounds.getY() + repairAllButtonBounds.getHeight()) {
@@ -1461,16 +1433,16 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                 int btnBottom = disassembleButtonBounds.getY() + disassembleButtonBounds.getHeight();
                 if (mouseX >= disassembleButtonBounds.getX() && mouseX <= btnRight &&
                         mouseY >= disassembleButtonBounds.getY() && mouseY <= btnBottom) {
-
                     isDisassembleButtonPressed = true;
-
                     boolean canAfford = NumismaticHelper.getTotalMoney(client.player) >= disassemblyCost;
                     if (canAfford && disassemblyTargetSlotIndex != -1) {
+                        // Проигрываем звук разборки
+                        client.player.playSound(ModSounds.DISASSEMBLE, 1.0f, 1.0f);
+
                         var buf = PacketByteBufs.create();
                         buf.writeInt(handler.syncId);
                         buf.writeInt(disassemblyTargetSlotIndex);
                         ClientPlayNetworking.send(new Identifier(TradeOverhaulMod.MOD_ID, "disassemble_request"), buf);
-
                         isDisassemblyActive = false;
                         disassemblyTargetSlotIndex = -1;
                         disassemblyComponents.clear();
@@ -1487,8 +1459,7 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                 boolean clickedOnSlot = getSlotAt(mouseX, mouseY) != null;
                 boolean clickedOnSearchField = searchField != null && mouseX >= searchField.getX() && mouseX <= searchField.getX() + searchField.getWidth() &&
                         mouseY >= searchField.getY() && mouseY <= searchField.getY() + searchField.getHeight();
-                boolean clickedOnCraftPanel = craftPanelBounds != null && craftPanelBounds.contains((int)mouseX, (int)mouseY);
-
+                boolean clickedOnCraftPanel = craftPanelBounds != null && craftPanelBounds.contains((int) mouseX, (int) mouseY);
                 if (!clickedOnRecipePanel && !clickedOnCraftButton && !clickedOnSlot && !clickedOnSearchField && !clickedOnCraftPanel) {
                     resetAllFilters();
                 }
@@ -1506,18 +1477,31 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                 }
                 allDamaged.sort(Comparator.comparingInt(DamagedItem::getSlotIndex));
 
-                int startX = inventoryX + INV_SLOT_START_X;
-                int startY = inventoryY + INV_SLOT_START_Y;
+                float sf = currentGuiScale / 3.0f;
+                int scaledSlotSize = (int) (BASE_SLOT_SIZE * sf);
+                int scaledSlotGap;
+                switch (currentGuiScale) {
+                    case 2: scaledSlotGap = 8; break;
+                    case 3: scaledSlotGap = 1; break;
+                    case 4: scaledSlotGap = -5; break;
+                    default: scaledSlotGap = Math.max(0, (int) (BASE_SLOT_GAP * sf)); break;
+                }
+                int scaledSlotStep = scaledSlotSize + scaledSlotGap;
+                int scaledInvSlotStartX = (int) (BASE_INV_SLOT_START_X * sf);
+                int scaledInvSlotStartY = (int) (BASE_INV_SLOT_START_Y * sf);
+
+                int startX = playerPanelX + scaledInvSlotStartX;
+                int startY = playerPanelY + scaledInvSlotStartY;
 
                 boolean clickedOnSlot = false;
                 for (int i = 0; i < Math.min(allDamaged.size(), GRID_ROWS * GRID_COLS); i++) {
                     int row = i / GRID_COLS;
                     int col = i % GRID_COLS;
-                    int slotX = startX + col * SLOT_STEP;
-                    int slotY = startY + row * SLOT_STEP;
+                    int slotX = startX + col * scaledSlotStep;
+                    int slotY = startY + row * scaledSlotStep;
 
-                    if (mouseX >= slotX && mouseX < slotX + SLOT_SIZE &&
-                            mouseY >= slotY && mouseY < slotY + SLOT_SIZE) {
+                    if (mouseX >= slotX && mouseX < slotX + scaledSlotSize &&
+                            mouseY >= slotY && mouseY < slotY + scaledSlotSize) {
                         DamagedItem selected = allDamaged.get(i);
                         if (repairPanel != null) {
                             repairPanel.updateItems(allDamaged);
@@ -1528,7 +1512,6 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                         break;
                     }
                 }
-
                 if (!clickedOnSlot && !isPointOverRepairButtons(mouseX, mouseY)) {
                     resetSelectedRepairItem();
                 }
@@ -1895,24 +1878,37 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         ItemStack stack = slot.getStack();
 
         if (currentTab == TabType.TRADE) {
-            // ✅ Слоты жителя теперь всегда обычные
+            // Слоты жителя
             if (slotIndex >= VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT) {
+                // Активная рамка только для выбранного предмета в tradePanel (покупка)
+                if (tradePanel != null && tradePanel.isVisible() &&
+                        tradePanel.isBuying() && tradePanel.getSlotIndex() == slotIndex) {
+                    return SlotState.ACTIVE;
+                }
                 return SlotState.DEFAULT;
             }
-            // Слоты игрока (продажа)
-            if (slotIndex < VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT) {
-                if (stack.isEmpty()) return SlotState.DEFAULT;
-                boolean canSell = handler.canVillagerBuyItem(stack);
-                int sellPrice = handler.getClientSellPrice(stack);
-                int villagerMoney = handler.getSyncedWallet();
 
-                if (canSell && villagerMoney >= sellPrice) return SlotState.ACTIVE;
-                if (canSell && villagerMoney < sellPrice) return SlotState.LOCKED;
-                return SlotState.DEFAULT; // Не в конфиге
+            // Слоты игрока (продажа жителю)
+            if (stack.isEmpty()) return SlotState.DEFAULT;
+
+            // Активная рамка только для выбранного предмета в tradePanel
+            if (tradePanel != null && tradePanel.isVisible() &&
+                    !tradePanel.isBuying() && tradePanel.getSlotIndex() == slotIndex) {
+                return SlotState.ACTIVE;
             }
+
+            // Проверяем, может ли житель купить этот предмет
+            boolean canSell = handler.canVillagerBuyItem(stack);
+            if (!canSell) {
+                // Предмет не в списке покупок - LOCKED (будет крест)
+                return SlotState.LOCKED;
+            }
+
+            // Предмет в списке покупок - DEFAULT
+            // Затенение (если не хватает денег) рисуется отдельно в drawDimmedSlots
+            return SlotState.DEFAULT;
         }
         else if (currentTab == TabType.CRAFT) {
-            // ✅ Подсвечиваем ВСЕГДА, если слот совпадает с выбранным
             if (selectedItemSlot >= 0 && slotIndex == selectedItemSlot) {
                 return SlotState.ACTIVE;
             }
@@ -2076,8 +2072,8 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     private void renderCraftPanel(DrawContext context, int mouseX, int mouseY) {
         craftBuyableSlots.clear();
 
-        int cx = this.centerX + 80; // Подгоняй X-координату панели
-        int cy = this.height / 2;
+        int cx = this.width / 2;
+        int cy = centerY;
         int panelW = CRAFT_PANEL_W;
         int panelH = CRAFT_PANEL_H;
         int px = cx - panelW / 2;
@@ -2480,7 +2476,6 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
     }
 
     private void renderRepairSlots(DrawContext context, int mouseX, int mouseY) {
-        // Собираем повреждённые предметы с реальными индексами
         List<DamagedItem> allDamaged = new ArrayList<>();
         PlayerInventory inv = client.player.getInventory();
         for (int i = 0; i < inv.size(); i++) {
@@ -2489,25 +2484,34 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
                 allDamaged.add(new DamagedItem(stack, i));
             }
         }
-
-        // ✅ СОРТИРУЕМ список (опционально - можно сортировать по имени, урону или индексу)
-        // Сортировка по индексу в инвентаре (естественный порядок)
         allDamaged.sort(Comparator.comparingInt(DamagedItem::getSlotIndex));
 
-        int startX = inventoryX + INV_SLOT_START_X;
-        int startY = inventoryY + INV_SLOT_START_Y;
+        float sf = currentGuiScale / 3.0f;
+        int scaledSlotSize = (int) (BASE_SLOT_SIZE * sf);
+        int scaledSlotGap;
+        switch (currentGuiScale) {
+            case 2: scaledSlotGap = 8; break;
+            case 3: scaledSlotGap = 1; break;
+            case 4: scaledSlotGap = -5; break;
+            default: scaledSlotGap = Math.max(0, (int) (BASE_SLOT_GAP * sf)); break;
+        }
+        int scaledSlotStep = scaledSlotSize + scaledSlotGap;
+        int scaledInvSlotStartX = (int) (BASE_INV_SLOT_START_X * sf);
+        int scaledInvSlotStartY = (int) (BASE_INV_SLOT_START_Y * sf);
 
-        // Рисуем все 36 слотов сетки, но заполняем их ТОЛЬКО повреждёнными предметами по порядку
+        int startX = playerPanelX + scaledInvSlotStartX;
+        int startY = playerPanelY + scaledInvSlotStartY;
+
         int damagedIndex = 0;
-        for (int row = 0; row < GRID_ROWS; row++) {
-            for (int col = 0; col < GRID_COLS; col++) {
-                int slotX = startX + col * SLOT_STEP;
-                int slotY = startY + row * SLOT_STEP;
+        for (int row = 0; row < BASE_GRID_ROWS; row++) {
+            for (int col = 0; col < BASE_GRID_COLS; col++) {
+                int slotX = startX + col * scaledSlotStep;
+                int slotY = startY + row * scaledSlotStep;
 
-                // Фон слота (всегда рисуем)
-                context.drawTexture(SLOT_TEX, slotX, slotY, 0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_TEX_W, SLOT_TEX_H);
+                // Фон слота
+                context.drawTexture(SLOT_TEX, slotX, slotY, 0, 0,
+                        SLOT_TEX_W, SLOT_TEX_H, SLOT_TEX_W, SLOT_TEX_H);
 
-                // Берём следующий повреждённый предмет, если он есть
                 if (damagedIndex < allDamaged.size()) {
                     DamagedItem item = allDamaged.get(damagedIndex);
                     ItemStack stack = item.getStack();
@@ -2517,18 +2521,17 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
 
                     // Выделение выбранного
                     if (currentRepairItem != null && currentRepairItem.getSlotIndex() == item.getSlotIndex()) {
-                        context.drawTexture(ACTIVE_SLOT_TEX, slotX, slotY, 0, 0, STATE_SLOT_W, STATE_SLOT_H, STATE_SLOT_W, STATE_SLOT_H);
+                        context.drawTexture(ACTIVE_SLOT_TEX, slotX, slotY, 0, 0,
+                                STATE_SLOT_W, STATE_SLOT_H, STATE_SLOT_W, STATE_SLOT_H);
                     }
 
-                    if (mouseX >= slotX && mouseX < slotX + SLOT_SIZE && mouseY >= slotY && mouseY < slotY + SLOT_SIZE) {
-                        context.fill(slotX, slotY, slotX + SLOT_SIZE, slotY + SLOT_SIZE, 0x30FFFFFF);
-                        List<Text> tooltip = new ArrayList<>();
-                        tooltip.add(stack.getName());
-
-                        context.drawTooltip(textRenderer, tooltip, mouseX, mouseY);
+                    // Подсветка при наведении (используем scaledSlotSize для корректного хитбокса)
+                    if (mouseX >= slotX && mouseX < slotX + scaledSlotSize &&
+                            mouseY >= slotY && mouseY < slotY + scaledSlotSize) {
+                        context.fill(slotX, slotY, slotX + scaledSlotSize, slotY + scaledSlotSize, 0x30FFFFFF);
+                        context.drawTooltip(textRenderer, List.of(stack.getName()), mouseX, mouseY);
                     }
                 }
-
                 damagedIndex++;
             }
         }
@@ -2780,13 +2783,13 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
         playerPanelX = centerX - panelWidth - gapBetweenPanels / 2;
         playerPanelY = centerY - panelHeight / 2;
 
-        // Правая панель (житель)
+        // Правая панель (житель) — для TRADE
         villagerPanelX = centerX + gapBetweenPanels / 2;
         villagerPanelY = centerY - panelHeight / 2;
 
-        // Отладочный вывод
-        System.out.println("Player panel: " + playerPanelX + ", " + playerPanelY);
-        System.out.println("Villager panel: " + villagerPanelX + ", " + villagerPanelY);
+        // Правая панель (рецепты) — симметрично playerPanelX относительно центра
+        recipePanelX = centerX + gapBetweenPanels / 2;
+        recipePanelY = centerY - panelHeight / 2;
     }
 
     private void drawPanelBackgrounds(DrawContext context) {
@@ -3004,5 +3007,90 @@ public class VillagerInteractionScreen extends HandledScreen<VillagerCraftingScr
             }
         }
         updateExpectedXp();
+    }
+
+    private void drawLockedCrosses(DrawContext context) {
+        int x = (this.width - this.backgroundWidth) / 2;
+        int y = (this.height - this.backgroundHeight) / 2;
+
+        int crossSize = 14;
+        int texSize = 32;
+        float scale = (float) crossSize / texSize;
+
+        float sf = currentGuiScale / 3.0f;
+        int scaledSlotSize = (int) (BASE_SLOT_SIZE * sf);
+
+        context.getMatrices().push();
+        // Z=300: выше предметов (~100-200) и количества (~200), но ниже тултипов (~400+)
+        context.getMatrices().translate(0, 0, 300);
+
+        for (Slot slot : handler.slots) {
+            if (slot.id >= VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT) continue;
+            if (slot.x < 0) continue;
+            if (getSlotState(slot.id, slot) != SlotState.LOCKED) continue;
+
+            int slotX = x + slot.x;
+            int slotY = y + slot.y;
+
+            int crossX = slotX + (scaledSlotSize - crossSize) / 2;
+            int crossY = slotY + (scaledSlotSize - crossSize) / 2;
+
+            context.getMatrices().push();
+            context.getMatrices().translate(crossX, crossY, 0);
+            context.getMatrices().scale(scale, scale, 1.0f);
+            context.drawTexture(CROSS_TEX, 0, 0, 0, 0, texSize, texSize, texSize, texSize);
+            context.getMatrices().pop();
+        }
+
+        context.getMatrices().pop();
+    }
+
+    private void drawDimmedSlots(DrawContext context) {
+        int x = (this.width - this.backgroundWidth) / 2;
+        int y = (this.height - this.backgroundHeight) / 2;
+
+        float sf = currentGuiScale / 3.0f;
+        int scaledSlotSize = (int) (BASE_SLOT_SIZE * sf);
+
+        context.getMatrices().push();
+        // Z=200: выше предметов, ниже крестов
+        context.getMatrices().translate(0, 0, 200);
+
+        for (Slot slot : handler.slots) {
+            if (slot.x < 0) continue;
+            if (slot.getStack().isEmpty()) continue;
+
+            boolean shouldDim = false;
+
+            if (slot.id >= VillagerCraftingScreenHandler.FIRST_VILLAGER_TRADE_SLOT) {
+                int buyPrice = handler.getClientBuyPrice(slot.id);
+                if (buyPrice > 0) {
+                    int playerMoney = NumismaticHelper.getTotalMoney(this.client.player);
+                    if (playerMoney < buyPrice) {
+                        shouldDim = true;
+                    }
+                }
+            } else if (slot.id >= VillagerCraftingScreenHandler.FIRST_MAIN_GRID_SLOT_INDEX) {
+                ItemStack stack = slot.getStack();
+                if (handler.canVillagerBuyItem(stack)) {
+                    int sellPrice = handler.getClientSellPrice(stack);
+                    if (sellPrice > 0) {
+                        int villagerMoney = handler.getSyncedWallet();
+                        if (villagerMoney < sellPrice) {
+                            shouldDim = true;
+                        }
+                    }
+                }
+            }
+
+            if (shouldDim) {
+                int slotX = x + slot.x;
+                int slotY = y + slot.y;
+                // Смещение на 1px вверх и влево, чтобы затенение плотно прилегало к слоту
+                context.fill(slotX - 1, slotY - 1, slotX + scaledSlotSize - 1, slotY + scaledSlotSize - 1, 0x80404040);
+            }
+        }
+
+        context.getMatrices().pop();
     }
 }

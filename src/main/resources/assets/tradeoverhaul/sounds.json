@@ -1,0 +1,11 @@
+{
+  "disassemble": {
+    "sounds": ["tradeoverhaul:disassemble"]
+  },
+  "craft_1": {
+    "sounds": ["tradeoverhaul:craft_1"]
+  },
+  "craft_2": {
+    "sounds": ["tradeoverhaul:craft_2"]
+  }
+}

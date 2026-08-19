@@ -565,7 +565,6 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
         if (item.isEmpty() || !TradePricing.canVillagerBuyItem(item, villager, professionFile)) return;
 
         String itemId = Registries.ITEM.getId(item.getItem()).toString();
-
         int sellPrice = TradePricing.applyDurabilityPriceModifier(TradePricing.getSellPrice(item, professionFile), item, TradeConfigLoader.getSettings());
         if (sellPrice <= 0) sellPrice = 1;
 
@@ -581,18 +580,20 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
 
         // Создаем копию ДО уменьшения
         ItemStack toAdd = item.copyWithCount(toSell);
-        item.decrement(toSell);
+
+        // Правильное уменьшение через слот
+        sl.takeStack(toSell);
 
         addToVillagerInventory(toAdd);
 
         int totalEarned = toSell * sellPrice;
         if (!data.tradeOverhaul$getCurrency().removeMoney(totalEarned)) return;
+
         data.tradeOverhaul$getProfession().markAsTraded();
 
         // === ЛОГИКА БЕЗ ТЕГОВ ===
         var professionComp = data.tradeOverhaul$getProfession();
         int xpAmount = professionComp.updateTrackerAndGetXpAmount(professionComp.boughtTracker, itemId, toSell);
-
         if (xpAmount > 0) {
             professionComp.applyXpFromSale(itemId, xpAmount, professionFile);
             professionComp.soldTracker.merge(itemId, toSell, Integer::sum);
@@ -877,6 +878,9 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
             int playerMoney = NumismaticHelper.getTotalMoney(player);
             if (playerMoney < totalPrice) return;
 
+            // Проверяем, что в выбранном слоте достаточно предметов
+            if (stack.getCount() < amount) return;
+
             ItemStack copyToInsert = stack.copyWithCount(amount);
             if (!player.getInventory().insertStack(copyToInsert)) {
                 player.sendMessage(Text.literal("§cNo space in inventory!"), false);
@@ -885,8 +889,8 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
 
             NumismaticHelper.removeMoney(player, totalPrice);
 
-            // Удаляем из всех стаков
-            removeItemsFromVillagerInventory(stack, amount);
+            // Удаляем именно из выбранного слота, а не поиском по типу
+            slot.takeStack(amount);
 
             data.tradeOverhaul$getCurrency().addMoney(totalPrice);
             professionComp.markAsTraded();
@@ -898,6 +902,7 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
             }
 
         } else {
+            // === ПРОДАЖА: используем именно тот слот, который выбрал игрок ===
             int price = getClientSellPrice(stack);
             if (price <= 0) return;
 
@@ -907,22 +912,11 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
 
             if (!hasVillagerSpaceForStack(stack, amount)) return;
 
-            PlayerInventory inv = player.getInventory();
-            int playerSlotIndex = -1;
-            for (int i = 0; i < inv.size(); i++) {
-                ItemStack s = inv.getStack(i);
-                if (!s.isEmpty() && ItemStack.canCombine(s, stack) && s.getCount() >= amount) {
-                    playerSlotIndex = i;
-                    break;
-                }
-            }
-            if (playerSlotIndex == -1) return;
+            // Проверяем, что в выбранном слоте достаточно предметов
+            if (stack.getCount() < amount) return;
 
-            ItemStack playerStack = inv.getStack(playerSlotIndex);
-            if (playerStack.getCount() < amount) return;
-
-            ItemStack toAdd = playerStack.copyWithCount(amount);
-            playerStack.decrement(amount);
+            ItemStack toAdd = stack.copyWithCount(amount);
+            slot.takeStack(amount);
 
             addToVillagerInventory(toAdd);
 
@@ -964,7 +958,7 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
                 trackersNbt
         );
 
-        sendContentUpdates();
+        // НЕ вызываем sendContentUpdates() — он ломает стаки >64 через стандартную синхронизацию
         com.unnameduser.tradeoverhaul.common.network.ModNetworking.sendInventorySync(player, this.syncId, villagerInventory);
     }
 
@@ -984,42 +978,46 @@ public class VillagerCraftingScreenHandler extends ScreenHandler {
 
     private void addToVillagerInventory(ItemStack stack) {
         if (stack.isEmpty()) return;
-
         ItemStack toAdd = stack.copy();
         int remaining = toAdd.getCount();
-        int maxStack = toAdd.getMaxCount();
 
-        // 1. Сначала пытаемся дополнить существующие стаки
+        // Если предмет вообще не стакабелен — сразу ищем пустой слот
+        if (!toAdd.isStackable()) {
+            for (int i = 0; i < villagerInventory.size() && remaining > 0; i++) {
+                if (villagerInventory.getStack(i).isEmpty()) {
+                    villagerInventory.setStack(i, toAdd.copyWithCount(1));
+                    remaining--;
+                }
+            }
+            villagerInventory.markDirty();
+            return;
+        }
+
+        // 1. Мердж существующих стаков (только для стакабельных)
         for (int i = 0; i < villagerInventory.size() && remaining > 0; i++) {
             ItemStack slotStack = villagerInventory.getStack(i);
 
-            // ✅ ВАЖНО: Используем мягкое сравнение только по ID предмета.
-            // Это позволяет складывать предметы вместе, даже если у них разные NBT или теги.
             boolean canCombine = !slotStack.isEmpty() &&
-                    slotStack.getItem() == toAdd.getItem();
+                    slotStack.getItem() == toAdd.getItem() &&
+                    ItemStack.canCombine(slotStack, toAdd);
 
             if (canCombine) {
-                int space = maxStack - slotStack.getCount();
+                int space = Integer.MAX_VALUE - slotStack.getCount();
                 if (space > 0) {
                     int add = Math.min(space, remaining);
-
-                    // Создаем новый стак на основе того, что УЖЕ лежит у жителя,
-                    // чтобы сохранить его "свойства" (если они важны для визуализации)
                     ItemStack newStack = slotStack.copy();
                     newStack.increment(add);
-
                     villagerInventory.setStack(i, newStack);
                     remaining -= add;
                 }
             }
         }
 
-        // 2. Если осталось, ищем пустые слоты
+        // 2. Пустые слоты
         for (int i = 0; i < villagerInventory.size() && remaining > 0; i++) {
             if (villagerInventory.getStack(i).isEmpty()) {
-                int add = Math.min(remaining, maxStack);
-                villagerInventory.setStack(i, toAdd.copyWithCount(add));
-                remaining -= add;
+                villagerInventory.setStack(i, toAdd.copyWithCount(remaining));
+                remaining = 0;
             }
         }
 
